@@ -1,5 +1,7 @@
 # Architecture
 
+> This is just a sketch -- it can change in time.
+
 ## Graph
 
 ```mermaid
@@ -35,3 +37,4 @@ graph LR
 ## Test Coordinator
 
 * [Testcontainers](https://testcontainers.com/)
+* [Mono Cecil](https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/)
