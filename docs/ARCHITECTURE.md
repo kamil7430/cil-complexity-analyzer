@@ -1,3 +1,7 @@
+# Architecture
+
+## Graph
+
 ```mermaid
 graph LR
     subgraph Facade [Facade Layer]
@@ -20,3 +24,15 @@ graph LR
     %% Ukrycie ramki dla kropek
     style Dots fill:none,stroke:none,color:#64748B
 ```
+
+# Tech stack
+
+* .NET 11 (preview, releasing on November 2026)
+
+## Test Framework / IDE Integration
+
+* []Microsoft.Testing.Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-intro)
+
+## Test Coordinator
+
+* [Testcontainers](https://testcontainers.com/)
