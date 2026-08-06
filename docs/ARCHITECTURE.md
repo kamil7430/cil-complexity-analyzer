@@ -17,5 +17,5 @@ graph LR
     end
 
     %% Ukrycie ramki dla kropek
-    style Dots fill:none,stroke:none,color:#64748B
+    style Dots fill:none,stroke:none
 ```
