@@ -1,7 +1,6 @@
 ```mermaid
 graph LR
     subgraph Facade [Facade Layer]
-        direction TB
         IDE[IDE\nIntegration] <--> TF[Test\nFramework]
     end
 
