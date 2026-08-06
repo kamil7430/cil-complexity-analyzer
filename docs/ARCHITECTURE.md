@@ -30,7 +30,7 @@ graph LR
 
 ## Test Framework / IDE Integration
 
-* []Microsoft.Testing.Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-intro)
+* [Microsoft.Testing.Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-intro)
 
 ## Test Coordinator
 
