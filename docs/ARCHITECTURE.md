@@ -5,7 +5,6 @@
 ```mermaid
 graph LR
     subgraph Facade [Facade Layer]
-        direction TB
         IDE[IDE\nIntegration] <--> TF[Test\nFramework]
     end
 
@@ -22,7 +21,7 @@ graph LR
     end
 
     %% Ukrycie ramki dla kropek
-    style Dots fill:none,stroke:none,color:#64748B
+    style Dots fill:none,stroke:none
 ```
 
 # Tech stack
