@@ -1,3 +1,4 @@
-src/.idea
+*/.idea
 src/*/obj
 src/*/bin
+*.user
