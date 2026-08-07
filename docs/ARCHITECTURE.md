@@ -62,5 +62,15 @@ graph LR
 
 ## Test Executor
 
-* [Testcontainers](https://testcontainers.com/)
+### Static Analyzer
+* [Syntax API (Roslyn)](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis)
+
+### Compiler
+* [CodeDOM](https://learn.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/dynamic-source-code-generation-and-compilation)
+* [Roslyn](https://www.tugberkugurlu.com/archive/compiling-c-sharp-code-into-memory-and-executing-it-with-roslyn)
+
+### CIL Instruction Injector
 * [Mono Cecil](https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/)
+
+### Executor
+* [Testcontainers](https://testcontainers.com/)
