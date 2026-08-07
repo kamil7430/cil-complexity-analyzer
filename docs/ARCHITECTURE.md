@@ -13,13 +13,13 @@ graph LR
     User[User] <--> TF
     IDE <--> User
 
-    TF <--> TC[Test\nCoordinator]
+    TF <--> TE[Test\nExecutor]
 
     subgraph Containers [Tests Layer]
-        TC <--> S1[Student #1 Code\nin Container]
-        TC <--> S2[Student #2 Code\nin Container]
-        TC ~~~ Dots[. . .]
-        TC <--> SN[Student #n Code\nin Container]
+        TE <--> S1[Student #1 Code\nin Container]
+        TE <--> S2[Student #2 Code\nin Container]
+        TE ~~~ Dots[. . .]
+        TE <--> SN[Student #n Code\nin Container]
     end
 
     %% Ukrycie ramki dla kropek
@@ -34,7 +34,7 @@ graph LR
 
 * [Microsoft.Testing.Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-intro)
 
-## Test Coordinator
+## Test Executor
 
 * [Testcontainers](https://testcontainers.com/)
 * [Mono Cecil](https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/)
