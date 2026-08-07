@@ -1,8 +1,10 @@
 # Architecture
 
-> This is just a sketch -- it can change in time.
+> This is just a sketch -- it can change over time.
 
-## Graph
+## Graphs
+
+### System Overview
 
 ```mermaid
 graph LR
@@ -26,9 +28,33 @@ graph LR
     style Dots fill:none,stroke:none
 ```
 
+### Test Executor Flow
+
+```mermaid
+graph LR
+  CF[C# Source File] .-> Co[Test\nCoordinator]
+  TD[Test Inputs and\nExpected Output] .-> Co
+  TS[Test Settings] .-> Co
+
+  subgraph TE [Test Executor]
+    Co --> SA
+    SA[Static\nAnalyzer] --> Cr[Compiler]
+    Cr --> CII[CIL Instruction\nInjector]
+    CII --> Ex[Executor]
+    Ex --> Co
+  end
+
+  Co .-> TR[Test Result]
+  
+  TR .-> EM[Error Message]
+  TR .-> Correctness
+  TR .-> Complexity
+```
+
 # Tech stack
 
-* .NET 11 (preview, releasing on November 2026)
+* .NET 10
+* Docker
 
 ## Test Framework / IDE Integration
 
