@@ -1,8 +1,7 @@
 ﻿namespace TestExecutor;
 
-public class TestExecutionException : Exception
+internal class TestExecutionException : Exception
 {
-    public TestExecutionException(string? message) : base(message) { }
-
-    public TestExecutionException(string? message, Exception? innerException) : base(message, innerException) { }
+    internal TestExecutionException(string? message) : base(message) { }
+    internal TestExecutionException(string? message, Exception? innerException) : base(message, innerException) { }
 }

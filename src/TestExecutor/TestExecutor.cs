@@ -20,9 +20,8 @@ public static class TestExecutor
         }
         catch (TestExecutionException e)
         {
-            var errorMessage = $"Test execution for {testCase.NameOrHash} failed: {e.Message}";
-            testCase.Logger?.LogInformation(errorMessage);
-            result = new Failure(errorMessage);
+            testCase.Logger?.LogInformation($"Test execution for {testCase.NameOrHash} failed: {e.Message}");
+            result = new Failure($"Test execution failed: {e.Message}");
         }
         testCase.Logger?.LogInformation($"Ending test execution for {testCase.NameOrHash}.");
         return result;
