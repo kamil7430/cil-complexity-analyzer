@@ -51,27 +51,40 @@ graph LR
   TR .-> Complexity
 ```
 
-# Tech stack
+## Tech stack
 
 * .NET 10
 * Docker
 
-## Test Framework / IDE Integration
+### Test Framework / IDE Integration
 
 * [xUnit](https://xunit.net/?tabs=cs)/[MSTest](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-csharp-with-mstest) wrapper -- IDE integration and much testing machinery for free; the only thing left to build is test-code generator (probably)
 * [Microsoft.Testing.Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-intro) -- creating test framework from scratch; building only what's needed
 
-## Test Executor
+### Test Executor
 
-### Static Analyzer
+#### Static Analyzer
 * [Syntax API (Roslyn)](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis)
 
-### Compiler
+#### Compiler
 * [Roslyn](https://www.tugberkugurlu.com/archive/compiling-c-sharp-code-into-memory-and-executing-it-with-roslyn) -- state-of-the-art for dynamic code compilation
 * [CodeDOM](https://learn.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/dynamic-source-code-generation-and-compilation) -- old and not recommended
 
-### CIL Instruction Injector
+#### CIL Instruction Injector
 * [Mono Cecil](https://www.mono-project.com/docs/tools+libraries/libraries/Mono.Cecil/)
 
-### Executor
+#### Executor
 * [Testcontainers](https://testcontainers.com/)
+
+## Facade
+
+> Conceptinal facade -- will change, probably.
+
+```cs
+// usings, namespaces, ...
+
+[SolutionList(...)] // list of student id-their code pairs 
+[TestCase(...)] // test case with (potentially) a couple of input volumes
+[TestCase(...)]
+public partial class Lab1Evaluation { }
+```
