@@ -8,7 +8,7 @@ public static class TestExecutor
 {
     public static TestResult Execute(TestCase testCase)
     {
-        testCase.Logger?.LogInformation($"Beginning test execution for {testCase.NameOrHash}.");
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning test execution.");
         TestResult result;
         try
         {
@@ -20,10 +20,15 @@ public static class TestExecutor
         }
         catch (TestExecutionException e)
         {
-            testCase.Logger?.LogInformation($"Test execution for {testCase.NameOrHash} failed: {e.Message}");
+            testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Test execution failed: {e.Message}");
             result = new Failure($"Test execution failed: {e.Message}");
         }
-        testCase.Logger?.LogInformation($"Ending test execution for {testCase.NameOrHash}.");
+        catch (Exception e)
+        {
+            testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] TestExecutor internal error or uncaught exception: {e.Message}");
+            result = new Failure($"TestExecutor internal error or uncaught exception: {e.Message}");
+        }
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Ending test execution.");
         return result;
     }
 }

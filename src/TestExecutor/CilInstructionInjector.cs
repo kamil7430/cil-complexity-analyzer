@@ -7,10 +7,10 @@ internal static class CilInstructionInjector
 {
     internal static TestCase InjectCil(this TestCase testCase)
     {
-        testCase.Logger?.LogInformation($"Beginning CIL instruction injection for {testCase.NameOrHash}.");
-        // TODO: un-mock
-        return Random.Shared.Next(4) == 0 ? 
-            throw new TestExecutionException("Injection failure") : 
-            testCase;
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning CIL instruction injection.");
+        
+        // TODO: inject CIL
+        
+        return testCase;
     }
 }

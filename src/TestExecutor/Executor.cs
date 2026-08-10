@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Reflection;
+using Microsoft.Extensions.Logging;
 using TestExecutor.Contract;
 using TestExecutor.Contract.Results;
 using TestExecutor.Contract.Settings;
@@ -9,13 +10,31 @@ internal static class Executor
 {
     internal static TestResult Execute(this TestCase testCase)
     {
-        testCase.Logger?.LogInformation($"Beginning code execution for {testCase.NameOrHash}.");
-        // TODO: un-mock
-        return Random.Shared.Next(4) == 0
-            ? new Failure("Stack overflow")
-            : new Success(
-                ComplexityCalculationMethod.CilInstructionCounting,
-                1_000_000
-            );
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning code execution.");
+
+        var assembly = testCase.Assembly ?? 
+            throw new NullReferenceException("Assembly is null! Did you run compiler before executor?");
+
+        var types = assembly.GetTypes().Where(t => t.GetMember(testCase.MethodToInvoke).Length == 1).ToArray();
+        if (types.Length != 1)
+            throw new TestExecutionException($"There are {types.Length} types containing {testCase.MethodToInvoke}" +
+                $" method. Expected exactly one.");
+
+        var type = types[0];
+        var obj = Activator.CreateInstance(type);
+
+        var returnedObj = type.InvokeMember(
+            name: testCase.MethodToInvoke, 
+            invokeAttr: BindingFlags.InvokeMethod, 
+            binder: null, 
+            target: obj, 
+            args: testCase.Input
+        );
+
+        if (returnedObj != null && !returnedObj.Equals(testCase.Output))
+            return new Failure($"Outputs don't match!\nExpected: {testCase.Output}\nActual: {returnedObj}");
+        
+        // TODO: assert time elapsed
+        return new Success(ComplexityCalculationMethod.CilInstructionCounting, -1);
     }
 }
