@@ -75,6 +75,7 @@ graph LR
 
 #### Executor
 * [Testcontainers](https://testcontainers.com/)
+* [dotnet-runtime Docker Image](https://hub.docker.com/r/microsoft/dotnet-runtime) -- normal or [distroless](https://github.com/dotnet/dotnet-docker/blob/main/documentation/distroless.md) version
 
 ## Facade
 
