@@ -7,7 +7,7 @@ public class TestExecutorTests
     private const string AddTwoNumbersCode = """
         namespace MyApp
         {
-            internal class Program
+            internal class Calculator
             {
                 public int Add(int a, int b) => a + b;
             }
