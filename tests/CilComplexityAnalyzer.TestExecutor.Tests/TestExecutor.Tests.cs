@@ -15,7 +15,7 @@ public class TestExecutorTests
     """;
     
     [Fact]
-    public void Execute_AddTwoNumbersExample_ShouldRunAndReturnSuccess()
+    public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
     {
         var testCase = new TestCase
         {
@@ -28,5 +28,22 @@ public class TestExecutorTests
         var result = TestExecutor.Execute(testCase);
         
         Assert.True(result.IsT0);
+    }
+    
+    [Fact]
+    public void Execute_AddTwoNumbersExample_InvalidOutput_ShouldRunAndReturnFailure()
+    {
+        var testCase = new TestCase
+        {
+            SourceCode = AddTwoNumbersCode,
+            MethodToInvoke = "Add",
+            Input = [2, 3],
+            Output = 4,
+        };
+
+        var result = TestExecutor.Execute(testCase);
+        
+        Assert.True(result.IsT1);
+        Assert.StartsWith("Outputs don't match!", result.AsT1.Message);
     }
 }
