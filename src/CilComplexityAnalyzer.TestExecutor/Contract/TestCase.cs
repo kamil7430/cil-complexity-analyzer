@@ -8,7 +8,7 @@ public class TestCase
 {
     // Public TestCase contract properties
     public string? Name { get; set; }
-    public required string SourceFile { get; set; }
+    public required string SourceCode { get; set; }
     public required string MethodToInvoke { get; set; }
     public object?[]? Input { get; set; }
     public object? Output { get; set; }
@@ -18,7 +18,7 @@ public class TestCase
     
     // Internal properties needed for the testing flow
     internal string NameOrHash 
-        => Name ?? SourceFile.GetHashCode().ToString();
+        => Name ?? SourceCode.GetHashCode().ToString();
     internal SyntaxTree? SyntaxTree { get; set; }
     internal Assembly? Assembly { get; set; }
 }

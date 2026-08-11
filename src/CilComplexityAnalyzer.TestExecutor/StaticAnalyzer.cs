@@ -11,7 +11,7 @@ internal static class StaticAnalyzer
         testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning static analysis.");
 
         var syntaxTree = CSharpSyntaxTree.ParseText(
-            text: testCase.SourceFile,
+            text: testCase.SourceCode,
             cancellationToken: testCase.CancellationToken
         );
         testCase.SyntaxTree = syntaxTree;
