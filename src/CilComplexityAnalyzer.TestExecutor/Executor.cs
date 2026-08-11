@@ -10,7 +10,7 @@ internal static class Executor
 {
     internal static void Initialize(ILogger? logger)
     {
-        // logger?.LogInformation("Initializing References...");
+        // logger?.LogInformation("Initializing DockerImage...");
         // _ = References;
     }
     
