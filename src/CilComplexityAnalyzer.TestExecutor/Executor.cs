@@ -8,6 +8,12 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Executor
 {
+    internal static void Initialize(ILogger? logger)
+    {
+        // logger?.LogInformation("Initializing References...");
+        // _ = References;
+    }
+    
     internal static TestResult Execute(this TestCase testCase)
     {
         testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning code execution.");

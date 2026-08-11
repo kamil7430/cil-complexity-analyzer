@@ -17,6 +17,14 @@ internal static class Compiler
         .ToImmutableList();
 
     private static readonly CSharpCompilationOptions CompilationOptions = new(OutputKind.DynamicallyLinkedLibrary);
+
+    internal static void Initialize(ILogger? logger)
+    {
+        logger?.LogInformation("Initializing References...");
+        _ = References;
+        logger?.LogInformation("Initializing CompilationOptions...");
+        _ = CompilationOptions;
+    }
     
     internal static TestCase Compile(this TestCase testCase)
     {
@@ -27,10 +35,10 @@ internal static class Compiler
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            testCase.NameOrHash, 
-            [testCase.SyntaxTree],
-            References,
-            CompilationOptions
+            assemblyName: testCase.NameOrHash, 
+            syntaxTrees: [testCase.SyntaxTree],
+            references: References,
+            options: CompilationOptions
         ).Emit(stream, cancellationToken: testCase.CancellationToken);
 
         if (!compilationResult.Success)
