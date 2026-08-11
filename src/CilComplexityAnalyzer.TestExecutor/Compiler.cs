@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 using System.Text;
+using CilComplexityAnalyzer.TestExecutor.Contract;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using TestExecutor.Contract;
 
-namespace TestExecutor;
+namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Compiler
 {

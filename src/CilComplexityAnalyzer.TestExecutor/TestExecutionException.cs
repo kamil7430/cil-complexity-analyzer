@@ -1,4 +1,4 @@
-﻿namespace TestExecutor;
+﻿namespace CilComplexityAnalyzer.TestExecutor;
 
 internal class TestExecutionException : Exception
 {

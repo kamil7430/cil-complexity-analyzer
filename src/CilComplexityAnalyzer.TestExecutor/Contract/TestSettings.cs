@@ -1,6 +1,6 @@
-﻿using TestExecutor.Contract.Settings;
+﻿using CilComplexityAnalyzer.TestExecutor.Contract.Settings;
 
-namespace TestExecutor.Contract;
+namespace CilComplexityAnalyzer.TestExecutor.Contract;
 
 public class TestSettings
 {

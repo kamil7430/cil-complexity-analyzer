@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
-namespace TestExecutor.Contract;
+namespace CilComplexityAnalyzer.TestExecutor.Contract;
 
 public class TestCase
 {

@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using TestExecutor.Contract;
-using TestExecutor.Contract.Results;
+﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+using CilComplexityAnalyzer.TestExecutor.Contract.Results;
+using Microsoft.Extensions.Logging;
 
-namespace TestExecutor;
+namespace CilComplexityAnalyzer.TestExecutor;
 
 public static class TestExecutor
 {

@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
+using CilComplexityAnalyzer.TestExecutor.Contract;
+using CilComplexityAnalyzer.TestExecutor.Contract.Results;
+using CilComplexityAnalyzer.TestExecutor.Contract.Settings;
 using Microsoft.Extensions.Logging;
-using TestExecutor.Contract;
-using TestExecutor.Contract.Results;
-using TestExecutor.Contract.Settings;
 
-namespace TestExecutor;
+namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Executor
 {

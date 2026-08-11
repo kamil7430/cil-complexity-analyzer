@@ -1,4 +1,8 @@
-*/.idea
-src/*/obj
-src/*/bin
+*.idea/
 *.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+**/bin/
+**/obj/

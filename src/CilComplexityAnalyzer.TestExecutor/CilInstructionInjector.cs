@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+using Microsoft.Extensions.Logging;
 
-namespace TestExecutor;
+namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class CilInstructionInjector
 {
