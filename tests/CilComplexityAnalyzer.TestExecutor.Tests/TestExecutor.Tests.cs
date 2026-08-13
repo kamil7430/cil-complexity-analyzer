@@ -1,7 +1,9 @@
 using CilComplexityAnalyzer.TestExecutor.Contract;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
 
+[TestClass]
 public class TestExecutorTests
 {
     private const string AddTwoNumbersCode = """
@@ -14,7 +16,7 @@ public class TestExecutorTests
         }
     """;
     
-    [Fact]
+    [TestMethod]
     public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
     {
         var testCase = new TestCase
@@ -27,10 +29,10 @@ public class TestExecutorTests
 
         var result = TestExecutor.Execute(testCase);
         
-        Assert.True(result.IsT0);
+        Assert.IsTrue(result.IsT0);
     }
     
-    [Fact]
+    [TestMethod]
     public void Execute_AddTwoNumbersExample_InvalidOutput_ShouldRunAndReturnFailure()
     {
         var testCase = new TestCase
@@ -43,7 +45,7 @@ public class TestExecutorTests
 
         var result = TestExecutor.Execute(testCase);
         
-        Assert.True(result.IsT1);
-        Assert.StartsWith("Outputs don't match!", result.AsT1.Message);
+        Assert.IsTrue(result.IsT1);
+        Assert.IsTrue(result.AsT1.Message?.Contains("Outputs don't match!"));
     }
 }
