@@ -10,6 +10,7 @@ internal static class CilInstructionInjector
         testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning CIL instruction injection.");
         
         // TODO: inject CIL
+        // TODO: inject abort mechanism
         
         return testCase;
     }
