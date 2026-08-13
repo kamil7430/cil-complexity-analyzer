@@ -44,6 +44,8 @@ graph LR
     Ex --> Co
   end
 
+  Ex <--> CW[Container\nWorker]
+
   Co .-> TR[Test Result]
   
   TR .-> EM[Error Message]
