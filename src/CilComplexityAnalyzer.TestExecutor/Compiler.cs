@@ -16,7 +16,10 @@ internal static class Compiler
         .Cast<MetadataReference>()
         .ToImmutableList();
 
-    private static readonly CSharpCompilationOptions CompilationOptions = new(OutputKind.DynamicallyLinkedLibrary);
+    private static readonly CSharpCompilationOptions CompilationOptions = new(
+        outputKind: OutputKind.DynamicallyLinkedLibrary,
+        optimizationLevel: OptimizationLevel.Debug
+    );
 
     internal static void Initialize(ILogger? logger)
     {
