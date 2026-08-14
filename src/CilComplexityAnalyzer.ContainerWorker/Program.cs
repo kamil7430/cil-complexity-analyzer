@@ -1,30 +1,81 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
 internal class Program
 {
-    internal static void Main(string[] args)
+    internal static void Main(string[] _)
     {
-        // discard any writes
+        // discard any writes (keep the real stdout for result writing)
         var realStdout = Console.Out;
         Console.SetOut(TextWriter.Null);
 
-        TestResult result;
+        List<TestResult> result = [];
         try
         {
-            var json = Console.ReadLine();
-            var data = JsonSerializer.Deserialize<TestData>(json);
+            // read test data from stdin
+            var json = Console.ReadLine() ??
+                throw new IOException("Couldn't read anything from stdin!");
+            var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
+                throw new ArgumentException("Json is 'null'.");
 
-            // TODO: execute
+            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
+
+            var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
+            if (types.Length != 1)
+            {
+                WriteFailureAndExit($"There are {types.Length} types containing {dataArray[0].MethodToInvoke}" +
+                    $" method. Expected exactly one.");
+            }
+            var type = types[0];
             
-            result = null;
+            foreach (var data in dataArray) {
+                var obj = Activator.CreateInstance(type);
+
+                try
+                {
+                    var returnedObj = type.InvokeMember(
+                        name: data.MethodToInvoke,
+                        invokeAttr: BindingFlags.InvokeMethod,
+                        binder: null,
+                        target: obj,
+                        args: data.Input
+                    );
+
+                    // TODO: assert time elapsed
+                    var complexity = -1L;
+
+                    if (returnedObj != null && !returnedObj.Equals(data.Output))
+                    {
+                        result.Add(new TestResult(false, complexity,
+                            $"Outputs don't match!\nExpected: {data.Output}\nActual: {returnedObj}"));
+                    }
+                    else
+                    {
+                        result.Add(new TestResult(true, complexity, null));
+                    }
+                }
+                catch (Exception e)
+                {
+                    result.Add(new TestResult(false, null, $"Unhandled exception in" +
+                        $"student code: {e.Message}"));
+                }
+            }
+
+            realStdout.WriteLine(JsonSerializer.Serialize(result));
         }
         catch (Exception e)
         {
-            result = new TestResult(false, null, $"Internal worker exception: {e.Message}");
+            WriteFailureAndExit($"Internal worker exception: {e.Message}");
         }
-        
-        realStdout.WriteLine(JsonSerializer.Serialize(result));
+
+        return;
+
+        void WriteFailureAndExit(string message)
+        {
+            realStdout.WriteLine(JsonSerializer.Serialize<TestResult[]>([new TestResult(false, null, message)]));
+            Environment.Exit(1);
+        }
     }
 }

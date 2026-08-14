@@ -20,5 +20,5 @@ public class TestCase
     internal string NameOrHash 
         => Name ?? SourceCode.GetHashCode().ToString();
     internal SyntaxTree? SyntaxTree { get; set; }
-    internal Assembly? Assembly { get; set; }
+    internal byte[]? AssemblyBytes { get; set; }
 }

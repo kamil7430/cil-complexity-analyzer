@@ -1,46 +1,36 @@
-﻿using System.Reflection;
+﻿using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.TestExecutor.Contract;
-using CilComplexityAnalyzer.TestExecutor.Contract.Results;
-using CilComplexityAnalyzer.TestExecutor.Contract.Settings;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Images;
 using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Executor
 {
+    private static readonly IImage DockerImage = new DockerImage("TODO");
+    
     internal static void Initialize(ILogger? logger)
     {
         // logger?.LogInformation("Initializing DockerImage...");
         // _ = References;
     }
     
-    internal static TestResult Execute(this TestCase testCase)
+    internal static Contract.TestResult Execute(this TestCase testCase)
     {
         testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning code execution.");
 
-        var assembly = testCase.Assembly ?? 
-            throw new NullReferenceException("Assembly is null! Did you run compiler before executor?");
-
-        var types = assembly.GetTypes().Where(t => t.GetMember(testCase.MethodToInvoke).Length == 1).ToArray();
-        if (types.Length != 1)
-            throw new TestExecutionException($"There are {types.Length} types containing {testCase.MethodToInvoke}" +
-                $" method. Expected exactly one.");
-
-        var type = types[0];
-        var obj = Activator.CreateInstance(type);
-
-        var returnedObj = type.InvokeMember(
-            name: testCase.MethodToInvoke, 
-            invokeAttr: BindingFlags.InvokeMethod, 
-            binder: null, 
-            target: obj, 
-            args: testCase.Input
-        );
-
-        if (returnedObj != null && !returnedObj.Equals(testCase.Output))
-            return new Failure($"Outputs don't match!\nExpected: {testCase.Output}\nActual: {returnedObj}");
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Building test container.");
+        var container = new ContainerBuilder(DockerImage)
+            .WithResourceMapping(
+                resourceContent: testCase.AssemblyBytes,
+                target: FilePath.Of(Consts.StudentSolutionDllPath)
+            ).Build();
         
-        // TODO: assert time elapsed
-        return new Success(ComplexityCalculationMethod.CilInstructionCounting, -1);
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Starting test container.");
+        container.StartAsync().Wait();
+        
+        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Sending test cases and starting test.");
+        // TODO: finish
     }
 }

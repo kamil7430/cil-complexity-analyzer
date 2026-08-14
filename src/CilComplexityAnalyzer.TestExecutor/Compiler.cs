@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection;
 using System.Text;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using Microsoft.CodeAnalysis;
@@ -55,7 +54,7 @@ internal static class Compiler
         }
             
         stream.Seek(0, SeekOrigin.Begin);
-        testCase.Assembly = Assembly.Load(stream.ToArray());
+        testCase.AssemblyBytes = stream.ToArray();
         return testCase;
     }
 }
