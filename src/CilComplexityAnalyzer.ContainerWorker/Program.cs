@@ -11,10 +11,9 @@ internal class Program
         var realStdout = Console.Out;
         Console.SetOut(TextWriter.Null);
 
-        List<TestResult> result = [];
         try
         {
-            // read test data from stdin
+            // read all test datas from stdin
             var json = Console.ReadLine() ??
                 throw new IOException("Couldn't read anything from stdin!");
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
@@ -30,6 +29,7 @@ internal class Program
             }
             var type = types[0];
             
+            // execute tests sequentially and report every output immediately
             foreach (var data in dataArray) {
                 var obj = Activator.CreateInstance(type);
 
@@ -48,22 +48,20 @@ internal class Program
 
                     if (returnedObj != null && !returnedObj.Equals(data.Output))
                     {
-                        result.Add(new TestResult(false, complexity,
+                        WriteResult(new TestResult(false, complexity,
                             $"Outputs don't match!\nExpected: {data.Output}\nActual: {returnedObj}"));
                     }
                     else
                     {
-                        result.Add(new TestResult(true, complexity, null));
+                        WriteResult(new TestResult(true, complexity, null));
                     }
                 }
                 catch (Exception e)
                 {
-                    result.Add(new TestResult(false, null, $"Unhandled exception in" +
+                    WriteResult(new TestResult(false, null, $"Unhandled exception in" +
                         $"student code: {e.Message}"));
                 }
             }
-
-            realStdout.WriteLine(JsonSerializer.Serialize(result));
         }
         catch (Exception e)
         {
@@ -71,10 +69,16 @@ internal class Program
         }
 
         return;
-
+        
+        void WriteResult(TestResult result)
+        {
+            realStdout.WriteLine(JsonSerializer.Serialize(result));
+            realStdout.Flush();
+        }
+        
         void WriteFailureAndExit(string message)
         {
-            realStdout.WriteLine(JsonSerializer.Serialize<TestResult[]>([new TestResult(false, null, message)]));
+            WriteResult(new TestResult(false, null, message));
             Environment.Exit(1);
         }
     }
