@@ -29,15 +29,15 @@ public static class TestExecutor
         }
     }
     
-    public static TestResult Execute(TestCase testCase)
+    public static TestResult Execute(TestSuite testSuite)
     {
-        Initialize(testCase.Logger);
+        Initialize(testSuite.Logger);
         
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning test execution.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning test execution.");
         TestResult result;
         try
         {
-            result = testCase
+            result = testSuite
                 .Analyze()
                 .Compile()
                 .InjectCil()
@@ -45,15 +45,15 @@ public static class TestExecutor
         }
         catch (TestExecutionException e)
         {
-            testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Test execution failed: {e.Message}");
+            testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Test execution failed: {e.Message}");
             result = new Failure($"Test execution failed: {e.Message}");
         }
         catch (Exception e)
         {
-            testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] TestExecutor internal error or uncaught exception: {e.Message}");
+            testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] TestExecutor internal error or uncaught exception: {e.Message}");
             result = new Failure($"TestExecutor internal error or uncaught exception: {e.Message}");
         }
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Ending test execution.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Ending test execution.");
         return result;
     }
 }

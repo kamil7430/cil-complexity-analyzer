@@ -28,20 +28,20 @@ internal static class Compiler
         _ = CompilationOptions;
     }
     
-    internal static TestCase Compile(this TestCase testCase)
+    internal static TestSuite Compile(this TestSuite testSuite)
     {
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning compilation.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning compilation.");
 
-        if (testCase.SyntaxTree is null)
+        if (testSuite.SyntaxTree is null)
             throw new NullReferenceException("SyntaxTree is null! Did you run analyzer before compiler?");
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: testCase.NameOrHash, 
-            syntaxTrees: [testCase.SyntaxTree],
+            assemblyName: testSuite.NameOrHash, 
+            syntaxTrees: [testSuite.SyntaxTree],
             references: References,
             options: CompilationOptions
-        ).Emit(stream, cancellationToken: testCase.CancellationToken);
+        ).Emit(stream, cancellationToken: testSuite.CancellationToken);
 
         if (!compilationResult.Success)
         {
@@ -54,7 +54,7 @@ internal static class Compiler
         }
             
         stream.Seek(0, SeekOrigin.Begin);
-        testCase.AssemblyBytes = stream.ToArray();
-        return testCase;
+        testSuite.AssemblyBytes = stream.ToArray();
+        return testSuite;
     }
 }

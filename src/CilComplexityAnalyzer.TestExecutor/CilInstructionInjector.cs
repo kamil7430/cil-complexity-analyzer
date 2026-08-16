@@ -5,13 +5,13 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class CilInstructionInjector
 {
-    internal static TestCase InjectCil(this TestCase testCase)
+    internal static TestSuite InjectCil(this TestSuite testSuite)
     {
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning CIL instruction injection.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning CIL instruction injection.");
         
         // TODO: inject CIL
         // TODO: inject abort mechanism
         
-        return testCase;
+        return testSuite;
     }
 }

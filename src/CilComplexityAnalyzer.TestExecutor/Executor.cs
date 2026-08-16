@@ -12,25 +12,25 @@ internal static class Executor
     
     internal static void Initialize(ILogger? logger)
     {
-        // logger?.LogInformation("Initializing DockerImage...");
-        // _ = References;
+        logger?.LogInformation("Initializing DockerImage...");
+        _ = DockerImage;
     }
     
-    internal static Contract.TestResult Execute(this TestCase testCase)
+    internal static Contract.TestResult Execute(this TestSuite testSuite)
     {
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Beginning code execution.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning code execution.");
 
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Building test container.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Building test container.");
         var container = new ContainerBuilder(DockerImage)
             .WithResourceMapping(
-                resourceContent: testCase.AssemblyBytes,
+                resourceContent: testSuite.AssemblyBytes,
                 target: FilePath.Of(Consts.StudentSolutionDllPath)
             ).Build();
         
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Starting test container.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Starting test container.");
         container.StartAsync().Wait();
         
-        testCase.Logger?.LogInformation($"[{testCase.NameOrHash}] Sending test cases and starting test.");
+        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Sending test cases and starting test.");
         // TODO: finish
     }
 }

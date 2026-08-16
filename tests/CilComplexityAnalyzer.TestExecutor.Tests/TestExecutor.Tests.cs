@@ -19,12 +19,18 @@ public class TestExecutorTests
     [TestMethod]
     public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
     {
-        var testCase = new TestCase
+        var testCase = new TestSuite
         {
             SourceCode = AddTwoNumbersCode,
             MethodToInvoke = "Add",
-            Input = [2, 3],
-            Output = 5,
+            TestCases =
+            [
+                new TestCase
+                {
+                    Input = [2, 3],
+                    Output = 5,
+                }
+            ]
         };
 
         var result = TestExecutor.Execute(testCase);
@@ -35,12 +41,18 @@ public class TestExecutorTests
     [TestMethod]
     public void Execute_AddTwoNumbersExample_InvalidOutput_ShouldRunAndReturnFailure()
     {
-        var testCase = new TestCase
+        var testCase = new TestSuite
         {
             SourceCode = AddTwoNumbersCode,
             MethodToInvoke = "Add",
-            Input = [2, 3],
-            Output = 4,
+            TestCases =
+            [
+                new TestCase
+                {
+                    Input = [2, 2],
+                    Output = 5,
+                }
+            ]
         };
 
         var result = TestExecutor.Execute(testCase);
