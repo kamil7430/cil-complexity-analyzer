@@ -33,7 +33,7 @@ public class TestExecutorTests
             ]
         };
 
-        var result = TestExecutor.Execute(testCase);
+        var result = TestExecutor.Execute(testCase)[0];
         
         Assert.IsTrue(result.IsT0);
     }
@@ -55,7 +55,7 @@ public class TestExecutorTests
             ]
         };
 
-        var result = TestExecutor.Execute(testCase);
+        var result = TestExecutor.Execute(testCase)[0];
         
         Assert.IsTrue(result.IsT1);
         Assert.IsTrue(result.AsT1.Message?.Contains("Outputs don't match!"));

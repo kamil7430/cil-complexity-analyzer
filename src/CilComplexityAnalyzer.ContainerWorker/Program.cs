@@ -13,13 +13,12 @@ internal class Program
 
         try
         {
-            // read all test datas from stdin
-            var json = Console.ReadLine() ??
-                throw new IOException("Couldn't read anything from stdin!");
+            // read all test datas from file
+            var json = File.ReadAllBytes(Consts.TestDataJsonFilename);
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
                 throw new ArgumentException("Json is 'null'.");
 
-            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
+            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllFilename);
 
             var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
             if (types.Length != 1)

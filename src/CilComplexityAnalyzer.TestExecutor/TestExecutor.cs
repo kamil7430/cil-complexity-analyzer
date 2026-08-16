@@ -29,12 +29,12 @@ public static class TestExecutor
         }
     }
     
-    public static TestResult Execute(TestSuite testSuite)
+    public static TestResult[] Execute(TestSuite testSuite)
     {
         Initialize(testSuite.Logger);
         
         testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning test execution.");
-        TestResult result;
+        TestResult[] result;
         try
         {
             result = testSuite
@@ -46,12 +46,12 @@ public static class TestExecutor
         catch (TestExecutionException e)
         {
             testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Test execution failed: {e.Message}");
-            result = new Failure($"Test execution failed: {e.Message}");
+            result = [new Failure($"Test execution failed: {e.Message}")];
         }
         catch (Exception e)
         {
             testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] TestExecutor internal error or uncaught exception: {e.Message}");
-            result = new Failure($"TestExecutor internal error or uncaught exception: {e.Message}");
+            result = [new Failure($"TestExecutor internal error or uncaught exception: {e.Message}")];
         }
         testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Ending test execution.");
         return result;
