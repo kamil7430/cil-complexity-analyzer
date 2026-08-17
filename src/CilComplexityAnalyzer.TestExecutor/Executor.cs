@@ -11,7 +11,8 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Executor
 {
-    private static readonly IImage DockerImage = new DockerImage("TODO");
+    private const string DockerImageTag = "docker.io/kamil7430/cil-complexity-analyzer-container-worker:latest";
+    private static readonly IImage DockerImage = new DockerImage(DockerImageTag);
     
     internal static void Initialize(ILogger? logger)
     {
