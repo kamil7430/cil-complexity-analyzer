@@ -16,7 +16,7 @@ public class TestSuite
     
     // Internal properties needed for the testing flow
     internal string NameOrHash 
-        => Name ?? SourceCode.GetHashCode().ToString();
+        => Name ?? SourceCode.GetHashCode().ToString("x8");
     internal SyntaxTree? SyntaxTree { get; set; }
     internal byte[]? AssemblyBytes { get; set; }
 }
