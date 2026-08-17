@@ -67,7 +67,18 @@ internal static class Executor
                 }
                 
                 Thread.Sleep(TimeSpan.FromSeconds(1));
-                resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken).Result;
+                try
+                {
+                    resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken)
+                        .Result;
+                }
+                catch (AggregateException e)
+                {
+                    if (e.InnerException is not FileNotFoundException)
+                    {
+                        throw e.InnerException ?? e;
+                    }
+                }
             }
             var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
 

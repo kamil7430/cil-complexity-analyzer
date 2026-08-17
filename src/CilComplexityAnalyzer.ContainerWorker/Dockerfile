@@ -1,4 +1,5 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
 WORKDIR /src/
 
 COPY ["CilComplexityAnalyzer.ContainerWorker.csproj", "./"]
@@ -11,6 +12,8 @@ RUN dotnet publish "CilComplexityAnalyzer.ContainerWorker.csproj" \
     /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled AS final
+
+WORKDIR /app/results/
 WORKDIR /app/
 
 COPY --from=build /build/ ./

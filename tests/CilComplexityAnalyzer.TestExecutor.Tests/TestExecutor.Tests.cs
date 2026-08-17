@@ -1,4 +1,5 @@
 using CilComplexityAnalyzer.TestExecutor.Contract;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
@@ -6,6 +7,7 @@ namespace CilComplexityAnalyzer.TestExecutor.Tests;
 [TestClass]
 public class TestExecutorTests
 {
+    private readonly ILogger _logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<TestExecutorTests>();
     private const string AddTwoNumbersCode = """
         namespace MyApp
         {
@@ -23,6 +25,7 @@ public class TestExecutorTests
         {
             SourceCode = AddTwoNumbersCode,
             MethodToInvoke = "Add",
+            Logger = _logger,
             TestCases =
             [
                 new TestCase
@@ -45,6 +48,7 @@ public class TestExecutorTests
         {
             SourceCode = AddTwoNumbersCode,
             MethodToInvoke = "Add",
+            Logger = _logger,
             TestCases =
             [
                 new TestCase

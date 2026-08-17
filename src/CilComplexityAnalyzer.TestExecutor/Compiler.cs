@@ -1,20 +1,12 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Compiler
 {
-    private static readonly ImmutableList<MetadataReference> References = AppDomain.CurrentDomain.GetAssemblies()
-        .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
-        .Select(a => MetadataReference.CreateFromFile(a.Location))
-        .Cast<MetadataReference>()
-        .ToImmutableList();
-
     private static readonly CSharpCompilationOptions CompilationOptions = new(
         outputKind: OutputKind.DynamicallyLinkedLibrary,
         optimizationLevel: OptimizationLevel.Debug
@@ -22,8 +14,6 @@ internal static class Compiler
 
     internal static void Initialize(ILogger? logger)
     {
-        logger?.LogInformation("Initializing References...");
-        _ = References;
         logger?.LogInformation("Initializing CompilationOptions...");
         _ = CompilationOptions;
     }
@@ -39,7 +29,7 @@ internal static class Compiler
         var compilationResult = CSharpCompilation.Create(
             assemblyName: testSuite.NameOrHash, 
             syntaxTrees: [testSuite.SyntaxTree],
-            references: References,
+            references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
         ).Emit(stream, cancellationToken: testSuite.CancellationToken);
 
