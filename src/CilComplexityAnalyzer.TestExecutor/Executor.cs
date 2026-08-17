@@ -34,10 +34,10 @@ internal static class Executor
             .WithCleanUp(true)
             .WithResourceMapping(
                 resourceContent: testSuite.AssemblyBytes,
-                target: FilePath.Of(Consts.StudentSolutionDllFilename)
+                target: FilePath.Of(Consts.StudentSolutionDllPath)
             ).WithResourceMapping(
                 resourceContent: testDatasBytes,
-                target: FilePath.Of(Consts.TestDataJsonFilename)
+                target: FilePath.Of(Consts.TestDataJsonPath)
             ).Build();
         
         testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Starting test container.");
@@ -66,7 +66,7 @@ internal static class Executor
                 }
                 
                 Thread.Sleep(TimeSpan.FromSeconds(1));
-                resultBytes = container.ReadFileAsync(Consts.ResultsJsonFilename(i), testSuite.CancellationToken).Result;
+                resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken).Result;
             }
             var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
 

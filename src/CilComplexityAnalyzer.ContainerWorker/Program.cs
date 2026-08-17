@@ -14,11 +14,11 @@ internal class Program
         try
         {
             // read all test datas from file
-            var json = File.ReadAllBytes(Consts.TestDataJsonFilename);
+            var json = File.ReadAllBytes(Consts.TestDataJsonPath);
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
                 throw new ArgumentException("Json is 'null'.");
 
-            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllFilename);
+            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
 
             var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
             if (types.Length != 1)
