@@ -19,7 +19,7 @@ internal class Program
 
             // read all test datas from file
             var json = File.ReadAllBytes(Consts.TestDataJsonPath);
-            if (Debug) Console.WriteLine(Encoding.UTF8.GetString(json));
+            if (Debug) Console.WriteLine($"Received json: {Encoding.UTF8.GetString(json)}");
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
                 throw new ArgumentException("Json is 'null'.");
             if (Debug) Console.WriteLine("Deserialized");
@@ -92,7 +92,7 @@ internal class Program
             var json = JsonSerializer.SerializeToUtf8Bytes(result);
             file.Write(json);
             testNo++;
-            if (Debug) Console.WriteLine(Encoding.UTF8.GetString(json));
+            if (Debug) Console.WriteLine($"Wrote json: {Encoding.UTF8.GetString(json)}");
         }
         
         void WriteFailureAndExit(string message)
