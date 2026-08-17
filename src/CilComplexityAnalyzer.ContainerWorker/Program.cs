@@ -1,17 +1,18 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
+[assembly: InternalsVisibleTo("CilComplexityAnalyzer.ContainerWorker.Tests")]
 namespace CilComplexityAnalyzer.ContainerWorker;
 
 internal class Program
 {
     private const bool Debug = false;
+    private static int _testNo = 0;
     
     internal static void Main(string[] _)
     {
-        var testNo = 0;
-        
         try
         {
             // discard any writes
@@ -28,77 +29,67 @@ internal class Program
             var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
             if (Debug) Console.WriteLine("Loaded assembly");
 
-            // find the method to invoke
-            var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
-            if (types.Length != 1)
-            {
-                WriteFailureAndExit($"There are {types.Length} types containing {dataArray[0].MethodToInvoke} " +
-                    $"method. Expected exactly one.");
-            }
-            var type = types[0];
-            if (Debug) Console.WriteLine($"Found type: {type}");
-            var method = type.GetMethod(dataArray[0].MethodToInvoke)!;
-            if (Debug) Console.WriteLine($"Found method: {method}");
-            
-            // execute tests sequentially and report every output immediately
-            foreach (var data in dataArray) {
-                var obj = Activator.CreateInstance(type);
-                if (Debug) Console.WriteLine("Created instance");
-
-                try
-                {
-                    var input = data.Input;
-                    var parameters = method.GetParameters();
-                    for (int i = 0; i < parameters.Length; i++)
-                    {
-                        CorrectType(ref input![i], parameters[i].ParameterType);
-                    }
-
-                    var returnedObj = method.Invoke(obj, input);
-                    if (Debug) Console.WriteLine("Invoked");
-
-                    // TODO: assert time elapsed
-                    var complexity = -1L;
-
-                    var output = data.Output;
-                    CorrectType(ref output, method.ReturnType);
-                    if (returnedObj != null && !returnedObj.Equals(output))
-                    {
-                        WriteResult(new TestResult(false, complexity,
-                            $"Outputs don't match!\nExpected: {output}\nActual: {returnedObj}"));
-                    }
-                    else
-                    {
-                        WriteResult(new TestResult(true, complexity, null));
-                    }
-                }
-                catch (Exception e)
-                {
-                    WriteResult(new TestResult(false, null, $"Unhandled exception in " +
-                        $"student code: {e.Message}"));
-                }
-            }
+            Execute(dataArray, assembly, WriteResult);
         }
         catch (Exception e)
         {
             WriteFailureAndExit($"Internal worker exception: {e.Message}");
         }
+    }
 
-        return;
-        
-        void WriteResult(TestResult result)
+    internal static void Execute(TestData[] dataArray, Assembly assembly, Action<TestResult> writeResult)
+    {
+        // find the method to invoke
+        var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
+        if (types.Length != 1)
         {
-            using var file = File.Open(Consts.ResultsJsonPath(testNo), FileMode.CreateNew);
-            var json = JsonSerializer.SerializeToUtf8Bytes(result);
-            file.Write(json);
-            testNo++;
-            if (Debug) Console.WriteLine($"Wrote json: {Encoding.UTF8.GetString(json)}");
+            WriteFailureAndExit($"There are {types.Length} types containing {dataArray[0].MethodToInvoke} " +
+                $"method. Expected exactly one.");
         }
-        
-        void WriteFailureAndExit(string message)
+
+        var type = types[0];
+        if (Debug) Console.WriteLine($"Found type: {type}");
+        var method = type.GetMethod(dataArray[0].MethodToInvoke)!;
+        if (Debug) Console.WriteLine($"Found method: {method}");
+
+        // execute tests sequentially and report every output immediately
+        foreach (var data in dataArray)
         {
-            WriteResult(new TestResult(false, null, message));
-            Environment.Exit(1);
+            var obj = Activator.CreateInstance(type);
+            if (Debug) Console.WriteLine("Created instance");
+
+            try
+            {
+                var input = data.Input;
+                var parameters = method.GetParameters();
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    CorrectType(ref input![i], parameters[i].ParameterType);
+                }
+
+                var returnedObj = method.Invoke(obj, input);
+                if (Debug) Console.WriteLine("Invoked");
+
+                // TODO: assert time elapsed
+                var complexity = -1L;
+
+                var output = data.Output;
+                CorrectType(ref output, method.ReturnType);
+                if (returnedObj != null && !returnedObj.Equals(output))
+                {
+                    writeResult(new TestResult(false, complexity,
+                        $"Outputs don't match!\nExpected: {output}\nActual: {returnedObj}"));
+                }
+                else
+                {
+                    writeResult(new TestResult(true, complexity, null));
+                }
+            }
+            catch (Exception e)
+            {
+                writeResult(new TestResult(false, null, $"Unhandled exception in " +
+                    $"student code: {e.Message}"));
+            }
         }
     }
 
@@ -110,5 +101,20 @@ internal class Program
             JsonElement j => JsonSerializer.Deserialize(j.GetRawText(), targetType),
             _ => Convert.ChangeType(input, targetType),
         };
+    }
+    
+    private static void WriteResult(TestResult result)
+    {
+        using var file = File.Open(Consts.ResultsJsonPath(_testNo), FileMode.CreateNew);
+        var json = JsonSerializer.SerializeToUtf8Bytes(result);
+        file.Write(json);
+        _testNo++;
+        if (Debug) Console.WriteLine($"Wrote json: {Encoding.UTF8.GetString(json)}");
+    }
+        
+    private static void WriteFailureAndExit(string message)
+    {
+        WriteResult(new TestResult(false, null, message));
+        Environment.Exit(1);
     }
 }

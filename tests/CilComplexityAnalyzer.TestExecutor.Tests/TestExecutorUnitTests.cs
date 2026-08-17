@@ -5,9 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
 
 [TestClass]
-public class TestExecutorTests
+public sealed class TestExecutorUnitTests
 {
-    private readonly ILogger _logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<TestExecutorTests>();
+    private readonly ILogger _logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<TestExecutorUnitTests>();
     private const string AddTwoNumbersCode = """
         namespace MyApp
         {

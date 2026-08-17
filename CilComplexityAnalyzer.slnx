@@ -4,6 +4,7 @@
     <Project Path="src/CilComplexityAnalyzer.TestExecutor/CilComplexityAnalyzer.TestExecutor.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CilComplexityAnalyzer.ContainerWorker.Tests/CilComplexityAnalyzer.ContainerWorker.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
   </Folder>
 </Solution>
