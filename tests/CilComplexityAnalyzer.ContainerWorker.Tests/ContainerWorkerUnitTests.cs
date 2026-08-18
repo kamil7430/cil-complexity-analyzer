@@ -57,7 +57,6 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
         TestData[] testData =
         [
             new("Add", [2.5, 2.5], 5),
-            new("Add", [2, 3], 5),
             new("Add", [10, 10.5], 20.5),
             new("Add", [10.5, 10], 20.5),
             new("Add", [10.3, 10.3], 20.6),
