@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -87,19 +88,20 @@ internal class Program
             }
             catch (Exception e)
             {
-                writeResult(new TestResult(false, null, $"Unhandled exception in " +
-                    $"student code: {e.Message}"));
+                writeResult(new TestResult(false, null, $"Unhandled exception: {e.Message}"));
             }
         }
     }
 
     private static void CorrectType(ref object? input, Type targetType)
     {
-        if (Debug) Console.WriteLine($"Converting from {input?.GetType()} to {targetType}.");
+        var inputType = input?.GetType();
+        if (Debug) Console.WriteLine($"Converting from {inputType} to {targetType}.");
+        if (inputType == targetType) return;
         input = input switch
         {
             JsonElement j => JsonSerializer.Deserialize(j.GetRawText(), targetType),
-            _ => Convert.ChangeType(input, targetType),
+            _ => throw new ArgumentException($"Invalid cast from {inputType} to {targetType}!"),
         };
     }
     
