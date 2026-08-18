@@ -1,33 +1,86 @@
-name: ContainerWorker Deploy to DockerHub
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - 'main'
     paths:
-      - 'src/CilComplexityAnalyzer.ContainerWorker/**'
+      - '.github/workflows/ci-cd.yml'
+      - 'src/**'
+      - 'tests/**'
   pull_request:
-    branches: [ "main" ]
+    branches: 
+      - 'main'
     paths:
-      - 'src/CilComplexityAnalyzer.ContainerWorker/**'
+      - '.github/workflows/ci-cd.yml'
+      - 'src/**'
+      - 'tests/**'
 
 env:
   REGISTRY: docker.io
   IMAGE_NAME: kamil7430/cil-complexity-analyzer-container-worker
 
 jobs:
-  build:
 
+  changes:
+
+    runs-on: ubuntu-latest
+    outputs:
+      worker-changed: ${{ steps.filter.outputs.worker-changed }}
+      executor-changed: ${{ steps.filter.outputs.executor-changed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Filter changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            worker-changed:
+              - '.github/workflows/ci-cd.yml'
+              - 'src/CilComplexityAnalyzer.ContainerWorker/**'
+              - 'tests/CilComplexityAnalyzer.ContainerWorker.Tests/**'
+            executor-changed:
+              - '.github/workflows/ci-cd.yml'
+              - 'src/CilComplexityAnalyzer.TestExecutor/**'
+              - 'tests/CilComplexityAnalyzer.TestExecutor.Tests/**'
+
+  container-worker-test:
+
+    needs: changes
+    if: ${{ needs.changes.outputs.worker-changed == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'tests/CilComplexityAnalyzer.ContainerWorker.Tests'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+  container-worker-deploy:
+
+    needs: container-worker-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
     steps:
@@ -93,3 +146,33 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+  test-executor-test:
+
+    needs: [changes, container-worker-deploy]
+    if: |
+      always() &&
+      (needs.container-worker-deploy.result == 'success' || needs.container-worker-deploy.result == 'skipped') &&
+      (needs.changes.outputs.worker-changed == 'true' || needs.changes.outputs.executor-changed == 'true')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'tests/CilComplexityAnalyzer.TestExecutor.Tests'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
