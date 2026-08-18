@@ -4,19 +4,33 @@ namespace CilComplexityAnalyzer.ContainerWorker.Tests;
 
 public class ContainerWorkerUnitTestsBase
 {
-    protected static void CaptureException(Action action)
+    protected static Assembly LoadAssembly(string assemblyName)
+    {
+        using var stream = Assembly.GetExecutingAssembly()
+            .GetManifestResourceStream($"CilComplexityAnalyzer.ContainerWorker.Tests.Assemblies.{assemblyName}.dll");
+        using var memoryStream = new MemoryStream();
+        stream!.CopyTo(memoryStream);
+        return Assembly.Load(memoryStream.ToArray());
+    }
+    
+    protected static void InvokeExecuteAndCaptureException(TestData[] testData, Assembly assembly,
+        Action<TestResult> action)
     {
         Exception? exception = null;
-        
-        try
+
+        Program.Execute(testData, assembly, testResult =>
         {
-            action();
-        }
-        catch (Exception e)
-        {
-            exception = e;
-        }
-        
+            try
+            {
+                action(testResult);
+            }
+            catch (Exception e)
+            {
+                // first exception should be captured
+                exception ??= e;
+            }
+        });
+
         if (exception is not null)
             throw exception;
     }

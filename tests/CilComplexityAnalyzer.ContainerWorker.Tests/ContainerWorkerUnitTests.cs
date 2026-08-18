@@ -6,15 +6,6 @@ namespace CilComplexityAnalyzer.ContainerWorker.Tests;
 public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
 {
     private readonly Assembly _addTwoNumbersAssembly = LoadAssembly("AddTwoNumbers");
-
-    private static Assembly LoadAssembly(string assemblyName)
-    {
-        using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream($"CilComplexityAnalyzer.ContainerWorker.Tests.Assemblies.{assemblyName}.dll");
-        using var memoryStream = new MemoryStream();
-        stream!.CopyTo(memoryStream);
-        return Assembly.Load(memoryStream.ToArray());
-    }
     
     [TestMethod]
     public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
@@ -25,12 +16,10 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10, 15], 25),
         ];
 
-        CaptureException(() =>
-            Program.Execute(testData, _addTwoNumbersAssembly, testResult =>
-            {
-                Assert.IsTrue(testResult.Success);
-            })
-        );
+        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        {
+            Assert.IsTrue(testResult.Success);
+        });
     }
     
     [TestMethod]
@@ -42,13 +31,11 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10, 10], 25),
         ];
 
-        CaptureException(() =>
-            Program.Execute(testData, _addTwoNumbersAssembly, testResult =>
-            {
-                Assert.IsFalse(testResult.Success);
-                Assert.IsTrue(testResult.Message?.Contains("Outputs don't match!"));
-            })
-        );
+        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        {
+            Assert.IsFalse(testResult.Success);
+            Assert.IsTrue(testResult.Message?.Contains("Outputs don't match!"));
+        });
     }
 
     [TestMethod]
@@ -62,12 +49,10 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10.3, 10.3], 20.6),
         ];
 
-        CaptureException(() =>
-            Program.Execute(testData, _addTwoNumbersAssembly, testResult =>
-            {
-                Assert.IsFalse(testResult.Success);
-                Assert.IsTrue(testResult.Message?.Contains("Invalid cast from"));
-            })
-        );
+        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        {
+            Assert.IsFalse(testResult.Success);
+            Assert.IsTrue(testResult.Message?.Contains("Invalid cast from"));
+        });
     }
 }
