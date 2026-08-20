@@ -9,7 +9,7 @@ namespace CilComplexityAnalyzer.ContainerWorker;
 
 internal class Program
 {
-    private const bool Debug = false;
+    private static TextWriter? _originalStdout;
     private static int _testNo = 0;
     
     internal static void Main(string[] _)
@@ -17,18 +17,20 @@ internal class Program
         try
         {
             // discard any writes
-            if (!Debug) Console.SetOut(TextWriter.Null);
+            _originalStdout = Console.Out;
+            Console.SetOut(TextWriter.Null);
 
             // read all test datas from file
             var json = File.ReadAllBytes(Consts.TestDataJsonPath);
-            if (Debug) Console.WriteLine($"Received json: {Encoding.UTF8.GetString(json)}");
+            Debug($"Received json: {Encoding.UTF8.GetString(json)}");
+            
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
                 throw new ArgumentException("Json is 'null'.");
-            if (Debug) Console.WriteLine("Deserialized");
+            Debug("Deserialized");
 
             // load student assembly
             var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
-            if (Debug) Console.WriteLine("Loaded assembly");
+            Debug("Loaded assembly");
 
             Execute(dataArray, assembly, WriteResult);
         }
@@ -49,15 +51,15 @@ internal class Program
         }
 
         var type = types[0];
-        if (Debug) Console.WriteLine($"Found type: {type}");
+        Debug($"Found type: {type}");
         var method = type.GetMethod(dataArray[0].MethodToInvoke)!;
-        if (Debug) Console.WriteLine($"Found method: {method}");
+        Debug($"Found method: {method}");
 
         // execute tests sequentially and report every output immediately
         foreach (var data in dataArray)
         {
             var obj = Activator.CreateInstance(type);
-            if (Debug) Console.WriteLine("Created instance");
+            Debug("Created instance");
 
             try
             {
@@ -69,7 +71,7 @@ internal class Program
                 }
 
                 var returnedObj = method.Invoke(obj, input);
-                if (Debug) Console.WriteLine("Invoked");
+                Debug("Invoked");
 
                 // TODO: assert time elapsed
                 var complexity = -1L;
@@ -93,10 +95,10 @@ internal class Program
         }
     }
 
-    private static void CorrectType(ref object? input, Type targetType)
+    internal static void CorrectType(ref object? input, Type targetType)
     {
         var inputType = input?.GetType();
-        if (Debug) Console.WriteLine($"Converting from {inputType} to {targetType}.");
+        Debug($"Converting from {inputType} to {targetType}.");
         if (inputType == targetType) return;
         input = input switch
         {
@@ -111,12 +113,18 @@ internal class Program
         var json = JsonSerializer.SerializeToUtf8Bytes(result);
         file.Write(json);
         _testNo++;
-        if (Debug) Console.WriteLine($"Wrote json: {Encoding.UTF8.GetString(json)}");
+        Debug($"Wrote json: {Encoding.UTF8.GetString(json)}");
     }
         
     private static void WriteFailureAndExit(string message)
     {
         WriteResult(new TestResult(false, null, message));
         Environment.Exit(1);
+    }
+
+    [Conditional("DEBUG")]
+    private static void Debug(string message)
+    {
+        _originalStdout?.WriteLine(message);
     }
 }

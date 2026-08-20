@@ -2,9 +2,9 @@ using System.Reflection;
 
 namespace CilComplexityAnalyzer.ContainerWorker.Tests;
 
-public class ContainerWorkerUnitTestsBase
+public static class Utils
 {
-    protected static Assembly LoadAssembly(string assemblyName)
+    public static Assembly LoadAssembly(string assemblyName)
     {
         using var stream = Assembly.GetExecutingAssembly()
             .GetManifestResourceStream($"CilComplexityAnalyzer.ContainerWorker.Tests.Assemblies.{assemblyName}.dll");
@@ -13,7 +13,7 @@ public class ContainerWorkerUnitTestsBase
         return Assembly.Load(memoryStream.ToArray());
     }
     
-    protected static void InvokeExecuteAndCaptureException(TestData[] testData, Assembly assembly,
+    public static void InvokeExecuteAndCaptureException(TestData[] testData, Assembly assembly,
         Action<TestResult> action)
     {
         Exception? exception = null;

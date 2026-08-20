@@ -1,0 +1,10 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace CilComplexityAnalyzer.TestExecutor.Tests;
+
+[TestClass]
+public sealed class InfiniteLoopsExecuteTests
+{
+    private readonly ILogger _logger = Utils.GetLogger<InfiniteLoopsExecuteTests>();
+}

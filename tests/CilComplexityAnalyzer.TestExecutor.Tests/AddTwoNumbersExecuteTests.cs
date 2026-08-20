@@ -5,9 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
 
 [TestClass]
-public sealed class TestExecutorUnitTests
+public sealed class AddTwoNumbersExecuteTests
 {
-    private readonly ILogger _logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<TestExecutorUnitTests>();
+    private readonly ILogger _logger = Utils.GetLogger<AddTwoNumbersExecuteTests>();
     private const string AddTwoNumbersCode = """
         namespace MyApp
         {
@@ -18,23 +18,26 @@ public sealed class TestExecutorUnitTests
         }
     """;
     
-    [TestMethod]
-    public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
-    {
-        var testCase = new TestSuite
+    private TestSuite NewTestSuite(TestCase[] testCases)
+        => new TestSuite
         {
             SourceCode = AddTwoNumbersCode,
             MethodToInvoke = "Add",
             Logger = _logger,
-            TestCases =
-            [
-                new TestCase
-                {
-                    Input = [2, 3],
-                    Output = 5,
-                }
-            ]
+            TestCases = testCases,
         };
+    
+    [TestMethod]
+    public void HappyPath_ShouldRunAndReturnSuccess()
+    {
+        var testCase = NewTestSuite(
+        [
+            new TestCase
+            {
+                Input = [2, 3],
+                Output = 5,
+            }
+        ]);
 
         var result = TestExecutor.Execute(testCase)[0];
         
@@ -42,14 +45,9 @@ public sealed class TestExecutorUnitTests
     }
     
     [TestMethod]
-    public void Execute_AddTwoNumbersExample_InvalidOutput_ShouldRunAndReturnFailure()
+    public void InvalidOutput_ShouldRunAndReturnFailure()
     {
-        var testCase = new TestSuite
-        {
-            SourceCode = AddTwoNumbersCode,
-            MethodToInvoke = "Add",
-            Logger = _logger,
-            TestCases =
+        var testCase = NewTestSuite(
             [
                 new TestCase
                 {
@@ -57,7 +55,7 @@ public sealed class TestExecutorUnitTests
                     Output = 5,
                 }
             ]
-        };
+        );
 
         var result = TestExecutor.Execute(testCase)[0];
         

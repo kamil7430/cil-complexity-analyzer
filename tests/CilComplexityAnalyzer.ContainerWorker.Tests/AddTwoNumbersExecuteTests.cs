@@ -3,12 +3,12 @@
 namespace CilComplexityAnalyzer.ContainerWorker.Tests;
 
 [TestClass]
-public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
+public sealed class AddTwoNumbersExecuteTests
 {
-    private readonly Assembly _addTwoNumbersAssembly = LoadAssembly("AddTwoNumbers");
+    private readonly Assembly _addTwoNumbersAssembly = Utils.LoadAssembly("AddTwoNumbers");
     
     [TestMethod]
-    public void Execute_AddTwoNumbersExample_HappyPath_ShouldRunAndReturnSuccess()
+    public void HappyPath_ShouldRunAndReturnSuccess()
     {
         TestData[] testData =
         [
@@ -16,14 +16,14 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10, 15], 25),
         ];
 
-        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        Utils.InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
         {
             Assert.IsTrue(testResult.Success);
         });
     }
     
     [TestMethod]
-    public void Execute_AddTwoNumbersExample_InvalidOutput_ShouldRunAndReturnFailure()
+    public void InvalidOutput_ShouldRunAndReturnFailure()
     {
         TestData[] testData =
         [
@@ -31,7 +31,7 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10, 10], 25),
         ];
 
-        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        Utils.InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
         {
             Assert.IsFalse(testResult.Success);
             Assert.IsTrue(testResult.Message?.Contains("Outputs don't match!"));
@@ -39,7 +39,7 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
     }
 
     [TestMethod]
-    public void Execute_AddTwoNumbersExample_InvalidCasting_ShouldRunAndReturnFailure()
+    public void InvalidCasting_ShouldRunAndReturnFailure()
     {
         TestData[] testData =
         [
@@ -49,7 +49,7 @@ public sealed class ContainerWorkerUnitTests : ContainerWorkerUnitTestsBase
             new("Add", [10.3, 10.3], 20.6),
         ];
 
-        InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
+        Utils.InvokeExecuteAndCaptureException(testData, _addTwoNumbersAssembly, testResult =>
         {
             Assert.IsFalse(testResult.Success);
             Assert.IsTrue(testResult.Message?.Contains("Invalid cast from"));
