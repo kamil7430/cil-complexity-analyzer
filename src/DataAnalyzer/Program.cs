@@ -5,76 +5,78 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-string[] argsList = ["solutions_dir"];
-string[] argsDescription = ["directory of zip-compressed solutions"];
-Debug.Assert(argsList.Length == argsDescription.Length);
+namespace DataAnalyzer;
 
-if (args.Length != argsList.Length) 
-    Usage();
-
-const string zipRegex = "^.+\\.zip$";
-var zipsToOpen = Directory.EnumerateFiles(args[0]).Where(name => Regex.IsMatch(name, zipRegex));
-
-Dictionary<string, int> usings = [];
-
-// solutions analysis
-foreach (var zipPath in zipsToOpen)
+internal class Program
 {
-    using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Read);
-
-    const string solutionFileRegex = "^[0-9]+\\.cs$";
-    var solutionFiles = zip.Entries.Where(entry => Regex.IsMatch(entry.Name, solutionFileRegex));
+    private static readonly UsingsCollector UsingsCollector = new();
     
-    foreach (var entry in solutionFiles)
+    private static void ForEachFile(string fileName, SyntaxNode root)
     {
-        var code = GetEntryContents(entry);
-        var syntaxTree = CSharpSyntaxTree.ParseText(code);
-        var root = syntaxTree.GetRoot();
+        UsingsCollector.Visit(root, fileName);
+    }
+
+    private static void AfterAnalysis()
+    {
+        UsingsCollector.PrintUsings(false);
+    }
+    
+    private static readonly string[] ArgsList = ["solutions_dir"];
+    private static readonly string[] ArgsDescription = ["directory of zip-compressed solutions"];
+    
+    internal static void Main(string[] args)
+    {
+        Debug.Assert(ArgsList.Length == ArgsDescription.Length);
+        if (args.Length != ArgsList.Length) 
+            Usage();
+
+        const string zipRegex = "^.+\\.zip$";
+        var zipsToOpen = Directory.EnumerateFiles(args[0]).Where(name => Regex.IsMatch(name, zipRegex));
+
+        foreach (var zipPath in zipsToOpen)
+        {
+            using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Read);
+
+            const string solutionFileRegex = "^[0-9]+\\.cs$";
+            var solutionFiles = zip.Entries.Where(entry => Regex.IsMatch(entry.Name, solutionFileRegex));
+    
+            foreach (var entry in solutionFiles)
+            {
+                var code = GetEntryContents(entry);
+                var syntaxTree = CSharpSyntaxTree.ParseText(code);
+                var root = syntaxTree.GetRoot();
         
-        Traverse(root);
+                ForEachFile(Path.Combine(zipPath, entry.FullName), root);
+            }
+        }
+
+        AfterAnalysis();
     }
-}
-
-foreach (var (us, no) in usings)
-    Console.WriteLine($"{us}: {no}");
-
-return;
-
-void Traverse(SyntaxNode node)
-{
-    foreach (var child in node.ChildNodes())
-        Traverse(child);
-
-    if (node.IsKind(SyntaxKind.UsingDirective))
-    {
-        if (!usings.TryAdd(node.ToString(), 1))
-            usings[node.ToString()]++;
-    }
-}
-
-void Usage()
-{
-    Console.Error.Write($"Usage:\n\t{AppDomain.CurrentDomain.FriendlyName}");
-    foreach (var arg in argsList)
-        Console.Error.Write($" <{arg}>");
-    Console.Error.WriteLine("\nWhere:");
-    for (int i = 0; i < argsList.Length; i++)
-        Console.Error.WriteLine($"\t{argsList[i]}: {argsDescription[i]}");
-    Environment.Exit(1);
-}
-
-string GetEntryContents(ZipArchiveEntry entry)
-{
-    using var fileStream = entry.Open();
-    int read = 0, offset = 0;
-    var length = entry.Length;
-    var buffer = new byte[length];
     
-    while (read < length)
+    private static void Usage()
     {
-        read = fileStream.Read(buffer, offset, (int)length);
-        offset += read;
+        Console.Error.Write($"Usage:\n\t{AppDomain.CurrentDomain.FriendlyName}");
+        foreach (var arg in ArgsList)
+            Console.Error.Write($" <{arg}>");
+        Console.Error.WriteLine("\nWhere:");
+        for (int i = 0; i < ArgsList.Length; i++)
+            Console.Error.WriteLine($"\t{ArgsList[i]}: {ArgsDescription[i]}");
+        Environment.Exit(1);
     }
+    
+    private static string GetEntryContents(ZipArchiveEntry entry)
+    {
+        using var fileStream = entry.Open();
+        int read = 0, offset = 0;
+        var length = entry.Length;
+        var buffer = new byte[length];
+    
+        while (read < length)
+        {
+            read = fileStream.Read(buffer, offset, (int)length);
+            offset += read;
+        }
 
-    return Encoding.UTF8.GetString(buffer);
+        return Encoding.UTF8.GetString(buffer);
+    }
 }
