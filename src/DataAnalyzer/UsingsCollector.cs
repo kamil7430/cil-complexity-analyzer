@@ -8,6 +8,6 @@ public class UsingsCollector : CollectorBase
     {
         var name = node.NamespaceOrType.ToString();
         Occurrences.TryAdd(name, []);
-        Occurrences[name].Add(_fileName!);
+        Occurrences[name].Add(FileName!);
     }
 }

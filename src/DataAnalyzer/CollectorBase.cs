@@ -5,14 +5,17 @@ namespace DataAnalyzer;
 
 public abstract class CollectorBase : CSharpSyntaxWalker
 {
-    protected string? _fileName;
+    protected string? FileName;
+    protected SemanticModel? SemanticModel;
     public Dictionary<string, List<string>> Occurrences { get; } = [];
     
-    public void Visit(SyntaxNode? node, string fileName)
+    public void Visit(SyntaxNode? node, string fileName, SemanticModel model)
     {
-        _fileName = fileName;
+        FileName = fileName;
+        SemanticModel = model;
         base.Visit(node);
-        _fileName = null;
+        SemanticModel = null;
+        FileName = null;
     }
 
     public void PrintOccurrences(bool shouldPrintFileList)

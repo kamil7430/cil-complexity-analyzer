@@ -12,21 +12,23 @@ internal class Program
     private static readonly UsingsCollector UsingsCollector = new();
     private static readonly MethodsCollector MethodsCollector = new();
     
-    private static void ForEachFile(string fileName, SyntaxNode root)
+    private static void ForEachFile(string fileName, SyntaxNode root, SemanticModel model)
     {
-        UsingsCollector.Visit(root, fileName);
-        MethodsCollector.Visit(root, fileName);
+        UsingsCollector.Visit(root, fileName, model);
+        MethodsCollector.Visit(root, fileName, model);
     }
 
     private static void AfterAnalysis()
     {
         UsingsCollector.PrintOccurrences(false);
+        Console.WriteLine(" ### ============= ###");
         MethodsCollector.PrintOccurrences(false);
     }
     
     private static readonly string[] ArgsList = ["solutions_dir"];
     private static readonly string[] ArgsDescription = ["directory of zip-compressed solutions"];
-    
+    private const string AssemblyPath = "Graphs.dll";
+
     internal static void Main(string[] args)
     {
         Debug.Assert(ArgsList.Length == ArgsDescription.Length);
@@ -48,8 +50,18 @@ internal class Program
                 var code = GetEntryContents(entry);
                 var syntaxTree = CSharpSyntaxTree.ParseText(code);
                 var root = syntaxTree.GetRoot();
+                var compilation = CSharpCompilation.Create(
+                    assemblyName: "sth",
+                    syntaxTrees: [syntaxTree],
+                    references:
+                    [
+                        ..Basic.Reference.Assemblies.Net100.References.All,
+                        MetadataReference.CreateFromFile(AssemblyPath),
+                    ]
+                );
+                var model = compilation.GetSemanticModel(syntaxTree);
         
-                ForEachFile(Path.Combine(zipPath, entry.FullName), root);
+                ForEachFile(Path.Combine(zipPath, entry.FullName), root, model);
             }
         }
 
