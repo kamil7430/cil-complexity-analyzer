@@ -10,15 +10,18 @@ namespace DataAnalyzer;
 internal class Program
 {
     private static readonly UsingsCollector UsingsCollector = new();
+    private static readonly MethodsCollector MethodsCollector = new();
     
     private static void ForEachFile(string fileName, SyntaxNode root)
     {
         UsingsCollector.Visit(root, fileName);
+        MethodsCollector.Visit(root, fileName);
     }
 
     private static void AfterAnalysis()
     {
-        UsingsCollector.PrintUsings(false);
+        UsingsCollector.PrintOccurrences(false);
+        MethodsCollector.PrintOccurrences(false);
     }
     
     private static readonly string[] ArgsList = ["solutions_dir"];
