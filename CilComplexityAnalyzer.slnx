@@ -2,9 +2,12 @@
   <Folder Name="/src/">
     <Project Path="src/CilComplexityAnalyzer.ContainerWorker/CilComplexityAnalyzer.ContainerWorker.csproj" />
     <Project Path="src/CilComplexityAnalyzer.TestExecutor/CilComplexityAnalyzer.TestExecutor.csproj" />
+    <Project Path="src/CilComplexityAnalyzer.TestGenerator.Attributes/CilComplexityAnalyzer.TestGenerator.Attributes.csproj" />
+    <Project Path="src/CilComplexityAnalyzer.TestGenerator/CilComplexityAnalyzer.TestGenerator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.ContainerWorker.Tests/CilComplexityAnalyzer.ContainerWorker.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
+    <Project Path="tests/CilComplexityAnalyzer.TestGenerator.Tests/CilComplexityAnalyzer.TestGenerator.Tests.csproj" />
   </Folder>
 </Solution>
