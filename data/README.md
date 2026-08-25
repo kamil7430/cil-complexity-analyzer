@@ -15,3 +15,5 @@ A big shout-out to everyone who sent us their files!
 - [paw10x](https://github.com/paw10x/ASD)
 - [FreePlacki](https://github.com/FreePlacki/asd2)
 - [srebrek](https://github.com/srebrek/ASD2)
+- kamil7430
+- [uasuna2022](https://github.com/uasuna2022/Algorithms-2)
