@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
-namespace CilComplexityAnalyzer.TestGenerator.Generators;
+namespace CilComplexityAnalyzer.TestGenerator;
 
 
 [Generator]
@@ -15,7 +15,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
         var classes = context.SyntaxProvider.ForAttributeWithMetadataName(
             "CilComplexityAnalyzer.TestGenerator.Attributes.SolutionListAttribute",
             predicate: (node, _) => node is ClassDeclarationSyntax,
-            transform: (ctx, _) => ctx)
+            transform: (ctx, _) => ctx) // potecjalny błąd
         .Collect();
         
         context.RegisterSourceOutput(classes, Generate);
