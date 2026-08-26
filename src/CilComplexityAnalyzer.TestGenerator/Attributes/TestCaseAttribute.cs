@@ -1,6 +1,4 @@
-using System;
-
-namespace CilComplexityAnalyzer.TestGenerator.Attributes;
+namespace CilComplexityAnalyzer.TestGenerator.GeneratorAttributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class TestCaseAttribute : Attribute

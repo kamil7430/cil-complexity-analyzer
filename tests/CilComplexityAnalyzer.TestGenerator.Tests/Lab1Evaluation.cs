@@ -1,4 +1,5 @@
-using CilComplexityAnalyzer.TestGenerator.Attributes;
+using CilComplexityAnalyzer.TestGenerator.GeneratorAttributes;
+
 namespace CilComplexityAnalyzer.TestGenerator.Tests;
 
 
