@@ -1,4 +1,6 @@
-namespace CilComplexityAnalyzer.TestGenerator.GeneratorAttributes;
+using System;
+
+namespace CilComplexityAnalyzer.TestGenerator.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class SolutionListAttribute(string[] ids, string[] paths) : Attribute
