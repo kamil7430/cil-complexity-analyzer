@@ -1,6 +1,6 @@
 namespace CilComplexityAnalyzer.TestGenerator.Tests;
 
-public class FakeExecutor
+public static class FakeExecutor
 {
     public static bool Run(
         string sourceCodePath, 

@@ -1,6 +1,4 @@
-using System;
-
-namespace CilComplexityAnalyzer.TestGenerator.Attributes;
+namespace CilComplexityAnalyzer.TestFramework.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class MethodToInvokeAttribute : Attribute
