@@ -1,5 +1,6 @@
 ﻿using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
+using CilComplexityAnalyzer.TestExecutor;
 using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;

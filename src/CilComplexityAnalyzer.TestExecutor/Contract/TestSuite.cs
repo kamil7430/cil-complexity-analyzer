@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor.Contract;
 
-public class TestSuite
+public class TestSuite : TestSuiteBase
 {
     // Public TestSuite contract properties
     public string? Name { get; set; }

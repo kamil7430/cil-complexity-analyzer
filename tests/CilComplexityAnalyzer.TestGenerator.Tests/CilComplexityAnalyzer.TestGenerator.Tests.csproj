@@ -27,10 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CilComplexityAnalyzer.TestGenerator\CilComplexityAnalyzer.TestGenerator.csproj" 
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="true"
-                      SetTargetFramework="TargetFramework=netstandard2.0"/>
+    <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\src\CilComplexityAnalyzer.TestExecutor\CilComplexityAnalyzer.TestExecutor.csproj" />
   </ItemGroup>
 
 </Project>

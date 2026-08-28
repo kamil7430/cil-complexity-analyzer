@@ -7,6 +7,7 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <LangVersion>latest</LangVersion>
+    <RootNamespace>CilComplexityAnalyzer.TestGenerator</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
