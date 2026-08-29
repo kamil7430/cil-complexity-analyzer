@@ -9,8 +9,8 @@ namespace CilComplexityAnalyzer.TestGenerator;
 [Generator]
 public class TestSuiteGenerator : IIncrementalGenerator
 {
-    private const string TestSuiteBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestSuiteBase";
-    private const string TestCaseBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestCaseBase";
+    private const string TestSuiteBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestSuite";
+    private const string TestCaseBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestCase";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -39,10 +39,21 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (!InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
-        var cases = suiteSymbol.GetTypeMembers()
-            .Where(t => InheritsFrom(t, TestCaseBaseFullName))
-            .Select(GetCaseInfo)
-            .ToImmutableArray();
+        var suiteAttr = suiteSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name is "MethodToInvokeAttribute" or "MethodToInvoke");
+
+        string? defaultSuiteMethod = suiteAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+
+        var casesBuilder = ImmutableArray.CreateBuilder<CaseInfo>() ?? throw new ArgumentNullException("ImmutableArray.CreateBuilder<CaseInfo>()");
+
+        foreach (var member in suiteSymbol.GetTypeMembers())
+        {
+            if (InheritsFrom(member, TestCaseBaseFullName))
+            {
+                var caseInfo = GetCaseInfo(member, defaultSuiteMethod);
+                casesBuilder.Add(caseInfo);
+            }
+        }
 
         var isContainerized = suiteSymbol.GetAttributes()
             .Any(a => a.AttributeClass?.Name is "IsContainerizedAttribute" or "IsContainerized");
@@ -57,21 +68,28 @@ public class TestSuiteGenerator : IIncrementalGenerator
             ClassName: suiteSymbol.Name,
             Name: string.IsNullOrWhiteSpace(name) ? suiteSymbol.Name : name!,
             IsContainerized: isContainerized,
-            Cases: cases);
+            Cases: casesBuilder.ToImmutable());
     }
 
-    private static CaseInfo GetCaseInfo(INamedTypeSymbol caseSymbol)
+    private static CaseInfo GetCaseInfo(INamedTypeSymbol caseSymbol, string? defaultSuiteMethod)
     {
         var settings = caseSymbol.GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name is "CaseSettingsAttribute" or "CaseSettings" or "TestSettingsAttribute" or "TestSettings" or "SecretTestName");
 
         long instructionCap = GetInstructionCap(settings, 1_000_000L);
-        //var classDecl = caseSymbol.DeclaringSyntaxReferences.First().GetSyntax();
-        //var fullSource = classDecl.ToFullString();
-        //long timeoutMs = GetNamedArg(settings, "TimeoutMs", 30_000L);
-        //int memoryMb = (int)GetNamedArg(settings, "MemoryMb", 512L);
+        var methodToInvokeAttr = caseSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name is "MethodToInvokeAttribute" or "MethodToInvoke");
 
-        return new CaseInfo(caseSymbol.Name, instructionCap);
+        string? methodName = null;
+        if (methodToInvokeAttr is not null && methodToInvokeAttr.ConstructorArguments.Length > 0)
+        {
+            methodName = methodToInvokeAttr.ConstructorArguments[0].Value as string;
+        }
+
+        methodName ??= defaultSuiteMethod;
+        var location = caseSymbol.Locations.FirstOrDefault();
+        
+        return new CaseInfo(caseSymbol.Name, instructionCap, methodName, location);
     }
 
     private static long GetInstructionCap(AttributeData? attr, long fallback)
@@ -92,8 +110,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
     {
         for (var baseType = symbol?.BaseType; baseType is not null; baseType = baseType.BaseType)
         {
-            var fullName = $"{baseType.ContainingNamespace.ToDisplayString()}.{baseType.Name}";
-            if (fullName == fullyQualifiedBaseName)
+            if (baseType.ToDisplayString() == fullyQualifiedBaseName)
                 return true;
         }
         return false;
@@ -163,19 +180,15 @@ public class TestSuiteGenerator : IIncrementalGenerator
     }
 
     private sealed record SuiteInfo(
-        string Namespace, string ClassName, string Name, bool IsContainerized,
-        ImmutableArray<CaseInfo> Cases)
-    {
-        public string Namespace { get; } = Namespace;
-        public string ClassName { get; } = ClassName;
-        public string Name { get; } = Name;
-        public bool IsContainerized { get; } = IsContainerized;
-        public ImmutableArray<CaseInfo> Cases { get; } = Cases;
-    }
+        string Namespace, 
+        string ClassName, 
+        string Name, 
+        bool IsContainerized,
+        ImmutableArray<CaseInfo> Cases);
 
-    private sealed record CaseInfo(string Name,long InstructionCap)
-    {
-        public string Name { get; } = Name;
-        public long InstructionCap { get; } = InstructionCap;
-    }
+    private sealed record CaseInfo(
+        string Name, 
+        long InstructionCap, 
+        string? MethodName, 
+        Location? Location);
 }

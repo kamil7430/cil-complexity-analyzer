@@ -7,17 +7,17 @@ namespace CilComplexityAnalyzer.TestGenerator.Tests;
 [IsContainerized]
 [Name("")] // opcjonalne
 [MethodToInvoke("SolveProblem")]
-public class Lab01Evaluation : TestSuite // nazwa koncepcyjna
+public class Lab01Evaluation : TestSuiteBase // nazwa koncepcyjna
 {
     [CaseSettings(InstructionCap = 1_000_000)]
-    public class Case1 : TestCase
+    public class Case1 : TestCaseBase
     {
         public override void Arrange() { /* ... */ }
         public override void Assert() { /* ... */ }
     }
     
     [CaseSettings(InstructionCap = 10_000_000, TimeoutMs = 30_000)]
-    public class Case2 : TestCase
+    public class Case2 : TestCaseBase
     {
         //private Graph _graph = new();
         public override void Arrange() { /* ... */ }
@@ -26,7 +26,7 @@ public class Lab01Evaluation : TestSuite // nazwa koncepcyjna
 
     
     [CaseSettings(InstructionCap = 20_000_000, TimeoutMs = 30_000, MemoryMb = 1024)]
-    public class CaseN : TestCase
+    public class CaseN : TestCaseBase
     {
         public override void Arrange() { /* ... */ }
         public override void Assert() { /* ... */ }
