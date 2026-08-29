@@ -3,6 +3,7 @@
 *.suo
 *.userosscache
 *.sln.docstates
+.DS_Store
 
 **/bin/
 **/obj/
