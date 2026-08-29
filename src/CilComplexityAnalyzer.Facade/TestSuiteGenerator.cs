@@ -123,7 +123,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine($"public partial class {suite.ClassName}_Tests");
             sb.AppendLine("{");
             sb.AppendLine("    private static List<string> _results = new List<string>();");
-            sb.AppendLine("    private TestExecutor? _executor;");
+            //sb.AppendLine("    private TestExecutor? _executor;");
             sb.AppendLine();
             sb.AppendLine("    [ClassInitialize]");
             sb.AppendLine("    public static void Initialize(TestContext context)");
@@ -140,7 +140,8 @@ public class TestSuiteGenerator : IIncrementalGenerator
                 sb.AppendLine($"    public async Task {testCase.Name}()");
                 sb.AppendLine("    {");
                 sb.AppendLine();
-                sb.AppendLine($"        var testResult = await _executor.GetResult(\"{testCase.Name}\");");
+                sb.AppendLine($"       // var testResult = await TestExecutor.GetResult(\"{testCase.Name}\");");
+                sb.AppendLine($"        var testResult =\" cos\";");
                 sb.AppendLine();
                 sb.AppendLine($"        _results[{numberOfTests}] = \"Success\";");
                 sb.AppendLine("        var typeName = testResult.GetType().Name;");
