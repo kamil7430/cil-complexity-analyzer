@@ -36,6 +36,15 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (ctx.SemanticModel.GetDeclaredSymbol(classDecl) is not { } suiteSymbol)
             return null;
 
+        if (suiteSymbol.DeclaredAccessibility != Accessibility.Public)
+            return null;
+
+        if (suiteSymbol.ContainingType is not null)
+            return null;
+
+        if (suiteSymbol.IsAbstract)
+            return null;
+        
         if (!InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
@@ -66,6 +75,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
         return new SuiteInfo(
             Namespace: suiteSymbol.ContainingNamespace.ToDisplayString(),
             ClassName: suiteSymbol.Name,
+            FullClassName: suiteSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             Name: string.IsNullOrWhiteSpace(name) ? suiteSymbol.Name : name!,
             IsContainerized: isContainerized,
             Cases: casesBuilder.ToImmutable());
@@ -139,14 +149,20 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine("[TestClass]");
             sb.AppendLine($"public partial class {suite.ClassName}_Tests");
             sb.AppendLine("{");
-            sb.AppendLine("    private static List<string> _results = new List<string>();");
+            sb.AppendLine($"    private static string[] _results = new string[{suite.Cases.Length}];");
             //sb.AppendLine("    private TestExecutor? _executor;");
             sb.AppendLine();
             sb.AppendLine("    [ClassInitialize]");
             sb.AppendLine("    public static void Initialize(TestContext context)");
             sb.AppendLine("    {");
-            sb.AppendLine($"        var suiteInstance = new {suite.ClassName}();");
+            sb.AppendLine($"        var suiteInstance = new {suite.FullClassName}()");
             //sb.AppendLine($"        var testResults = ExecEngine.Execute(suiteInstance);");
+            //fix with add two numbers tests
+            sb.AppendLine("        {");
+            sb.AppendLine("            SourceCode = string.Empty,");
+            sb.AppendLine("            MethodToInvoke = string.Empty,");
+            sb.AppendLine("            TestCases = default!");
+            sb.AppendLine("        };");
             sb.AppendLine("    }");
             sb.AppendLine();
 
@@ -182,6 +198,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
     private sealed record SuiteInfo(
         string Namespace, 
         string ClassName, 
+        string FullClassName,
         string Name, 
         bool IsContainerized,
         ImmutableArray<CaseInfo> Cases);
