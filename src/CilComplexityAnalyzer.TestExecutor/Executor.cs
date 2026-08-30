@@ -2,7 +2,6 @@
 using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
-using CilComplexityAnalyzer.TestExecutor.Contract.Settings;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Images;
 using Microsoft.Extensions.Logging;
@@ -19,18 +18,25 @@ internal static class Executor
         logger?.LogInformation("Initializing DockerImage...");
         _ = DockerImage;
     }
-    
-    internal static Contract.TestResult[] Execute(this TestSuite testSuite)
+
+    internal static IEnumerable<Contract.TestResult> Execute(this TestSuite testSuite)
+        => testSuite.Settings()?.Containerized switch
+        {
+            false => ExecuteLocally(testSuite),
+            _ => ExecuteInContainer(testSuite),
+        };
+
+    private static IEnumerable<Contract.TestResult> ExecuteInContainer(TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning code execution.");
-        
+
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Serializing test suite.");
-        var testDatas = testSuite.TestCases()
+        var testDatas = testSuite.TestCases
             .Select(t => new TestData(testSuite.MethodToInvoke(), t.Input, t.Output))
             .ToArray();
         var testDatasBytes = JsonSerializer.SerializeToUtf8Bytes(testDatas);
 
-        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Building test container.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Building test container.");
         var container = new ContainerBuilder(DockerImage)
             .WithCleanUp(true)
             .WithResourceMapping(
@@ -40,36 +46,36 @@ internal static class Executor
                 resourceContent: testDatasBytes,
                 target: FilePath.Of(Consts.TestDataJsonPath)
             ).Build();
-        
-        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Starting test container.");
-        container.StartAsync(testSuite.CancellationToken).Wait();
 
-        var globalTimeoutMs = testSuite.TestCases.Sum(t => t.TimeoutMs);
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Starting test container.");
+        container.StartAsync(testSuite.CancellationToken()).Wait();
+
+        var globalTimeoutMs = testSuite.TestCases.Sum(t => t.Settings().TimeoutMs);
         var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs) + TimeSpan.FromSeconds(20);
-        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Global container timeout set to " +
-            $"{globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
-        
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Global container timeout set to " +
+                                         $"{globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
+
         List<Contract.TestResult> results = [];
         for (int i = 0; i < testDatas.Length; i++)
         {
-            var timeoutMs = testSuite.TestCases[i].TimeoutMs;
-            testSuite.Logger?.LogInformation($"[{testSuite.Name}] Waiting for test {i + 1} to finish " +
-                $"(timeout is {timeoutMs} ms).");
+            var timeoutMs = testSuite.TestCases[i].Settings().TimeoutMs;
+            testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Waiting for test {i + 1} to finish " +
+                                             $"(timeout is {timeoutMs} ms).");
 
             byte[]? resultBytes = null;
             while (resultBytes is null)
             {
                 if (globalTimeout <= DateTime.UtcNow)
                 {
-                    testSuite.Logger?.LogInformation($"[{testSuite.Name}] Test container timed out!");
+                    testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Test container timed out!");
                     results.Add(new Failure("Test container timed out!"));
                     return results.ToArray();
                 }
-                
+
                 Thread.Sleep(TimeSpan.FromSeconds(1));
                 try
                 {
-                    resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken)
+                    resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken())
                         .Result;
                 }
                 catch (AggregateException e)
@@ -80,12 +86,12 @@ internal static class Executor
                     }
                 }
             }
+
             var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
 
             if (result.Success)
             {
                 results.Add(new Success(
-                    ComplexityCalculationMethod.CilInstructionCounting, 
                     result.MeasuredComplexity!.Value
                 ));
             }
@@ -96,5 +102,10 @@ internal static class Executor
         }
 
         return results.ToArray();
+    }
+
+    private static IEnumerable<Contract.TestResult> ExecuteLocally(TestSuite testSuite)
+    {
+        
     }
 }

@@ -18,10 +18,10 @@ public abstract class TestSuite
     // Internal properties needed for the testing flow
     internal string Name
         => GetType().ToString();
-    internal IEnumerable<Type> TestCaseTypes()
+    internal IEnumerable<Type> TestCaseTypes
         => GetType().GetMembers().Select(m => m.ReflectedType).Where(t => t?.IsSubclassOf(typeof(TestCase)) ?? false)!;
-    internal TestCase[] TestCases()
-        => TestCaseTypes().Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray();
+    internal TestCase[] TestCases
+        => TestCaseTypes.Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray();
     internal SyntaxTree? SyntaxTree { get; set; }
     internal byte[]? AssemblyBytes { get; set; }
 }
