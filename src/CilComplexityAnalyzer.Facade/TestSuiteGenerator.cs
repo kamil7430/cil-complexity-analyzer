@@ -49,7 +49,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
 
         string? defaultSuiteMethod = suiteAttr?.ConstructorArguments.FirstOrDefault().Value as string;
 
-        var casesBuilder = ImmutableArray.CreateBuilder<CaseInfo>() ?? throw new ArgumentNullException("ImmutableArray.CreateBuilder<CaseInfo>()");
+        var casesBuilder = ImmutableArray.CreateBuilder<CaseInfo>();
 
         foreach (var member in suiteSymbol.GetTypeMembers())
         {
@@ -192,10 +192,10 @@ public class TestSuiteGenerator : IIncrementalGenerator
     }
 
     private sealed record SuiteInfo(
-        string Namespace, 
-        string ClassName, 
+        string Namespace,
+        string ClassName,
         string FullClassName,
-        string Name, 
+        string Name,
         bool IsContainerized,
         ImmutableArray<CaseInfo> Cases);
 

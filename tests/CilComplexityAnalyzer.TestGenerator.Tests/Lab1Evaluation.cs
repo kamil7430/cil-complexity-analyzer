@@ -6,7 +6,7 @@ namespace CilComplexityAnalyzer.Facade.Attributes.Tests;
 
 [IsContainerized]
 [Name("")] // opcjonalne
-[MethodToInvoke("SolveProblem")]
+//[MethodToInvoke("SolveProblem")]
 public class Lab01Evaluation : TestSuite // nazwa koncepcyjna
 {
     [CaseSettings(InstructionCap = 1_000_000)]
