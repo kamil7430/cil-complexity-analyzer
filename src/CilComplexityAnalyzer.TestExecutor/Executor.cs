@@ -22,15 +22,15 @@ internal static class Executor
     
     internal static Contract.TestResult[] Execute(this TestSuite testSuite)
     {
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning code execution.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning code execution.");
         
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Serializing test suite.");
-        var testDatas = testSuite.TestCases
-            .Select(t => new TestData(testSuite.MethodToInvoke, t.Input, t.Output))
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Serializing test suite.");
+        var testDatas = testSuite.TestCases()
+            .Select(t => new TestData(testSuite.MethodToInvoke(), t.Input, t.Output))
             .ToArray();
         var testDatasBytes = JsonSerializer.SerializeToUtf8Bytes(testDatas);
 
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Building test container.");
+        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Building test container.");
         var container = new ContainerBuilder(DockerImage)
             .WithCleanUp(true)
             .WithResourceMapping(
@@ -41,19 +41,19 @@ internal static class Executor
                 target: FilePath.Of(Consts.TestDataJsonPath)
             ).Build();
         
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Starting test container.");
+        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Starting test container.");
         container.StartAsync(testSuite.CancellationToken).Wait();
 
         var globalTimeoutMs = testSuite.TestCases.Sum(t => t.TimeoutMs);
         var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs) + TimeSpan.FromSeconds(20);
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Global container timeout set to " +
+        testSuite.Logger?.LogInformation($"[{testSuite.Name}] Global container timeout set to " +
             $"{globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
         
         List<Contract.TestResult> results = [];
         for (int i = 0; i < testDatas.Length; i++)
         {
             var timeoutMs = testSuite.TestCases[i].TimeoutMs;
-            testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Waiting for test {i + 1} to finish " +
+            testSuite.Logger?.LogInformation($"[{testSuite.Name}] Waiting for test {i + 1} to finish " +
                 $"(timeout is {timeoutMs} ms).");
 
             byte[]? resultBytes = null;
@@ -61,7 +61,7 @@ internal static class Executor
             {
                 if (globalTimeout <= DateTime.UtcNow)
                 {
-                    testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Test container timed out!");
+                    testSuite.Logger?.LogInformation($"[{testSuite.Name}] Test container timed out!");
                     results.Add(new Failure("Test container timed out!"));
                     return results.ToArray();
                 }

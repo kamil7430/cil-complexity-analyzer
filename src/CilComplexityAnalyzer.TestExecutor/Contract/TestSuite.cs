@@ -5,18 +5,23 @@ namespace CilComplexityAnalyzer.TestExecutor.Contract;
 
 public abstract class TestSuite
 {
-    // Public TestSuite contract properties
-    public string? Name { get; set; }
-    public required string SourceCode { get; set; }
-    public required string MethodToInvoke { get; set; }
-    public required TestCase[] TestCases { get; set; }
-    public TestSettings? Settings { get; set; }
-    public ILogger? Logger { get; set; }
-    public CancellationToken CancellationToken { get; set; }
+    // Public TestSuite contract methods
+    public abstract string SourceCode();
+    public abstract string MethodToInvoke();
+    public virtual TestSuiteSettings? Settings() 
+        => null;
+    public virtual ILogger? Logger() 
+        => null;
+    public virtual CancellationToken CancellationToken() 
+        => System.Threading.CancellationToken.None;
     
     // Internal properties needed for the testing flow
-    internal string NameOrHash 
-        => Name ?? SourceCode.GetHashCode().ToString("x8");
+    internal string Name
+        => GetType().ToString();
+    internal IEnumerable<Type> TestCaseTypes()
+        => GetType().GetMembers().Select(m => m.ReflectedType).Where(t => t?.IsSubclassOf(typeof(TestCase)) ?? false)!;
+    internal TestCase[] TestCases()
+        => TestCaseTypes().Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray();
     internal SyntaxTree? SyntaxTree { get; set; }
     internal byte[]? AssemblyBytes { get; set; }
 }

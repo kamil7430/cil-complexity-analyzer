@@ -1,6 +1,5 @@
 ﻿using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
-using CilComplexityAnalyzer.TestExecutor;
 using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
@@ -32,9 +31,9 @@ public static class TestExecutor
     
     public static TestResult[] Execute(TestSuite testSuite)
     {
-        Initialize(testSuite.Logger);
+        Initialize(testSuite.Logger());
         
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning test execution.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test execution.");
         TestResult[] result;
         try
         {
@@ -46,15 +45,15 @@ public static class TestExecutor
         }
         catch (TestExecutionException e)
         {
-            testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Test execution failed: {e.Message}");
+            testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Test execution failed: {e.Message}");
             result = [new Failure($"Test execution failed: {e.Message}")];
         }
         catch (Exception e)
         {
-            testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] TestExecutor internal error or uncaught exception: {e.Message}");
+            testSuite.Logger()?.LogInformation($"[{testSuite.Name}] TestExecutor internal error or uncaught exception: {e.Message}");
             result = [new Failure($"TestExecutor internal error or uncaught exception: {e.Message}")];
         }
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Ending test execution.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Ending test execution.");
         return result;
     }
 }

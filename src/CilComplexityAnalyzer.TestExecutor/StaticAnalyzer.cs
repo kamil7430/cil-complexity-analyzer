@@ -8,11 +8,11 @@ internal static class StaticAnalyzer
 {
     internal static TestSuite Analyze(this TestSuite testSuite)
     {
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning static analysis.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning static analysis.");
 
         var syntaxTree = CSharpSyntaxTree.ParseText(
-            text: testSuite.SourceCode,
-            cancellationToken: testSuite.CancellationToken
+            text: testSuite.SourceCode(),
+            cancellationToken: testSuite.CancellationToken()
         );
         testSuite.SyntaxTree = syntaxTree;
 
