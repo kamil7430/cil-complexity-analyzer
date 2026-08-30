@@ -15,7 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\CilComplexityAnalyzer.TestExecutor\CilComplexityAnalyzer.TestExecutor.csproj" />
+        <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\CilComplexityAnalyzer.TestExecutor\CilComplexityAnalyzer.TestExecutor.csproj" />
     </ItemGroup>
 
 </Project>
