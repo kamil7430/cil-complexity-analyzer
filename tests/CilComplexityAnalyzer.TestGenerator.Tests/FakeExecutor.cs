@@ -1,4 +1,4 @@
-namespace CilComplexityAnalyzer.TestGenerator.Tests;
+namespace CilComplexityAnalyzer.Facade.Attributes.Tests;
 
 public class FakeExecutor
 {

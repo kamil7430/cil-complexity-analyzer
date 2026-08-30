@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CilComplexityAnalyzer.TestGenerator;
+namespace CilComplexityAnalyzer.Facade.TestGenerator;
 
 [Generator]
 public class TestSuiteGenerator : IIncrementalGenerator
@@ -21,10 +21,6 @@ public class TestSuiteGenerator : IIncrementalGenerator
             .Where(static suite => suite is not null)
             .Select(static (suite, _) => suite!)
             .Collect();
-        context.RegisterPostInitializationOutput(ctx => 
-        {
-            ctx.AddSource("GeneratorDebug.g.cs", "// Generator dziala!");
-        });
 
         context.RegisterSourceOutput(suites, Generate);
     }

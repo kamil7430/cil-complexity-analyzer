@@ -1,7 +1,7 @@
 using CilComplexityAnalyzer.TestExecutor.Contract;
-using CilComplexityAnalyzer.TestGenerator.Attributes;
+using CilComplexityAnalyzer.Facade.Attributes;
 
-namespace CilComplexityAnalyzer.TestGenerator.Tests;
+namespace CilComplexityAnalyzer.Facade.Attributes.Tests;
 
 
 [IsContainerized]
