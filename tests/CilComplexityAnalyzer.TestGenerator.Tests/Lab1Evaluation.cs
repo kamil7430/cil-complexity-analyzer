@@ -1,5 +1,5 @@
 using CilComplexityAnalyzer.TestExecutor.Contract;
-using CilComplexityAnalyzer.TestGenerator.Attributes;
+using CilComplexityAnalyzer.Facade.Attributes;
 
 namespace CilComplexityAnalyzer.Facade.Attributes.Tests;
 

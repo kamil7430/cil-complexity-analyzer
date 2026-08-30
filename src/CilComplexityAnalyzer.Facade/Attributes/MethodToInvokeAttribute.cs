@@ -1,7 +1,7 @@
-namespace CilComplexityAnalyzer.TestGenerator.Attributes;
+namespace CilComplexityAnalyzer.Facade.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class MethodToInvokeAttribute(string methodName) : Attribute
 {
-    public string? MethodName { get; } = methodName;
+    public string MethodName { get; } = methodName;
 }
