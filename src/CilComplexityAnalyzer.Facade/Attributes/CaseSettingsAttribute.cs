@@ -1,5 +1,3 @@
-using System;
-
 namespace CilComplexityAnalyzer.TestGenerator.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
