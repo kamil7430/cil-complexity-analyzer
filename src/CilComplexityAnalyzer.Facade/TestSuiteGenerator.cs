@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CilComplexityAnalyzer.Facade.TestGenerator;
+namespace CilComplexityAnalyzer.Facade;
 
 [Generator]
 public class TestSuiteGenerator : IIncrementalGenerator
