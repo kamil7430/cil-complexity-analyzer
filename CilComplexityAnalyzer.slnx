@@ -7,7 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.ContainerWorker.Tests/CilComplexityAnalyzer.ContainerWorker.Tests.csproj" />
+    <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
-    <Project Path="tests/CilComplexityAnalyzer.TestGenerator.Tests/CilComplexityAnalyzer.TestGenerator.Tests.csproj" />
   </Folder>
 </Solution>

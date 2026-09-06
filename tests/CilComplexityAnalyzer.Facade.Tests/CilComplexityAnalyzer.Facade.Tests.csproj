@@ -15,12 +15,12 @@
     <PackageReference Include="MSTest.TestFramework" Version="4.3.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Submissions/**/*.cs" />
-    <None Include="Submissions/**/*.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+<!--  <ItemGroup>-->
+<!--    <Compile Remove="Submissions/**/*.cs" />-->
+<!--    <None Include="Submissions/**/*.cs">-->
+<!--      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--    </None>-->
+<!--  </ItemGroup>-->
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
