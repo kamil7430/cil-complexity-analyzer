@@ -6,6 +6,8 @@ namespace CilComplexityAnalyzer.TestExecutor.Contract;
 public abstract class TestSuite
 {
     // Public TestSuite contract methods
+    public abstract string StudentSolutionSourceCode();
+    public abstract string TestSuiteSourceCode();
     public virtual TestSuiteSettings? Settings() 
         => null;
     public virtual ILogger? Logger() 
@@ -20,6 +22,8 @@ public abstract class TestSuite
         => GetType().GetMembers().Select(m => m.ReflectedType).Where(t => t?.IsSubclassOf(typeof(TestCase)) ?? false)!;
     internal TestCase[] TestCases
         => TestCaseTypes.Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray();
-    internal SyntaxTree? SyntaxTree { get; set; }
-    internal byte[]? AssemblyBytes { get; set; }
+    internal SyntaxTree? StudentSolutionSyntaxTree { get; set; }
+    internal byte[]? StudentSolutionAssemblyBytes { get; set; }
+    internal SyntaxTree? TestSuiteSyntaxTree { get; set; }
+    internal byte[]? TestSuiteAssemblyBytes { get; set; }
 }

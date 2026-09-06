@@ -40,7 +40,7 @@ internal static class Executor
         var container = new ContainerBuilder(DockerImage)
             .WithCleanUp(true)
             .WithResourceMapping(
-                resourceContent: testSuite.AssemblyBytes,
+                resourceContent: testSuite.StudentSolutionAssemblyBytes,
                 target: FilePath.Of(Paths.StudentSolutionDllPath)
             ).WithResourceMapping(
                 resourceContent: testDatasBytes,

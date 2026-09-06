@@ -22,13 +22,13 @@ internal static class Compiler
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning compilation.");
 
-        if (testSuite.SyntaxTree is null)
+        if (testSuite.StudentSolutionSyntaxTree is null)
             throw new NullReferenceException("SyntaxTree is null! Did you run analyzer before compiler?");
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
             assemblyName: testSuite.Name, 
-            syntaxTrees: [testSuite.SyntaxTree],
+            syntaxTrees: [testSuite.StudentSolutionSyntaxTree],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
         ).Emit(stream, cancellationToken: testSuite.CancellationToken());
@@ -44,7 +44,7 @@ internal static class Compiler
         }
             
         stream.Seek(0, SeekOrigin.Begin);
-        testSuite.AssemblyBytes = stream.ToArray();
+        testSuite.StudentSolutionAssemblyBytes = stream.ToArray();
         return testSuite;
     }
 }

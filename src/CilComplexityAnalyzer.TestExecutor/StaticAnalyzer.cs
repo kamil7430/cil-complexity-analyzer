@@ -14,7 +14,7 @@ internal static class StaticAnalyzer
             text: testSuite.SourceCode(),
             cancellationToken: testSuite.CancellationToken()
         );
-        testSuite.SyntaxTree = syntaxTree;
+        testSuite.StudentSolutionSyntaxTree = syntaxTree;
 
         // TODO: actual analysis ;>
         

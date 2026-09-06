@@ -28,12 +28,12 @@ internal static class CilInstructionInjector
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection.");
 
-        if (testSuite.AssemblyBytes is null)
+        if (testSuite.StudentSolutionAssemblyBytes is null)
         {
             throw new InvalidOperationException("AssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
         }
 
-        using var inputStream = new MemoryStream(testSuite.AssemblyBytes);
+        using var inputStream = new MemoryStream(testSuite.StudentSolutionAssemblyBytes);
         using var outputStream = new MemoryStream();
 
         // Wczytanie skompilowanego assembly z pamięci
@@ -67,7 +67,7 @@ internal static class CilInstructionInjector
 
         // Zapisanie zmodyfikowanego assembly z powrotem do pamięci
         assemblyDef.Write(outputStream);
-        testSuite.AssemblyBytes = outputStream.ToArray();
+        testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
 
         testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] CIL instruction injection completed.");
 
