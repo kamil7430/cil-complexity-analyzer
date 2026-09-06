@@ -1,6 +1,6 @@
 namespace CilComplexityAnalyzer.ContainerWorker;
 
-public static class Consts
+public static class Paths
 {
     public const string StudentSolutionDllPath = "/app/student-solution.dll";
     public const string TestDataJsonPath = "/app/test-data.json";

@@ -41,10 +41,10 @@ internal static class Executor
             .WithCleanUp(true)
             .WithResourceMapping(
                 resourceContent: testSuite.AssemblyBytes,
-                target: FilePath.Of(Consts.StudentSolutionDllPath)
+                target: FilePath.Of(Paths.StudentSolutionDllPath)
             ).WithResourceMapping(
                 resourceContent: testDatasBytes,
-                target: FilePath.Of(Consts.TestDataJsonPath)
+                target: FilePath.Of(Paths.TestDataJsonPath)
             ).Build();
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Starting test container.");
@@ -75,7 +75,7 @@ internal static class Executor
                 Thread.Sleep(TimeSpan.FromSeconds(1));
                 try
                 {
-                    resultBytes = container.ReadFileAsync(Consts.ResultsJsonPath(i), testSuite.CancellationToken())
+                    resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i), testSuite.CancellationToken())
                         .Result;
                 }
                 catch (AggregateException e)
