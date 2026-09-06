@@ -63,21 +63,20 @@ internal class Program
             WriteFailureAndExit("TestSuite base not found.");
         }
         
-        var testCaseBase = types.FirstOrDefault(t => t.Name == $"{contract}.TestCase");
+        var testCaseBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestCase");
         if (testCaseBase == null)
         {
             WriteFailureAndExit("TestCase base not found.");
         }
         
-        var testSuite = types.FirstOrDefault(t => t.IsAssignableTo(testSuiteBase));
+        var testSuite = types.FirstOrDefault(t => t != testSuiteBase && t.IsAssignableTo(testSuiteBase));
         if (testSuite == null)
         {
             WriteFailureAndExit("Concrete TestSuite not found.");
         }
 
-        var testCases = testSuite!.GetMembers()
-            .Select(m => m.ReflectedType)
-            .Where(t => t?.IsAssignableTo(testCaseBase) ?? false)
+        var testCases = testSuite!.GetNestedTypes()
+            .Where(t => t.IsAssignableTo(testCaseBase))
             .ToArray();
         if (testCases.Length == 0)
         {
@@ -123,9 +122,15 @@ internal class Program
             assertMethod!.Invoke(testCase, null);
             Debug("Invoked Assert");
         }
-        catch (AssertFailedException e)
+        catch (TargetInvocationException e)
         {
-            writeResult(new TestResult(false, complexity, $"Assertion failed:\n{e.Message}"));
+            if (e.InnerException is AssertFailedException ie)
+            {
+                writeResult(new TestResult(false, complexity, $"Assertion failed:\n{ie.Message}"));
+                return;
+            }
+
+            throw;
         }
         
         writeResult(new TestResult(true, complexity, null));
