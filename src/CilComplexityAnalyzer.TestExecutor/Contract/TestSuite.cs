@@ -6,8 +6,6 @@ namespace CilComplexityAnalyzer.TestExecutor.Contract;
 public abstract class TestSuite
 {
     // Public TestSuite contract methods
-    public abstract string SourceCode();
-    public abstract string MethodToInvoke();
     public virtual TestSuiteSettings? Settings() 
         => null;
     public virtual ILogger? Logger() 
