@@ -11,13 +11,7 @@ namespace CilComplexityAnalyzer.TestExecutor;
 internal static class Executor
 {
     private const string DockerImageTag = "docker.io/kamil7430/cil-complexity-analyzer-container-worker:main";
-    private static readonly IImage DockerImage = new DockerImage(DockerImageTag);
-    
-    internal static void Initialize(ILogger? logger)
-    {
-        logger?.LogInformation("Initializing DockerImage...");
-        _ = DockerImage;
-    }
+    private static readonly Lazy<IImage> DockerImage = new(() => new DockerImage(DockerImageTag));
 
     internal static IEnumerable<Contract.TestResult> Execute(this TestSuite testSuite)
         => testSuite.Settings()?.Containerized switch
@@ -37,7 +31,7 @@ internal static class Executor
         var testDatasBytes = JsonSerializer.SerializeToUtf8Bytes(testDatas);
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Building test container.");
-        var container = new ContainerBuilder(DockerImage)
+        var container = new ContainerBuilder(DockerImage.Value)
             .WithCleanUp(true)
             .WithResourceMapping(
                 resourceContent: testSuite.StudentSolutionAssemblyBytes,

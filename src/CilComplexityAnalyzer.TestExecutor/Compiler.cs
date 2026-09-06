@@ -11,12 +11,6 @@ internal static class Compiler
         outputKind: OutputKind.DynamicallyLinkedLibrary,
         optimizationLevel: OptimizationLevel.Debug
     );
-
-    internal static void Initialize(ILogger? logger)
-    {
-        logger?.LogInformation("Initializing CompilationOptions...");
-        _ = CompilationOptions;
-    }
     
     internal static TestSuite CompileStudentSolution(this TestSuite testSuite)
     {

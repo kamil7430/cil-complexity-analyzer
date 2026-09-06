@@ -12,9 +12,6 @@ public class TestExecutor
     private int _i = 0;
     private bool _started = false;
     private Lock _startedLock = new();
-    
-    private static bool _initialized = false;
-    private static Lock _initializedBoolLock = new();
 
     public TestExecutor(TestSuite testSuite)
     {
@@ -38,8 +35,6 @@ public class TestExecutor
         
         Task.Run(() =>
         {
-            Initialize(_testSuite.Logger());
-
             _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Beginning test execution.");
             try
             {
@@ -89,25 +84,5 @@ public class TestExecutor
     {
         await _resultsTcs[i].Task;
         return _results[i]!;
-    }
-
-    public static void Initialize(ILogger? logger)
-    {
-        if (_initialized)
-            return;
-        
-        lock (_initializedBoolLock)
-        {
-            if (_initialized)
-                return;
-            
-            logger?.LogInformation("TestExecutor is uninitialized. Beginning initialization.");
-            
-            Compiler.Initialize(logger);
-            Executor.Initialize(logger);
-            _initialized = true;
-            
-            logger?.LogInformation("TestExecutor initialization finished.");
-        }
     }
 }
