@@ -20,7 +20,7 @@
 
 ## Milestone II -- End-to-end testing flow
 
-- Deadline: 26-08-2026 (to be confirmed)
+- Deadline: 09-09-2026
 - Scope (planned):
   - Test Framework:
     - MSTest code-gen wrapper (PoC)
