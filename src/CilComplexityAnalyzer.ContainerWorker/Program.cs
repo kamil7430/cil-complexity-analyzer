@@ -18,19 +18,11 @@ internal class Program
             _originalStdout = Console.Out;
             Console.SetOut(TextWriter.Null);
 
-            // read all test datas from file
-            var json = File.ReadAllBytes(Paths.TestDataJsonPath);
-            Debug($"Received json: {Encoding.UTF8.GetString(json)}");
-            
-            var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
-                throw new ArgumentException("Json is 'null'.");
-            Debug("Deserialized");
-
-            // load student assembly
-            var assembly = Assembly.LoadFrom(Paths.StudentSolutionDllPath);
+            // load test suite assembly
+            var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
             Debug("Loaded assembly");
 
-            Execute(dataArray, assembly, WriteResult);
+            Execute(assembly, WriteResult);
         }
         catch (Exception e)
         {
@@ -38,53 +30,20 @@ internal class Program
         }
     }
 
-    internal static void Execute(TestData[] dataArray, Assembly assembly, Action<TestResult> writeResult)
+    internal static void Execute(Assembly assembly, Action<TestResult> writeResult)
     {
-        // find the method to invoke
-        var types = assembly.GetTypes().Where(t => t.GetMember(dataArray[0].MethodToInvoke).Length == 1).ToArray();
-        if (types.Length != 1)
-        {
-            WriteFailureAndExit($"There are {types.Length} types containing {dataArray[0].MethodToInvoke} " +
-                $"method. Expected exactly one.");
-        }
+        var testCases = FindAllTestCases(assembly);
+        Debug($"Found {testCases.Length} TestCase types.");
 
-        var type = types[0];
-        Debug($"Found type: {type}");
-        var method = type.GetMethod(dataArray[0].MethodToInvoke)!;
-        Debug($"Found method: {method}");
-
+        var testCasesSorted = ActivateAndSortTestCases(testCases);
+        Debug("Activated and sorted test cases.");
+        
         // execute tests sequentially and report every output immediately
-        foreach (var data in dataArray)
+        foreach (var testCase in testCasesSorted)
         {
-            var obj = Activator.CreateInstance(type);
-            Debug("Created instance");
-
             try
             {
-                var input = data.Input;
-                var parameters = method.GetParameters();
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    CorrectType(ref input![i], parameters[i].ParameterType);
-                }
-
-                var returnedObj = method.Invoke(obj, input);
-                Debug("Invoked");
-
-                // TODO: assert time elapsed
-                var complexity = -1L;
-
-                var output = data.Output;
-                CorrectType(ref output, method.ReturnType);
-                if (returnedObj != null && !returnedObj.Equals(output))
-                {
-                    writeResult(new TestResult(false, complexity,
-                        $"Outputs don't match!\nExpected: {output}\nActual: {returnedObj}"));
-                }
-                else
-                {
-                    writeResult(new TestResult(true, complexity, null));
-                }
+                PerformSingleTest(testCase, writeResult);
             }
             catch (Exception e)
             {
@@ -93,16 +52,83 @@ internal class Program
         }
     }
 
-    internal static void CorrectType(ref object? input, Type targetType)
+    private static Type[] FindAllTestCases(Assembly assembly)
     {
-        var inputType = input?.GetType();
-        Debug($"Converting from {inputType} to {targetType}.");
-        if (inputType == targetType) return;
-        input = input switch
+        const string contract = "CilComplexityAnalyzer.TestExecutor.Contract";
+        var types = assembly.GetTypes();
+        
+        var testSuiteBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestSuite");
+        if (testSuiteBase == null)
         {
-            JsonElement j => JsonSerializer.Deserialize(j.GetRawText(), targetType),
-            _ => throw new ArgumentException($"Invalid cast from {inputType} to {targetType}!"),
-        };
+            WriteFailureAndExit("TestSuite base not found.");
+        }
+        
+        var testCaseBase = types.FirstOrDefault(t => t.Name == $"{contract}.TestCase");
+        if (testCaseBase == null)
+        {
+            WriteFailureAndExit("TestCase base not found.");
+        }
+        
+        var testSuite = types.FirstOrDefault(t => t.IsAssignableTo(testSuiteBase));
+        if (testSuite == null)
+        {
+            WriteFailureAndExit("Concrete TestSuite not found.");
+        }
+
+        var testCases = testSuite!.GetMembers()
+            .Select(m => m.ReflectedType)
+            .Where(t => t?.IsAssignableTo(testCaseBase) ?? false)
+            .ToArray();
+        if (testCases.Length == 0)
+        {
+            WriteFailureAndExit("No TestCases found.");
+        }
+        
+        return testCases!;
+    }
+
+    private static object[] ActivateAndSortTestCases(Type[] testCases)
+    {
+        var objects = testCases.Select(c => Activator.CreateInstance(c)!).ToArray();
+        objects.Sort((x, y) =>
+        {
+            var a = (int)x.GetType().GetMethod("TestNumber")!.Invoke(x, null)!;
+            var b = (int)y.GetType().GetMethod("TestNumber")!.Invoke(y, null)!;
+            return a.CompareTo(b);
+        });
+        return objects;
+    }
+
+    private static void PerformSingleTest(object testCase, Action<TestResult> writeResult)
+    {
+        var arrangeMethod = testCase.GetType().GetMethod("Arrange");
+        var actMethod = testCase.GetType().GetMethod("Act");
+        var assertMethod = testCase.GetType().GetMethod("Assert");
+
+        arrangeMethod!.Invoke(testCase, null);
+        Debug("Invoked Arrange");
+        
+        actMethod!.Invoke(testCase, null);
+        Debug("Invoked Act");
+        
+        var complexity = -1L;
+        // TODO: assert time elapsed
+        // if (complexity > ???)
+        // {
+        //     writeResult(new TestResult(false, complexity, $"Too high complexity!\nExpected: {}\nActual: {complexity}"));
+        // }
+
+        try
+        {
+            assertMethod!.Invoke(testCase, null);
+            Debug("Invoked Assert");
+        }
+        catch (AssertFailedException e)
+        {
+            writeResult(new TestResult(false, complexity, $"Assertion failed:\n{e.Message}"));
+        }
+        
+        writeResult(new TestResult(true, complexity, null));
     }
     
     private static void WriteResult(TestResult result)
