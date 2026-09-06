@@ -6,15 +6,30 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class StaticAnalyzer
 {
-    internal static TestSuite Analyze(this TestSuite testSuite)
+    internal static TestSuite AnalyzeStudentSolution(this TestSuite testSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning static analysis.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning student solution static analysis.");
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(
-            text: testSuite.SourceCode(),
+        var studentSolutionSyntaxTree = CSharpSyntaxTree.ParseText(
+            text: testSuite.StudentSolutionSourceCode(),
             cancellationToken: testSuite.CancellationToken()
         );
-        testSuite.StudentSolutionSyntaxTree = syntaxTree;
+        testSuite.StudentSolutionSyntaxTree = studentSolutionSyntaxTree;
+
+        // TODO: actual analysis ;>
+        
+        return testSuite;
+    }
+    
+    internal static TestSuite AnalyzeTestSuite(this TestSuite testSuite)
+    {
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test suite static analysis.");
+
+        var testSuiteSyntaxTree = CSharpSyntaxTree.ParseText(
+            text: testSuite.TestSuiteSourceCode(),
+            cancellationToken: testSuite.CancellationToken()
+        );
+        testSuite.TestSuiteSyntaxTree = testSuiteSyntaxTree;
 
         // TODO: actual analysis ;>
         

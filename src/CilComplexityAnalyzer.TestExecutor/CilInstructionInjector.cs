@@ -1,9 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.TestExecutor.Contract;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -24,10 +23,10 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class CilInstructionInjector
 {
-    internal static TestSuite InjectCil(this TestSuite testSuite)
+    internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection.");
-
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
+/*
         if (testSuite.StudentSolutionAssemblyBytes is null)
         {
             throw new InvalidOperationException("AssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
@@ -70,7 +69,7 @@ internal static class CilInstructionInjector
         testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
 
         testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] CIL instruction injection completed.");
-
+*/
         return testSuite;
     }
 

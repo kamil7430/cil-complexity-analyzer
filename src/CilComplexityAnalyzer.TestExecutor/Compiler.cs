@@ -18,16 +18,16 @@ internal static class Compiler
         _ = CompilationOptions;
     }
     
-    internal static TestSuite Compile(this TestSuite testSuite)
+    internal static TestSuite CompileStudentSolution(this TestSuite testSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning compilation.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning student solution compilation.");
 
         if (testSuite.StudentSolutionSyntaxTree is null)
-            throw new NullReferenceException("SyntaxTree is null! Did you run analyzer before compiler?");
+            throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: testSuite.Name, 
+            assemblyName: "StudentSolution", 
             syntaxTrees: [testSuite.StudentSolutionSyntaxTree],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
@@ -45,6 +45,29 @@ internal static class Compiler
             
         stream.Seek(0, SeekOrigin.Begin);
         testSuite.StudentSolutionAssemblyBytes = stream.ToArray();
+        return testSuite;
+    }
+
+    internal static TestSuite CompileTestSuite(this TestSuite testSuite)
+    {
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test suite compilation.");
+        
+        if (testSuite.TestSuiteSyntaxTree is null)
+            throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
+        
+        using var stream = new MemoryStream();
+        var compilationResult = CSharpCompilation.Create(
+            assemblyName: testSuite.Name, 
+            syntaxTrees: [testSuite.TestSuiteSyntaxTree],
+            references: Basic.Reference.Assemblies.Net100.References.All,
+            options: CompilationOptions
+        ).Emit(stream, cancellationToken: testSuite.CancellationToken());
+
+        if (!compilationResult.Success)
+            throw new TestExecutionException("Failed to compile test suite.");
+        
+        stream.Seek(0, SeekOrigin.Begin);
+        testSuite.TestSuiteAssemblyBytes = stream.ToArray();
         return testSuite;
     }
 }
