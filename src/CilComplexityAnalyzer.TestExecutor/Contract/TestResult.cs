@@ -4,4 +4,4 @@ using OneOf;
 namespace CilComplexityAnalyzer.TestExecutor.Contract;
 
 [GenerateOneOf]
-public partial class TestResult : OneOfBase<Success, Failure> { }
+public partial class TestResult : OneOfBase<Success, Failure>;

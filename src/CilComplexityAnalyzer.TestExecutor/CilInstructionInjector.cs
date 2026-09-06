@@ -26,7 +26,7 @@ internal static class CilInstructionInjector
 {
     internal static TestSuite InjectCil(this TestSuite testSuite)
     {
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning CIL instruction injection.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection.");
 
         if (testSuite.AssemblyBytes is null)
         {
