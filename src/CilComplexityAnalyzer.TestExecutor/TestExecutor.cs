@@ -43,7 +43,8 @@ public class TestExecutor
             _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Beginning test execution.");
             try
             {
-                foreach (var result in _testSuite.Analyze().Compile().InjectCil().Execute())
+                _testSuite.Analyze().Compile().InjectCil().Link();
+                foreach (var result in _testSuite.Execute())
                 {
                     _results[_i] = result;
                     _resultsTcs[_i].SetResult(true);
