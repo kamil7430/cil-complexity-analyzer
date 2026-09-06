@@ -83,20 +83,12 @@ internal class Program
             WriteFailureAndExit("No TestCases found.");
         }
         
-        return testCases!;
+        return testCases;
     }
 
-    private static object[] ActivateAndSortTestCases(Type[] testCases)
-    {
-        var objects = testCases.Select(c => Activator.CreateInstance(c)!).ToArray();
-        objects.Sort((x, y) =>
-        {
-            var a = (int)x.GetType().GetMethod("TestNumber")!.Invoke(x, null)!;
-            var b = (int)y.GetType().GetMethod("TestNumber")!.Invoke(y, null)!;
-            return a.CompareTo(b);
-        });
-        return objects;
-    }
+    private static IEnumerable<object> ActivateAndSortTestCases(Type[] testCases)
+        => testCases.Select(c => Activator.CreateInstance(c)!)
+            .OrderBy(o => o.GetType().GetMethod("TestNumber")!.Invoke(o, null)!);
 
     private static void PerformSingleTest(object testCase, Action<TestResult> writeResult)
     {
