@@ -24,37 +24,27 @@ internal static class Executor
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning code execution.");
 
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Serializing test suite.");
-        var testDatas = testSuite.TestCases
-            .Select(t => new TestData(testSuite.MethodToInvoke(), t.Input, t.Output))
-            .ToArray();
-        var testDatasBytes = JsonSerializer.SerializeToUtf8Bytes(testDatas);
-
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Building test container.");
         var container = new ContainerBuilder(DockerImage.Value)
             .WithCleanUp(true)
             .WithResourceMapping(
-                resourceContent: testSuite.StudentSolutionAssemblyBytes,
-                target: FilePath.Of(Paths.StudentSolutionDllPath)
-            ).WithResourceMapping(
-                resourceContent: testDatasBytes,
-                target: FilePath.Of(Paths.TestDataJsonPath)
+                resourceContent: testSuite.TestSuiteAssemblyBytes,
+                target: FilePath.Of(Paths.TestSuiteDllPath)
             ).Build();
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Starting test container.");
         container.StartAsync(testSuite.CancellationToken()).Wait();
 
-        var globalTimeoutMs = testSuite.TestCases.Sum(t => t.Settings().TimeoutMs);
+        var globalTimeoutMs = testSuite.TestCases.Value.Sum(t => t.Settings().TimeoutMs);
         var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs) + TimeSpan.FromSeconds(20);
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Global container timeout set to " +
-                                         $"{globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
+            $"{globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
 
-        List<Contract.TestResult> results = [];
-        for (int i = 0; i < testDatas.Length; i++)
+        for (int i = 0; i < testSuite.TestCases.Value.Length; i++)
         {
-            var timeoutMs = testSuite.TestCases[i].Settings().TimeoutMs;
+            var timeoutMs = testSuite.TestCases.Value[i].Settings().TimeoutMs;
             testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Waiting for test {i + 1} to finish " +
-                                             $"(timeout is {timeoutMs} ms).");
+                $"(timeout is {timeoutMs} ms).");
 
             byte[]? resultBytes = null;
             while (resultBytes is null)
@@ -62,8 +52,9 @@ internal static class Executor
                 if (globalTimeout <= DateTime.UtcNow)
                 {
                     testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Test container timed out!");
-                    results.Add(new Failure("Test container timed out!"));
-                    return results.ToArray();
+                    for (int j = i; j < testSuite.TestCases.Value.Length; j++)
+                        yield return new Failure("Test container timed out!");
+                    yield break;
                 }
 
                 Thread.Sleep(TimeSpan.FromSeconds(1));
@@ -75,27 +66,18 @@ internal static class Executor
                 catch (AggregateException e)
                 {
                     if (e.InnerException is not FileNotFoundException)
-                    {
                         throw e.InnerException ?? e;
-                    }
                 }
             }
 
             var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
 
-            if (result.Success)
+            yield return result.Success switch
             {
-                results.Add(new Success(
-                    result.MeasuredComplexity!.Value
-                ));
-            }
-            else
-            {
-                results.Add(new Failure(result.Message));
-            }
+                true => new Success(result.MeasuredComplexity!.Value),
+                _ => new Failure(result.Message),
+            };
         }
-
-        return results.ToArray();
     }
 
     private static IEnumerable<Contract.TestResult> ExecuteLocally(TestSuite testSuite)

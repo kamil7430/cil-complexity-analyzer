@@ -16,7 +16,7 @@ public class TestExecutor
     public TestExecutor(TestSuite testSuite)
     {
         _testSuite = testSuite;
-        var length = testSuite.TestCases.Length;
+        var length = testSuite.TestCases.Value.Length;
         _results = new TestResult[length];
         _resultsTcs = new TaskCompletionSource<bool>[length];
     }
