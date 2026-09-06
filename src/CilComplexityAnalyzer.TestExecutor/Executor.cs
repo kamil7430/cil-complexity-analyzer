@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Channels;
 using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
