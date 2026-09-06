@@ -7,48 +7,51 @@ namespace CilComplexityAnalyzer.ContainerWorker;
 
 public class Program
 {
-    private static readonly TextWriter OriginalStdout = Console.Out;
+    private static TextWriter? _originalStdout;
     private static int _testNo = 0;
     
     internal static void Main(string[] _)
     {
+        // load test suite assembly
+        var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
+        Debug("Loaded assembly");
+        
+        Execute(assembly, WriteResult);
+    }
+
+    public static void Execute(Assembly assembly, Action<TestResult> writeResult)
+    {
         try
         {
-            // load test suite assembly
-            var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
-            Debug("Loaded assembly");
+            // discard any writes
+            _originalStdout = Console.Out;
+            Console.SetOut(TextWriter.Null);
 
-            Execute(assembly, WriteResult);
+            var testCases = FindAllTestCases(assembly);
+            Debug($"Found {testCases.Length} TestCase types.");
+
+            var testCasesSorted = ActivateAndSortTestCases(testCases);
+            Debug("Activated and sorted test cases.");
+
+            // execute tests sequentially and report every output immediately
+            foreach (var testCase in testCasesSorted)
+            {
+                try
+                {
+                    PerformSingleTest(testCase, writeResult);
+                }
+                catch (Exception e)
+                {
+                    writeResult(new TestResult(false, null, $"Unhandled exception: {e.Message}"));
+                }
+            }
         }
         catch (Exception e)
         {
             WriteFailureAndExit($"Internal worker exception: {e.Message}");
         }
-    }
-
-    public static void Execute(Assembly assembly, Action<TestResult> writeResult)
-    {
-        // discard any writes
-        Console.SetOut(TextWriter.Null);
-
-        var testCases = FindAllTestCases(assembly);
-        Debug($"Found {testCases.Length} TestCase types.");
-
-        var testCasesSorted = ActivateAndSortTestCases(testCases);
-        Debug("Activated and sorted test cases.");
         
-        // execute tests sequentially and report every output immediately
-        foreach (var testCase in testCasesSorted)
-        {
-            try
-            {
-                PerformSingleTest(testCase, writeResult);
-            }
-            catch (Exception e)
-            {
-                writeResult(new TestResult(false, null, $"Unhandled exception: {e.Message}"));
-            }
-        }
+        Console.SetOut(_originalStdout!);
     }
 
     private static Type[] FindAllTestCases(Assembly assembly)
@@ -145,6 +148,6 @@ public class Program
     [Conditional("DEBUG")]
     private static void Debug(string message)
     {
-        OriginalStdout.WriteLine(message);
+        _originalStdout?.WriteLine(message);
     }
 }
