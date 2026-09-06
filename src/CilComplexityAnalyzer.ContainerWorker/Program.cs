@@ -5,19 +5,15 @@ using System.Text.Json;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
-internal class Program
+public class Program
 {
-    private static TextWriter? _originalStdout;
+    private static readonly TextWriter OriginalStdout = Console.Out;
     private static int _testNo = 0;
     
     internal static void Main(string[] _)
     {
         try
         {
-            // discard any writes
-            _originalStdout = Console.Out;
-            Console.SetOut(TextWriter.Null);
-
             // load test suite assembly
             var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
             Debug("Loaded assembly");
@@ -30,8 +26,11 @@ internal class Program
         }
     }
 
-    internal static void Execute(Assembly assembly, Action<TestResult> writeResult)
+    public static void Execute(Assembly assembly, Action<TestResult> writeResult)
     {
+        // discard any writes
+        Console.SetOut(TextWriter.Null);
+
         var testCases = FindAllTestCases(assembly);
         Debug($"Found {testCases.Length} TestCase types.");
 
@@ -146,6 +145,6 @@ internal class Program
     [Conditional("DEBUG")]
     private static void Debug(string message)
     {
-        _originalStdout?.WriteLine(message);
+        OriginalStdout.WriteLine(message);
     }
 }

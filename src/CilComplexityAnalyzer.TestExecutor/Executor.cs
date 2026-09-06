@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading.Channels;
 using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
@@ -57,7 +60,6 @@ internal static class Executor
                     yield break;
                 }
 
-                Thread.Sleep(TimeSpan.FromSeconds(1));
                 try
                 {
                     resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i), testSuite.CancellationToken())
@@ -68,6 +70,7 @@ internal static class Executor
                     if (e.InnerException is not FileNotFoundException)
                         throw e.InnerException ?? e;
                 }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
             var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
@@ -82,6 +85,24 @@ internal static class Executor
 
     private static IEnumerable<Contract.TestResult> ExecuteLocally(TestSuite testSuite)
     {
-        
+        var assembly = Assembly.Load(testSuite.TestSuiteAssemblyBytes!);
+        var results = new BlockingCollection<Contract.TestResult>(testSuite.TestCases.Value.Length);
+
+        Task.Run(() =>
+        {
+            ContainerWorker.Program.Execute(assembly, result =>
+            {
+                results.Add(result.Success switch
+                {
+                    true => new Success(result.MeasuredComplexity!.Value),
+                    _ => new Failure(result.Message),
+                });
+            });
+            
+            results.CompleteAdding();
+        });
+
+        foreach (var result in results.GetConsumingEnumerable(testSuite.CancellationToken()))
+            yield return result;
     }
 }
