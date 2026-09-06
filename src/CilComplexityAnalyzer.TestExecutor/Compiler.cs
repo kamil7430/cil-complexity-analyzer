@@ -20,18 +20,18 @@ internal static class Compiler
     
     internal static TestSuite Compile(this TestSuite testSuite)
     {
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] Beginning compilation.");
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning compilation.");
 
         if (testSuite.SyntaxTree is null)
             throw new NullReferenceException("SyntaxTree is null! Did you run analyzer before compiler?");
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: testSuite.NameOrHash, 
+            assemblyName: testSuite.Name, 
             syntaxTrees: [testSuite.SyntaxTree],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
-        ).Emit(stream, cancellationToken: testSuite.CancellationToken);
+        ).Emit(stream, cancellationToken: testSuite.CancellationToken());
 
         if (!compilationResult.Success)
         {

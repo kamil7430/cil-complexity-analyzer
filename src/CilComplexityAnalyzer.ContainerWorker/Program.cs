@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
-[assembly: InternalsVisibleTo("CilComplexityAnalyzer.ContainerWorker.Tests")]
 namespace CilComplexityAnalyzer.ContainerWorker;
 
 internal class Program
@@ -21,7 +19,7 @@ internal class Program
             Console.SetOut(TextWriter.Null);
 
             // read all test datas from file
-            var json = File.ReadAllBytes(Consts.TestDataJsonPath);
+            var json = File.ReadAllBytes(Paths.TestDataJsonPath);
             Debug($"Received json: {Encoding.UTF8.GetString(json)}");
             
             var dataArray = JsonSerializer.Deserialize<TestData[]>(json) ??
@@ -29,7 +27,7 @@ internal class Program
             Debug("Deserialized");
 
             // load student assembly
-            var assembly = Assembly.LoadFrom(Consts.StudentSolutionDllPath);
+            var assembly = Assembly.LoadFrom(Paths.StudentSolutionDllPath);
             Debug("Loaded assembly");
 
             Execute(dataArray, assembly, WriteResult);
@@ -109,7 +107,7 @@ internal class Program
     
     private static void WriteResult(TestResult result)
     {
-        using var file = File.Open(Consts.ResultsJsonPath(_testNo), FileMode.CreateNew);
+        using var file = File.Open(Paths.ResultsJsonPath(_testNo), FileMode.CreateNew);
         var json = JsonSerializer.SerializeToUtf8Bytes(result);
         file.Write(json);
         _testNo++;
