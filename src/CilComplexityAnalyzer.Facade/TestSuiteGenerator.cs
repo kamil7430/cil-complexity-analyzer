@@ -16,7 +16,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
     {
         var suites = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (node, _) => node is ClassDeclarationSyntax, // { BaseList: not null },
+                predicate: static (node, _) => node is ClassDeclarationSyntax, 
                 transform: static (ctx, _) => GetSuiteOrNull(ctx))
             .Where(static suite => suite is not null)
             .Select(static (suite, _) => suite!)
@@ -38,78 +38,49 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (suiteSymbol.ContainingType is not null)
             return null;
 
-        if (suiteSymbol.IsAbstract)
-            return null;
-        
-        if (!InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
+        if (suiteSymbol.IsAbstract || !InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
-        var suiteAttr = suiteSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name is "MethodToInvokeAttribute" or "MethodToInvoke");
+        var testSuiteSource = classDecl.SyntaxTree.ToString();
 
-        string? defaultSuiteMethod = suiteAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+        var studentAttr = suiteSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name is "StudentSolutionAttribute" or "StudentSolution");
 
-        var casesBuilder = ImmutableArray.CreateBuilder<CaseInfo>();
+        string studentSourceCode = string.Empty;
 
-        foreach (var member in suiteSymbol.GetTypeMembers())
+        if (studentAttr is not null && studentAttr.ConstructorArguments.Length > 0)
         {
-            if (InheritsFrom(member, TestCaseBaseFullName))
+            if (studentAttr.ConstructorArguments[0].Value is INamedTypeSymbol studentTypeSymbol)
             {
-                var caseInfo = GetCaseInfo(member, defaultSuiteMethod);
-                casesBuilder.Add(caseInfo);
+                var syntaxReference = studentTypeSymbol.DeclaringSyntaxReferences.FirstOrDefault();
+                if (syntaxReference is not null)
+                {
+                    studentSourceCode = syntaxReference.SyntaxTree.ToString();
+                }
             }
         }
 
-        var isContainerized = suiteSymbol.GetAttributes()
-            .Any(a => a.AttributeClass?.Name is "IsContainerizedAttribute" or "IsContainerized");
+        var cases = suiteSymbol.GetTypeMembers()
+            .Where(m => !m.IsAbstract && InheritsFrom(m, TestCaseBaseFullName))
+            .Select(m => new CaseInfo(m.Name))
+            .ToImmutableArray();
 
-        var nameAttr = suiteSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name is "NameAttribute" or "Name");
-        
-        var name = nameAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+        string ns = suiteSymbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : suiteSymbol.ContainingNamespace.ToDisplayString();
+
+        string fullClassName = string.IsNullOrEmpty(ns)
+            ? suiteSymbol.Name
+            : $"{ns}.{suiteSymbol.Name}";
 
         return new SuiteInfo(
-            Namespace: suiteSymbol.ContainingNamespace.ToDisplayString(),
+            Namespace: ns,
             ClassName: suiteSymbol.Name,
-            FullClassName: suiteSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-            Name: string.IsNullOrWhiteSpace(name) ? suiteSymbol.Name : name!,
-            IsContainerized: isContainerized,
-            Cases: casesBuilder.ToImmutable());
-    }
-
-    private static CaseInfo GetCaseInfo(INamedTypeSymbol caseSymbol, string? defaultSuiteMethod)
-    {
-        var settings = caseSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name is "CaseSettingsAttribute" or "CaseSettings" or "TestSettingsAttribute" or "TestSettings" or "SecretTestName");
-
-        long instructionCap = GetInstructionCap(settings, 1_000_000L);
-        var methodToInvokeAttr = caseSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.Name is "MethodToInvokeAttribute" or "MethodToInvoke");
-
-        string? methodName = null;
-        if (methodToInvokeAttr is not null && methodToInvokeAttr.ConstructorArguments.Length > 0)
-        {
-            methodName = methodToInvokeAttr.ConstructorArguments[0].Value as string;
-        }
-
-        methodName ??= defaultSuiteMethod;
-        var location = caseSymbol.Locations.FirstOrDefault();
-        
-        return new CaseInfo(caseSymbol.Name, instructionCap, methodName, location);
-    }
-
-    private static long GetInstructionCap(AttributeData? attr, long fallback)
-    {
-        if (attr is null) return fallback;
-
-        var namedArg = attr.NamedArguments.FirstOrDefault(a => a.Key == "InstructionCap");
-        if (namedArg.Value.Value is not null)
-            return Convert.ToInt64(namedArg.Value.Value);
-
-        if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is not null)
-            return Convert.ToInt64(attr.ConstructorArguments[0].Value);
-
-        return fallback;
+            FullClassName: fullClassName,
+            TestSuiteSource: testSuiteSource,
+            StudentSolutionSource: studentSourceCode,
+            Cases: cases
+        );
     }
 
     private static bool InheritsFrom(INamedTypeSymbol? symbol, string fullyQualifiedBaseName)
@@ -131,9 +102,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine("#nullable enable");
             sb.AppendLine("using Microsoft.VisualStudio.TestTools.UnitTesting;");
             sb.AppendLine("using System.Threading.Tasks;");
-            sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using ExecEngine = global::CilComplexityAnalyzer.TestExecutor.TestExecutor;");
+            sb.AppendLine("using CilComplexityAnalyzer.TestExecutor.Contract.Results;");
             sb.AppendLine();
 
             if (!string.IsNullOrEmpty(suite.Namespace) && suite.Namespace != "<global namespace>")
@@ -142,47 +111,51 @@ public class TestSuiteGenerator : IIncrementalGenerator
                 sb.AppendLine();
             }
 
+            sb.AppendLine($"public partial class {suite.ClassName}");
+            sb.AppendLine("{");
+            sb.AppendLine("    public override string StudentSolutionSourceCode() => \"\"\"");
+            sb.AppendLine(suite.StudentSolutionSource);
+            sb.AppendLine("\"\"\";");
+            sb.AppendLine();
+            sb.AppendLine("    public override string TestSuiteSourceCode() => \"\"\"");
+            sb.AppendLine(suite.TestSuiteSource);
+            sb.AppendLine("\"\"\";");
+            sb.AppendLine("}");
+            sb.AppendLine();
+            
             sb.AppendLine("[TestClass]");
             sb.AppendLine($"public partial class {suite.ClassName}_Tests");
             sb.AppendLine("{");
-            sb.AppendLine($"    private static string[] _results = new string[{suite.Cases.Length}];");
-            //sb.AppendLine("    private TestExecutor? _executor;");
+            sb.AppendLine($"    private static {suite.FullClassName} _suite = default!;");
+            sb.AppendLine("    private static global::CilComplexityAnalyzer.TestExecutor.TestExecutor _executor = default!;");
             sb.AppendLine();
             sb.AppendLine("    [ClassInitialize]");
             sb.AppendLine("    public static void Initialize(TestContext context)");
             sb.AppendLine("    {");
-            sb.AppendLine($"        var suiteInstance = new {suite.FullClassName}()");
-            //sb.AppendLine($"        var testResults = ExecEngine.Execute(suiteInstance);");
-            //fix with add two numbers tests
-            sb.AppendLine("        {");
-            sb.AppendLine("            SourceCode = string.Empty,");
-            sb.AppendLine("            MethodToInvoke = string.Empty,");
-            sb.AppendLine("            TestCases = default!");
-            sb.AppendLine("        };");
+            sb.AppendLine($"        _suite = new {suite.FullClassName}();");
+            sb.AppendLine($"        _executor = new global::CilComplexityAnalyzer.TestExecutor.TestExecutor(_suite);");
+            sb.AppendLine($"        _executor.BeginExecution();");
             sb.AppendLine("    }");
             sb.AppendLine();
 
-            var numberOfTests = 0;
-            foreach (var testCase in suite.Cases)
+            for (int i = 0; i < suite.Cases.Length; i++)
             {
+                var testCase = suite.Cases[i];
                 sb.AppendLine("    [TestMethod]");
                 sb.AppendLine($"    public async Task {testCase.Name}()");
                 sb.AppendLine("    {");
-                sb.AppendLine();
-                sb.AppendLine($"       // var testResult = await TestExecutor.GetResult(\"{testCase.Name}\");");
-                sb.AppendLine($"        var testResult =\" cos\";");
-                sb.AppendLine();
-                sb.AppendLine($"        _results[{numberOfTests}] = \"Success\";");
-                sb.AppendLine("        var typeName = testResult.GetType().Name;");
-                sb.AppendLine("        if (typeName == \"Failure\")");
-                sb.AppendLine("        {");
-                sb.AppendLine("            var message = testResult.GetType().GetProperty(\"Message\")?.GetValue(testResult)?.ToString() ?? \"Unknown failure\";");
-                sb.AppendLine($"            _results[{numberOfTests}] = message;");
-                sb.AppendLine($"            Assert.Fail($\"Test '{testCase.Name}' zakończył się niepowodzeniem: {{message}}\");");
-                sb.AppendLine("        }");
+                sb.AppendLine($"         var result = await _executor.GetResult({i});");
+                sb.AppendLine($"         if (result.IsT1)");
+                sb.AppendLine("         {");
+                sb.AppendLine("             var failure = result.AsT1;");
+                sb.AppendLine("             Assert.Fail(failure.Message ?? \"Test failed\");");
+                sb.AppendLine("         }");
                 sb.AppendLine("    }");
-                sb.AppendLine();
-                numberOfTests++;
+
+                if (i < suite.Cases.Length - 1)
+                {
+                    sb.AppendLine();
+                }
             }
 
             sb.AppendLine("}");
@@ -195,13 +168,17 @@ public class TestSuiteGenerator : IIncrementalGenerator
         string Namespace,
         string ClassName,
         string FullClassName,
-        string Name,
-        bool IsContainerized,
-        ImmutableArray<CaseInfo> Cases);
+        string TestSuiteSource,
+        string StudentSolutionSource,
+        ImmutableArray<CaseInfo> Cases
+    );
 
     private sealed record CaseInfo(
-        string Name, 
-        long InstructionCap, 
-        string? MethodName, 
-        Location? Location);
+        string Name
+        /*
+        long InstructionCap,
+        string? MethodName,
+        Location? Location
+         */
+    );
 }
