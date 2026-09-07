@@ -10,62 +10,24 @@ public partial class Lab01Evaluation : TestSuite
 {
     public class Case1 : TestCase
     {
-        public override int TestNumber()
-        {
-            throw new NotImplementedException();
-        }
+        public override int TestNumber() => 0;
 
-        public override TestCaseSettings Settings()
-        {
-            /* ... */
-            return null;
-        }
-        public override void Arrange() { /* ... */ }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
+        public override TestCaseSettings Settings() => new  TestCaseSettings();
+        public override void Arrange() {  }
+        public override void Act() {  }
+        public override void Assert() {  }
     }
     
     public class Case2 : TestCase
     {
-        // private Graph _graph = new();
-        public override int TestNumber()
-        {
-            throw new NotImplementedException();
-        }
+        public override int TestNumber() => 1;
 
-        public override TestCaseSettings Settings()
-        {
-            /* ... */
-            return null;
-        }
-        public override void Arrange()
-        {
-            // ...
-            // _graph = new Graph();
-            // ...
-        }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
+        public override TestCaseSettings Settings()  => new  TestCaseSettings();
+        public override void Arrange() { }
+        public override void Act() {  }
+        public override void Assert() {  }
     }
     
-    // ...
-    
-    public class CaseN : TestCase
-    {
-        public override int TestNumber()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override TestCaseSettings Settings()
-        {
-            /* ... */
-            return null;
-        }
-        public override void Arrange() { /* ... */ }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
-    }
 }
 
 // generated tests
