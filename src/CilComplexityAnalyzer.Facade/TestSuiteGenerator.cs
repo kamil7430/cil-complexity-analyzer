@@ -41,7 +41,15 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (suiteSymbol.IsAbstract || !InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
-        var testSuiteSource = classDecl.SyntaxTree.ToString();
+        var root = classDecl.SyntaxTree.GetRoot();
+        var usings = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Select(u => u.ToFullString());
+
+        string usingsCode = string.Join("\n", usings);
+        string classCode = classDecl.ToFullString();
+
+        var testSuiteSource = $"{usingsCode}\n{classCode}";
 
         var studentAttr = suiteSymbol.GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name is "StudentSolutionAttribute" or "StudentSolution");

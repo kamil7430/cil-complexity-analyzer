@@ -29,10 +29,10 @@ internal static class Compiler
 
         if (!compilationResult.Success)
         {
-            var errors = new StringBuilder("Compilation failed. Errors and warnings:");
+            var errors = new StringBuilder("Failed to compile test suite. Diagnostics:");
             foreach (var diagnostic in compilationResult.Diagnostics)
             {
-                errors.Append($"\n{diagnostic.ToString()}");
+                errors.Append($"\n{diagnostic}");
             }
             throw new TestExecutionException(errors.ToString());
         }

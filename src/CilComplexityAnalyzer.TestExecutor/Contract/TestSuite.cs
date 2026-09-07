@@ -18,11 +18,19 @@ public abstract class TestSuite
     // Internal properties needed for the testing flow
     internal string Name
         => GetType().ToString();
+    /*
     internal Lazy<Type[]> TestCaseTypes
         => new(() => GetType().GetMembers()
             .Select(m => m.ReflectedType)
             .Where(t => t?.IsSubclassOf(typeof(TestCase)) ?? false)
             .ToArray()!
+        );
+        */
+    internal Lazy<Type[]> TestCaseTypes
+        => new(() => GetType()
+            .GetNestedTypes(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+            .Where(t => t.IsSubclassOf(typeof(TestCase)) && !t.IsAbstract)
+            .ToArray()
         );
     internal Lazy<TestCase[]> TestCases
         => new(() => TestCaseTypes.Value.Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray());
