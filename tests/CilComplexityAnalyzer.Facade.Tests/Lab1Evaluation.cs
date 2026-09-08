@@ -1,13 +1,15 @@
+using System.Text;
 using CilComplexityAnalyzer.Facade.Attributes;
 using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
 namespace CilComplexityAnalyzer.Facade.Tests;
 
-[TestSuite]
+//[TestSuite]
 [StudentSolution(typeof(Student1Solution))]
 public partial class Lab01Evaluation : TestSuite
 {
+    
     public class Case1 : TestCase
     {
         public override int TestNumber() => 0;
@@ -27,7 +29,14 @@ public partial class Lab01Evaluation : TestSuite
         public override void Act() {  }
         public override void Assert() {  }
     }
-    
+
+    public override TestSuiteSettings? Settings()
+    {
+        return new TestSuiteSettings
+        {
+            Containerized = false
+        };
+    }
 }
 
 // generated tests

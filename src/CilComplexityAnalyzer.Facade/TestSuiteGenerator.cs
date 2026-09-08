@@ -41,15 +41,8 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (suiteSymbol.IsAbstract || !InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
-        var root = classDecl.SyntaxTree.GetRoot();
-        var usings = root.DescendantNodes()
-            .OfType<UsingDirectiveSyntax>()
-            .Select(u => u.ToFullString());
-
-        string usingsCode = string.Join("\n", usings);
-        string classCode = classDecl.ToFullString();
-
-        var testSuiteSource = $"{usingsCode}\n{classCode}";
+        string testSuiteSource = classDecl.SyntaxTree.ToString();
+        string rawSource = classDecl.SyntaxTree.ToString();
 
         var studentAttr = suiteSymbol.GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name is "StudentSolutionAttribute" or "StudentSolution");
@@ -74,8 +67,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
             .ToImmutableArray();
 
         string ns = suiteSymbol.ContainingNamespace.IsGlobalNamespace
-            ? string.Empty
-            : suiteSymbol.ContainingNamespace.ToDisplayString();
+            ? string.Empty : suiteSymbol.ContainingNamespace.ToDisplayString();
 
         string fullClassName = string.IsNullOrEmpty(ns)
             ? suiteSymbol.Name
@@ -134,11 +126,11 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine("[TestClass]");
             sb.AppendLine($"public partial class {suite.ClassName}_Tests");
             sb.AppendLine("{");
-            sb.AppendLine($"    private static {suite.FullClassName} _suite = default!;");
-            sb.AppendLine("    private static global::CilComplexityAnalyzer.TestExecutor.TestExecutor _executor = default!;");
+            sb.AppendLine($"    private {suite.FullClassName} _suite;");
+            sb.AppendLine("    private global::CilComplexityAnalyzer.TestExecutor.TestExecutor _executor;");
             sb.AppendLine();
             sb.AppendLine("    [ClassInitialize]");
-            sb.AppendLine("    public static void Initialize(TestContext context)");
+            sb.AppendLine("    public void Initialize(TestContext context)");
             sb.AppendLine("    {");
             sb.AppendLine($"        _suite = new {suite.FullClassName}();");
             sb.AppendLine($"        _executor = new global::CilComplexityAnalyzer.TestExecutor.TestExecutor(_suite);");
@@ -183,10 +175,5 @@ public class TestSuiteGenerator : IIncrementalGenerator
 
     private sealed record CaseInfo(
         string Name
-        /*
-        long InstructionCap,
-        string? MethodName,
-        Location? Location
-         */
     );
 }
