@@ -2,8 +2,8 @@
 using System.Reflection;
 using System.Text.Json;
 using CilComplexityAnalyzer.ContainerWorker;
-using CilComplexityAnalyzer.TestExecutor.Contract;
-using CilComplexityAnalyzer.TestExecutor.Contract.Results;
+using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.Results;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Images;
 using Microsoft.Extensions.Logging;

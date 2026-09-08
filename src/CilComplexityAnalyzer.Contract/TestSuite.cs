@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
-namespace CilComplexityAnalyzer.TestExecutor.Contract;
+namespace CilComplexityAnalyzer.Contract;
 
 public abstract class TestSuite
 {
@@ -18,14 +18,6 @@ public abstract class TestSuite
     // Internal properties needed for the testing flow
     internal string Name
         => GetType().ToString();
-    /*
-    internal Lazy<Type[]> TestCaseTypes
-        => new(() => GetType().GetMembers()
-            .Select(m => m.ReflectedType)
-            .Where(t => t?.IsSubclassOf(typeof(TestCase)) ?? false)
-            .ToArray()!
-        );
-        */
     internal Lazy<Type[]> TestCaseTypes
         => new(() => GetType()
             .GetNestedTypes(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)

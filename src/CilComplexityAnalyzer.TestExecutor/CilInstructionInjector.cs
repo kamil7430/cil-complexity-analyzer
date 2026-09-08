@@ -1,4 +1,4 @@
-﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.Contract;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

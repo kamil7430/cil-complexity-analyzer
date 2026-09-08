@@ -1,8 +1,9 @@
 ﻿using System.Text;
-using CilComplexityAnalyzer.TestExecutor.Contract;
+using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Compiler

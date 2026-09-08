@@ -1,4 +1,4 @@
-namespace CilComplexityAnalyzer.TestExecutor.Contract;
+namespace CilComplexityAnalyzer.Contract;
 
 public class TestCaseSettings
 {

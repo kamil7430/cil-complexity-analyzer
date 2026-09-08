@@ -1,4 +1,4 @@
-﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 
