@@ -1,3 +1,4 @@
+using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Attributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
@@ -16,12 +17,27 @@ public partial class Lab01Evaluation : TestSuite
     
     public class Case1 : TestCase
     {
+        private int _liczba = 3;
+        
         public override int TestNumber() => 0;
 
         public override TestCaseSettings Settings() => new  TestCaseSettings();
-        public override void Arrange() {  }
-        public override void Act() {  }
-        public override void Assert() {  }
+
+        public override void Arrange()
+        {
+            _liczba = 5;
+        }
+
+        public override void Act()
+        {
+            _liczba *= _liczba;
+        }
+
+        public override void Assert()
+        {
+            if (_liczba != 25)
+                throw new Exception();
+        }
     }
     
     public class Case2 : TestCase
@@ -31,7 +47,11 @@ public partial class Lab01Evaluation : TestSuite
         public override TestCaseSettings Settings()  => new  TestCaseSettings();
         public override void Arrange() { }
         public override void Act() {  }
-        public override void Assert() {  }
+
+        public override void Assert()
+        {
+            throw new Exception();
+        }
     }
 }
 
