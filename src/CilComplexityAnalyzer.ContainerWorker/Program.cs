@@ -56,29 +56,29 @@ public class Program
 
     private static Type[] FindAllTestCases(Assembly assembly)
     {
-        const string contract = "CilComplexityAnalyzer.TestExecutor.Contract";
+        const string contract = "CilComplexityAnalyzer.Contract";
         var types = assembly.GetTypes();
         
-        var testSuiteBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestSuite");
-        if (testSuiteBase == null)
-        {
-            WriteFailureAndExit("TestSuite base not found.");
-        }
+        // var testSuiteBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestSuite");
+        // if (testSuiteBase == null)
+        // {
+        //     WriteFailureAndExit("TestSuite base not found.");
+        // }
+        //
+        // var testCaseBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestCase");
+        // if (testCaseBase == null)
+        // {
+        //     WriteFailureAndExit("TestCase base not found.");
+        // }
         
-        var testCaseBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestCase");
-        if (testCaseBase == null)
-        {
-            WriteFailureAndExit("TestCase base not found.");
-        }
-        
-        var testSuite = types.FirstOrDefault(t => t != testSuiteBase && t.IsAssignableTo(testSuiteBase));
+        var testSuite = types.FirstOrDefault(t => t.CustomAttributes.Any(a => a.AttributeType.FullName == $"{contract}.Attributes.StudentSolutionAttribute"));
         if (testSuite == null)
         {
             WriteFailureAndExit("Concrete TestSuite not found.");
         }
 
         var testCases = testSuite!.GetNestedTypes()
-            .Where(t => t.IsAssignableTo(testCaseBase))
+            // .Where(t => t.IsAssignableTo(testCaseBase))
             .ToArray();
         if (testCases.Length == 0)
         {

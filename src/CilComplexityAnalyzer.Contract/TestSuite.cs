@@ -6,8 +6,10 @@ namespace CilComplexityAnalyzer.Contract;
 public abstract class TestSuite
 {
     // Public TestSuite contract methods
-    public abstract string StudentSolutionSourceCode();
-    public abstract string TestSuiteSourceCode();
+    public virtual string StudentSolutionSourceCode()
+        => "";
+    public virtual string TestSuiteSourceCode()
+        => "";
     public virtual TestSuiteSettings? Settings() 
         => null;
     public virtual ILogger? Logger() 

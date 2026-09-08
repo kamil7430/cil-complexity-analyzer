@@ -1,4 +1,4 @@
-namespace CilComplexityAnalyzer.Facade.Attributes;
+namespace CilComplexityAnalyzer.Contract.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class StudentSolutionAttribute(Type studentSolutionType) : Attribute
