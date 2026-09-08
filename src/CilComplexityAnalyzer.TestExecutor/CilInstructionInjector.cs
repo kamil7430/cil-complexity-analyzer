@@ -26,10 +26,10 @@ internal static class CilInstructionInjector
     internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
-/*
+
         if (testSuite.StudentSolutionAssemblyBytes is null)
         {
-            throw new InvalidOperationException("AssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
+            throw new InvalidOperationException("StudentSolutionAssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
         }
 
         using var inputStream = new MemoryStream(testSuite.StudentSolutionAssemblyBytes);
@@ -60,7 +60,7 @@ internal static class CilInstructionInjector
                 if (!method.HasBody || method.IsConstructor)
                     continue;
                 
-                InjectCounter(mainModule, method, globalCounterField, isEntryPoint);
+                InjectCounter(mainModule, method, globalCounterField);
             }
         }
 
@@ -68,8 +68,8 @@ internal static class CilInstructionInjector
         assemblyDef.Write(outputStream);
         testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
 
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] CIL instruction injection completed.");
-*/
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
+
         return testSuite;
     }
 

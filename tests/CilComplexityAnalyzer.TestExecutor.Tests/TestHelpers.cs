@@ -1,4 +1,4 @@
-using CilComplexityAnalyzer.TestExecutor.Contract;
+/*using CilComplexityAnalyzer.TestExecutor.Contract;
 using CilComplexityAnalyzer.TestExecutor.Contract.Results;
 
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
@@ -30,4 +30,4 @@ public static class TestHelpers
         
         return await executor.GetResult(0);
     }
-}
+}*/

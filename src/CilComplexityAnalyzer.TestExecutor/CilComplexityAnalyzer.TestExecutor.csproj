@@ -19,6 +19,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CilComplexityAnalyzer.ContainerWorker\CilComplexityAnalyzer.ContainerWorker.csproj" />
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+        <_Parameter1>CilComplexityAnalyzer.TestExecutor.Tests</_Parameter1>
+      </AssemblyAttribute>
     </ItemGroup>
 
 </Project>
