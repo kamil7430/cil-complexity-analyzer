@@ -2,6 +2,6 @@ namespace CilComplexityAnalyzer.ContainerWorker;
 
 public class AssertFailedException : Exception
 {
-    internal AssertFailedException(string? message) : base(message) { }
-    internal AssertFailedException(string? message, Exception? innerException) : base(message, innerException) { }
+    public AssertFailedException(string? message) : base(message) { }
+    public AssertFailedException(string? message, Exception? innerException) : base(message, innerException) { }
 }

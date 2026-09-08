@@ -15,5 +15,9 @@
         <PackageReference Include="OneOf.SourceGenerator" Version="3.0.271" />
         <PackageReference Include="Testcontainers" Version="4.13.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CilComplexityAnalyzer.ContainerWorker\CilComplexityAnalyzer.ContainerWorker.csproj" />
+    </ItemGroup>
     
 </Project>

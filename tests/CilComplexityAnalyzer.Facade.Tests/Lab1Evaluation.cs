@@ -35,8 +35,9 @@ public partial class Lab01Evaluation : TestSuite
 
         public override void Assert()
         {
-            if (_liczba != 25)
-                throw new Exception();
+            IsTrue(_liczba > 0);
+            IsTrue(_liczba == 25);
+            base.Assert();
         }
     }
     
@@ -50,7 +51,10 @@ public partial class Lab01Evaluation : TestSuite
 
         public override void Assert()
         {
-            throw new Exception();
+            IsTrue(0 < 1);
+            IsTrue(1 < 1);
+            IsTrue(2 < 1);
+            base.Assert();
         }
     }
 }
