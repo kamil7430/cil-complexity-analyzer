@@ -9,5 +9,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
+    <Project Path="tests/NewTester/NewTester.csproj" />
   </Folder>
 </Solution>

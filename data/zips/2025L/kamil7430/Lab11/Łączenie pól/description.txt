@@ -1,0 +1,46 @@
+﻿Warszawa, 2400
+Zawód tradycyjnego rolnika zanikł wiele lat temu.
+Dziś farmer jest programistą i wydaje polecenia robotom pracującym na roli. 
+W ramach ostatniej reformy rządu wszystkie pola uprawne danego właściciela zostaną połączone w jedno supergospodarstwo. 
+Do tej pory były one wielokątami wypukłymi, których otoczka zawierała pola tylko jednego właściciela. 
+Od przyszłego tygodnia właśnie ta otoczka będzie stanowić pole rolnika.
+Twoja firma dostarcza oprogramowanie do robotów pracujących na roli. Pomóż rolnikom dostosować się do nowych regulacji.
+
+Część 1  -  1 pkt.
+Do tej pory rolicy nie przywiązywali uwagi do dokładnego okreslenia współrzędnych swoich pól. 
+Na ten moment pole określone jest jako nieuporządkowana lista współrzędnych wierzchołków.
+Niektóre z nich mogą się powtarzać. Współrzędne mogą też tworzyć krawędzie przedłużające się.
+Zaimplementuj znany Ci algorytm wyznaczający otoczkę wypukłą i na jego podstawie zwróć posortowaną przeciwnie
+do ruchu wskazówek zegara listę współrzędnych otoczki wypukłej ograniczającej podany na wejściu zbiór punktów.
+
+Część 2  -  3 pkt.
+Aby mieć pewność, że rolnicy nie oszukali władzy - pola będą łączone parami. 
+Od setek lat roboty były niezawodne. Ich zbiór operacji był na tyle prosty i zoptymalizowany,
+że ich procesory to wybitnie niewydajne jednostki. 
+Okazuje się, że robot będzie w stanie połączyć dwa pola tylko wtedy,
+gdy złożoność algorytmu łączenia tych pół będzie liniowa ze względu na sumę liczby ich wierzchołków. 
+Zaproponuj algorytm, który to wykona.
+Załóż, że współrzędne wielokąta podane są jako lista wierzchołków w kolejności przeciwnej do ruchu wskazówek zegara.
+
+Możesz do tego podejść następująco:
+
+1)  podziel wielokąt na dwie częsci - otoczkę górną (zawiera wierzchołki od tego o najmniejszej wartości współrzędnej x
+    do tego o największej wartości współrzędnej x) oraz dolną (pozostałe wierzchołki + ewentualnie pierwszy i ostatni
+    wierzchołek otoczki górnej)
+
+2)  połącz w jedną listę otoczki górne obu wielokątów wykorzystując krok znany z algorytmu mergesort
+    (tak aby punkty w połączonej liście były posowtowane względem wspołrzędnej x)
+
+2a) analogicznie połącz otoczki dolne obu wielokątów
+
+3)  na podstawie listy utworzonej w pkt. 2 utwórz otoczkę górną obu wielokątów
+    (wskazówka: możesz wykorzystać pomysł z algorytmu Grahama)
+
+3a) analogicznie na podstawie listy utworzonej w pkt. 2a utwórz otoczkę dolną obu wielokątów
+
+4)  połącz obie "półotoczki" w wynikową otoczkę.
+
+
+Uwaga 1: Obie części zadania są od siebie niezależne
+Uwaga 2: Algorytm dla części 2 zadania musi mieć złożoność liniową,
+         algorytm o gorszej zlożoności nie będzie uznany.

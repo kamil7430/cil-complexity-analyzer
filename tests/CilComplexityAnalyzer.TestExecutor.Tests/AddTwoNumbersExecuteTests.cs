@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+/*using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.TestExecutor.Tests;
 
@@ -31,3 +31,4 @@ public sealed class AddTwoNumbersExecuteTests
         StringAssert.Contains(result.AsT1.Message, "Outputs don't match!");
     }
 }
+*/

@@ -1,0 +1,136 @@
+﻿using ASD.Graphs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ASD
+{
+    public class Lab10 : MarshalByRefObject
+    {
+        /// <summary>
+        /// Szukanie najdłuższego powtórzenia w zadanym kolorowaniu grafu.
+        /// </summary>
+        /// <param name="G_copy">Graf prosty</param>
+        /// <param name="color">Kolorowanie wierzchołków G (color[v] to kolor wierzchołka v)</param>
+        /// <returns>Ścieżka, na której występuje powtórzenie (numery kolejnych wierzchołków)</returns>
+        /// <remarks>W przypadku braku powtórzeń należy zwrócić null lub tablicę o długości 0</remarks>
+        public int[] FindLongestRepetition(Graph G, int[] color)
+        {
+            Graph G_copy = (Graph)G.Clone();
+            int n = G_copy.VertexCount;
+            var visited = new bool[n];
+
+            var firstHalf = new List<int>();
+            var secondHalf = new List<int>();
+            var bestPath = new List<int>();
+
+            int maxCol = -1;
+            foreach (int c in color)
+                if (maxCol < c)
+                    maxCol = c;
+            var maxColors = new int[maxCol + 1];
+            foreach (var c in color)
+                maxColors[c]++;
+            var colorsVisited = new int[maxCol + 1];
+
+            int removedVertices = 0;
+            for (int i = 0; i < n; i++)
+            {
+                if (maxColors[color[i]] > 1)
+                    continue;
+                removedVertices++;
+                foreach (var nei in G_copy.OutNeighbors(i).ToList())
+                {
+                    G_copy.RemoveEdge(i, nei);
+                    G_copy.RemoveEdge(nei, i);
+                }
+            }
+
+            var sequencesOf2 = new int[maxCol + 1, maxCol + 1];
+            var usedSequencesOf2 = new int[maxCol + 1, maxCol + 1];
+            for (int i = 0; i < n; i++)
+                foreach (int nei in G_copy.OutNeighbors(i))
+                    if (nei > i)
+                    {
+                        sequencesOf2[color[i], color[nei]]++;
+                        sequencesOf2[color[nei], color[i]]++;
+                    }
+
+            bool pathChanged = false;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (maxColors[color[i]] > 1)
+                {
+                    firstHalf.Add(i);
+                    visited[i] = true;
+                    colorsVisited[color[i]]++;
+                    Process(i);
+                    colorsVisited[color[i]]--;
+                    visited[i] = false;
+                    firstHalf.RemoveAt(firstHalf.Count - 1);
+                }
+            }
+
+            return bestPath.ToArray();
+
+            void TryBuildSecondHalf(int v, int pos)
+            {
+                if (pos == firstHalf.Count)
+                {
+                    bestPath = new List<int>(firstHalf);
+					bestPath.AddRange(secondHalf);
+                    pathChanged = true;
+                    return;
+                }
+                foreach (int nei in G_copy.OutNeighbors(v))
+                {
+                    if (!visited[nei] && color[nei] == color[firstHalf[pos]])
+                    {
+                        secondHalf.Add(nei);
+                        visited[nei] = true;
+                        TryBuildSecondHalf(nei, pos + 1);
+                        visited[nei] = false;
+                        secondHalf.RemoveAt(secondHalf.Count - 1);
+                        if (pathChanged)
+                            return;
+                    }
+                }
+            }
+
+            void Process(int v)
+            {
+                if (firstHalf.Count > (n - removedVertices) / 2)
+                    return;
+                if (colorsVisited[color[v]] > maxColors[color[v]] / 2)
+                    return;
+                if (firstHalf.Count > bestPath.Count / 2)
+                {
+                    pathChanged = false;
+                    TryBuildSecondHalf(v, 0);
+                }
+                foreach (int nei in G_copy.OutNeighbors(v))
+                {
+                    if (!visited[nei])
+                    {
+                        firstHalf.Add(nei);
+                        visited[nei] = true;
+                        colorsVisited[color[nei]]++;
+                        usedSequencesOf2[color[v], color[nei]]++;
+                        usedSequencesOf2[color[nei], color[v]]++;
+                        if (usedSequencesOf2[color[v], color[nei]] <= sequencesOf2[color[v], color[nei]] / 2)
+                            Process(nei);
+                        usedSequencesOf2[color[v], color[nei]]--;
+                        usedSequencesOf2[color[nei], color[v]]--;
+                        colorsVisited[color[nei]]--;
+                        visited[nei] = false;
+                        firstHalf.RemoveAt(firstHalf.Count - 1);
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+

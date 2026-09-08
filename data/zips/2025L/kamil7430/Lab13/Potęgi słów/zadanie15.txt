@@ -1,0 +1,42 @@
+Potêgi i okresy.
+
+Dla s³owa s, przez |s| oznaczamy d³ugoœæ s.
+
+Okres s³owa s to najmniejsze dodatnie p takie, ¿e s[i]=s[i+p] dla ka¿dego i=0,...,|s|-p-1.
+Przyk³adowo: okres s³owa abcab to 3, okres s³owa ababab to 2, okres s³owa xyz to 3.
+
+Przez k-t¹ potêgê s³owa x rozumiemy k-krotne powtórzenie s³owa x.
+Przyk³adowo: abcabcabc to trzecia potêga s³owa abc.
+
+Zadanie sk³ada siê z dwóch czêœci.
+
+1. Wyznaczenie okresu zadanego s³owa (metoda Period)
+Uwaga: metoda musi dzia³aæ w czasie O(|s|)
+
+2. Wyznaczenie najwiêkszej potêgi zawartej w danym s³owie (metoda MaxPower)
+Metoda powinna dla zadanego s³owa s zwróciæ najwiêksze k takie, ¿e k-ta potêga jakiegoœ s³owa
+jest zawarta w s jako pods³owo. 
+Przyk³adowo, dla s³owa s=abxyzxyzcd odpowiedzi¹ powinno byæ 2, bo s zawiera drug¹ potêgê xyz jako pods³owo.
+
+Ponadto, w parametrach wyjœciowych nale¿y przekazaæ miejsce wyst¹pienia znalezionej potêgi, 
+tzn. startIndex to indeks pierwszej litery znalezionej potêgi,
+a endIndex to indeks pierwszej litery znajduj¹cej siê za znalezion¹ potêg¹.
+W powy¿szym przyk³adzie, startIndex=2, a endIndex=8
+
+Uwaga: metoda musi dzia³aæ w czasie O(|s|^2)
+
+Wskazówki:
+Wykorzystaj algorytm KMP.
+W czêœci 1. wystarczy znaleŸæ najd³u¿sze s³owo bêd¹ce jednoczeœnie w³aœciwym prefiksem i sufiksem s.
+
+W czêœci 2. nale¿y wyznaczyæ najd³u¿sze s³owo bêd¹ce jednoczeœnie w³aœciwym prefiksem i sufiksem
+ka¿dego z pods³ów s³owa s, a nastêpne sprawdziæ, które z tych pods³ów s¹ potêgami
+(a s³owo jest potêg¹, jeœli jego d³ugoœæ jest podzielna przez okres).
+Naiwna implementacja bêdzie mia³a z³o¿onoœæ O(|s|^3), ale ³atwo to poprawiæ: wystarczy zauwa¿yæ, ¿e 
+raz policzona tablica P (z algorytmu KMP) mo¿e byæ u¿yta dla wielu pods³ów s³owa s.
+
+Punktacja:
+Etap 1: 1pkt
+Etap 2: 2 pkt za prawid³ow¹ odpowiedŸ
+		   +1 pkt za prawid³owe startIndex i endIndex
+		   

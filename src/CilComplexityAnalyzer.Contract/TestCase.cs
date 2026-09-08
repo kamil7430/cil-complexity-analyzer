@@ -22,7 +22,7 @@ public abstract class TestCase
             throw new AssertFailedException(assertions);
     }
 
-    protected void IsTrue(bool condition, string message = "")
+    public void IsTrue(bool condition, string message = "")
     {
         if (condition)
             return;

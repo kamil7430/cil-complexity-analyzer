@@ -1,0 +1,140 @@
+using ASD.Graphs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+namespace ASD
+{
+    public class Lab08 : MarshalByRefObject
+    {
+        private (DiGraph<int>, int s, int t) StworzPlansze(ref int[,] P, ref (int row, int col)[] MachinePos, int h, int w)
+        {
+            int N = h * w * 2 + 2;
+            int n = h * w;
+            int s = N - 2, t = N - 1;
+            // in: <0, hw-1>, out: <hw, 2hw-1>
+            DiGraph<int> g = new DiGraph<int>(N);
+
+            Func<int, int, int> V = (int i, int j) => i * w + j;
+            int INF = int.MaxValue / 2;
+
+            for (int i = 0; i < h; i++)
+                for (int j = 0; j < w; j++)
+                {
+                    if (i < h - 1 && i != 0)
+                        g.AddEdge(V(i, j) + n, V(i + 1, j), INF);
+                    if (i > 0)
+                        g.AddEdge(V(i, j) + n, V(i - 1, j), INF);
+                    if (j < w - 1 && i != 0)
+                        g.AddEdge(V(i, j) + n, V(i, j + 1), INF);
+                    if (j > 0 && i != 0)
+                        g.AddEdge(V(i, j) + n, V(i, j - 1), INF);
+                    if (i == 0)
+                        g.AddEdge(V(i, j) + n, t, INF);
+                    if (P[i, j] > 0)
+                        g.AddEdge(V(i, j), V(i, j) + n, P[i, j]);
+                }
+
+            foreach (var machine in MachinePos)
+                g.AddEdge(s, V(machine.row, machine.col), 1);
+
+            return (g, s, t);
+        }
+
+        /// <summary>Etap I</summary>
+        /// <param name="P">Tablica która dla każdego pola zawiera informacje, ile maszyn moze lacznie wyjechac z tego pola</param>
+        /// <param name="MachinePos">Tablica zawierajaca informacje o poczatkowym polozeniu maszyn</param>
+        /// <returns>Pierwszy element kroki to liczba uratowanych maszyn, drugi to tablica indeksów tych maszyn</returns>
+        public (int savedNum, int[] Saved) Stage1(int[,] P, (int row, int col)[] MachinePos)
+        {
+			int h = P.GetLength(0);
+            int w = P.GetLength(1);
+
+            var (g, s, t) = StworzPlansze(ref P, ref MachinePos, h, w);
+
+            var (flow, f) = Flows.FordFulkerson(g, s, t);
+
+            List<int> saved = new List<int>();
+            for (int i = 0; i < MachinePos.Length; i++)
+            {
+                var machine = MachinePos[i];
+                if (f.HasEdge(s, machine.row * w + machine.col)
+                    && f.GetEdgeWeight(s, machine.row * w + machine.col) > 0)
+                    saved.Add(i);
+            }
+
+            return (flow, saved.ToArray());
+        }
+
+        /// <summary>Etap II</summary>
+        /// <param name="P">Tablica która dla każdego pola zawiera informacje, ile maszyn moze lacznie wyjechac z tego pola</param>
+        /// <param name="MachinePos">Tablica zawierajaca informacje o poczatkowym polozeniu maszyn</param>
+        /// <param name="MachineValue">Tablica zawierajaca informacje o wartosci maszyn</param>
+        /// <param name="moveCost">Koszt jednego ruchu</param>
+        /// <returns>Pierwszy element kroki to najwiekszy mozliwy zysk, drugi to tablica indeksow maszyn, ktorych wyprowadzenie maksymalizuje zysk</returns>
+        public (int bestProfit, int[] Saved) Stage2(int[,] P, (int row, int col)[] MachinePos, int[] MachineValue, int moveCost)
+        {
+			int h = P.GetLength(0);
+            int w = P.GetLength(1);
+
+            int N = h * w * 2 + 2;
+            int n = h * w;
+            int s = N - 2, t = N - 1;
+            // in: <0, hw-1>, out: <hw, 2hw-1>
+            NetworkWithCosts<int, int> g = new NetworkWithCosts<int, int>(N);
+
+            int V(int i, int j) => i * w + j;
+            
+            int MAXCAP = MachinePos.Length;
+
+            for (int i = 0; i < h; i++)
+                for (int j = 0; j < w; j++)
+                {
+                    if (P[i, j] <= 0)
+                        continue;
+                    if (i != 0)
+                    {
+                        if (i < h - 1 && P[i + 1, j] > 0)
+                            g.AddEdge(V(i, j) + n, V(i + 1, j), MAXCAP, 0);
+                        if (P[i - 1, j] > 0)
+                            g.AddEdge(V(i, j) + n, V(i - 1, j), MAXCAP, 0);
+                        if (j < w - 1 && P[i, j + 1] > 0)
+                            g.AddEdge(V(i, j) + n, V(i, j + 1), MAXCAP, 0);
+                        if (j > 0 && P[i, j - 1] > 0)
+                            g.AddEdge(V(i, j) + n, V(i, j - 1), MAXCAP, 0);
+                    }
+                    else
+                        g.AddEdge(V(i, j) + n, t, MAXCAP, 0);
+                    g.AddEdge(V(i, j), V(i, j) + n, P[i, j], moveCost);
+                }
+
+            for (int i = 0; i < MachinePos.Length; i++)
+            {
+                if (MachinePos[i].row * moveCost >= MachineValue[i])
+                    continue;
+                if (MachineValue[i] > 0 && P[MachinePos[i].row, MachinePos[i].col] > 0)
+                {
+                    g.AddEdge(s, V(MachinePos[i].row, MachinePos[i].col), 1, -MachineValue[i]);
+                    g.AddEdge(V(MachinePos[i].row, MachinePos[i].col), t, 1, MachineValue[i]);
+                }
+            }
+
+            //Console.WriteLine("cos");
+            var (_, cost, f) = Flows.MinCostMaxFlow(g, s, t);
+            //Console.WriteLine(f);
+
+            var uratowane = new LinkedList<int>();
+            for (int i = 0; i < MachinePos.Length; i++)
+            {
+                var machine = MachinePos[i];
+                if (f.HasEdge(s, machine.row * w + machine.col)) 
+                    if (!f.HasEdge(machine.row * w + machine.col, t)
+                        || f.GetEdgeWeight(machine.row * w + machine.col, t) == 0)
+                        uratowane.AddLast(i);
+            }
+
+            return (-cost, uratowane.ToArray());
+        }
+    }
+}
