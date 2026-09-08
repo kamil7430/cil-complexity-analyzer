@@ -59,9 +59,46 @@ public class CilInstructionInjectorTests
         testSuite.InjectCilToStudentSolution();
 
         // Assert
-        testSuite.ShouldHaveInstructionSeqeunceInjected(
+        testSuite.ShouldHaveInstructionSequenceInjected(
             className: "Calculator", 
             methodName: "Add"
+        );
+    }
+    
+    [TestMethod]
+    public void InjectCilToStudentSolution_RedirectsBranchTargetsToInjectedCounters()
+    {
+        // Arrange
+        const string studentCode = @"
+        namespace StudentSolution;
+        public class Calculator
+        {
+            public int Max(int a, int b)
+            {
+                if (a > b)
+                {
+                    return a;
+                }
+                return b;
+            }
+        }";
+
+        var originalTestSuite = CilTestSuiteBuilder.Create()
+            .WithStudentCode(studentCode)
+            .Build();
+
+        var testSuite = CilTestSuiteBuilder.Create()
+            .WithStudentCode(studentCode)
+            .Build();
+
+        // Act
+        testSuite.InjectCilToStudentSolution();
+
+        // Assert
+        testSuite.ShouldRedirectBranchTargetsToCorrectInjectedCounter(
+            originalTestSuite: originalTestSuite,
+            className: "Calculator",
+            methodName: "Max"
         );
     }
 }
