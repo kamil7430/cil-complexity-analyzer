@@ -46,18 +46,17 @@ internal static class CilInstructionInjector
         // (klasy, interfejsy, struktury, enumy, delegaty, rekordy, typy anonimowe, typy generyczne)
         foreach (var type in mainModule.Types)
         {
-            // Pominięcie wygenerowanej klasy kontenera, interfejsów i typów generowanych automatycznie przez kompilator
-            // (np. typy anonimowe, closure dla lambd/LINQ, generatory async/yield)
-            if (type.Name == "<GlobalCounterContainer>" || type.IsInterface || type.Name.StartsWith("<")) 
+            // Pominięcie wygenerowanej klasy kontenera, interfejsów
+            if (type.Name == "<GlobalCounterContainer>" || type.IsInterface) 
                 continue;
 
             // Przejście po metodach (klas, struktur, rekordów, delegat, typów generycznych)
             // type.Methods pominie enumy
             foreach (var method in type.Methods)
             {
-                // Pominięcie metod bez bajtkodu CIL oraz konstruktory
+                // Pominięcie metod bez bajtkodu CIL
                 // odrzuca delegaty - HasBody == false
-                if (!method.HasBody || method.IsConstructor)
+                if (!method.HasBody)
                     continue;
                 
                 InjectCounter(mainModule, method, globalCounterField);
