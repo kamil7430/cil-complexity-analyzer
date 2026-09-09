@@ -59,7 +59,8 @@ public class CilInstructionInjectorTests
         testSuite.InjectCilToStudentSolution();
 
         // Assert
-        testSuite.ShouldHaveInstructionSeqeunceInjected(
+        testSuite.ShouldHaveInstructionSequenceInjected(
+
             className: "Calculator", 
             methodName: "Add"
         );

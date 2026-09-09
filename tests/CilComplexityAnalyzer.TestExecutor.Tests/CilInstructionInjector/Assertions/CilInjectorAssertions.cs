@@ -179,8 +179,7 @@ internal static class CilInjectorAssertions
             "Typ pola powinien wynosić System.Int64 (long).");
     }
 
-    public static void ShouldHaveInstructionSequenceInjected(
-        this TestSuite testSuite,
+    public static void ShouldHaveInstructionSequenceInjected(this TestSuite testSuite,
         string className,
         string methodName)
     {
