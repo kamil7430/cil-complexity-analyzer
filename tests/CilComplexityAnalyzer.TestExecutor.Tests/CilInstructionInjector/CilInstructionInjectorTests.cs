@@ -64,4 +64,41 @@ public class CilInstructionInjectorTests
             methodName: "Add"
         );
     }
+
+    [TestMethod]
+    public void InjectCilToStudentSolution_WhenExecuted_IncrementsInstructionCounterCorrectly()
+    {
+        // Arrange
+        var testSuite = CilTestSuiteBuilder.Create()
+            .WithStudentCode(@"
+            namespace StudentSolution;
+            public class Calculator
+            {
+                public int Add(int a, int b)
+                {
+                    return a + b;
+                }
+            }")
+            .Build();
+
+        // Act
+        testSuite.InjectCilToStudentSolution();
+        var assembly = System.Reflection.Assembly.Load(testSuite.StudentSolutionAssemblyBytes!);
+        var calculatorType = assembly.GetTypes()
+            .FirstOrDefault(t => t.Name == "Calculator");
+        Assert.IsNotNull(calculatorType, "Nie odnaleziono typu Calculator w załadowanym assembly.");
+        var calculatorInstance = Activator.CreateInstance(calculatorType)!;
+        var addMethod = calculatorType.GetMethod("Add")!;
+        var result = (int)addMethod.Invoke(calculatorInstance, new object[] { 2, 3 })!;
+        var containerType = assembly.GetTypes()
+            .FirstOrDefault(t => t.Name == "<GlobalCounterContainer>");
+        Assert.IsNotNull(containerType, "Nie odnaleziono typu <GlobalCounterContainer> w załadowanym assembly.");
+        var counterField = containerType.GetField("__InstructionCounter", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)!;
+        var instructionCount = (long)counterField.GetValue(null)!;
+
+        // Assert
+        Assert.AreEqual(5, result, "Metoda Add powinna zwrócić poprawny wynik logiczny (2 + 3 = 5).");
+        Assert.IsTrue(instructionCount > 0, $"Licznik instrukcji powinien być większy od 0, a wynosił: {instructionCount}");
+    }
 }
