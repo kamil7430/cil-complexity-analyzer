@@ -1,4 +1,4 @@
-﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.Contract;
 
 namespace CilComplexityAnalyzer.TestExecutor.Tests.CilInstructionInjector.Infrastructure;
 

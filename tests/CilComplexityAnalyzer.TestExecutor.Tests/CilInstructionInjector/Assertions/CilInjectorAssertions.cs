@@ -1,4 +1,4 @@
-﻿using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using CilComplexityAnalyzer.Contract;
 using Microsoft.VisualStudio.TestTools.UnitTesting; 
 using Mono.Cecil;
 using Mono.Cecil.Cil;

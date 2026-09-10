@@ -2,6 +2,7 @@
 using CilComplexityAnalyzer.TestExecutor.Tests.CilInstructionInjector.Infrastructure;
 using CilComplexityAnalyzer.TestExecutor.Tests.CilInstructionInjector.Assertions;
 
+
 namespace CilComplexityAnalyzer.TestExecutor.Tests.CilInstructionInjector;
 
 [TestClass]
