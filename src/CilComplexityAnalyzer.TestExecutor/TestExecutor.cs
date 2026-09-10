@@ -1,5 +1,5 @@
-﻿using CilComplexityAnalyzer.TestExecutor.Contract;
-using CilComplexityAnalyzer.TestExecutor.Contract.Results;
+﻿using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.Results;
 using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
@@ -19,6 +19,10 @@ public class TestExecutor
         var length = testSuite.TestCases.Value.Length;
         _results = new TestResult[length];
         _resultsTcs = new TaskCompletionSource<bool>[length];
+        for (int i = 0; i < length; i++)
+        {
+            _resultsTcs[i] = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
     
     public void BeginExecution()
@@ -82,6 +86,18 @@ public class TestExecutor
 
     public async Task<TestResult> GetResult(int i)
     {
+        if (_testSuite.TestCases is null || _testSuite.TestCases.Value.Length == 0)
+        {
+            throw new InvalidOperationException(
+                $"TestSuite '{_testSuite.GetType().Name}' does not contain any TestCases. Ensure TestCases array is initialized.");
+        }
+
+        if (i < 0 || i >= _testSuite.TestCases.Value.Length)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(i), 
+                $"Requested test index {i} is out of bounds. Suite only contains {_testSuite.TestCases.Value.Length} test cases.");
+        }
         await _resultsTcs[i].Task;
         return _results[i]!;
     }

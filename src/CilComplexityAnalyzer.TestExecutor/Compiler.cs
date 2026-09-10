@@ -1,8 +1,11 @@
-﻿using System.Text;
-using CilComplexityAnalyzer.TestExecutor.Contract;
+﻿using System.Reflection;
+using System.Text;
+using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic.CompilerServices;
+
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Compiler
@@ -29,10 +32,10 @@ internal static class Compiler
 
         if (!compilationResult.Success)
         {
-            var errors = new StringBuilder("Compilation failed. Errors and warnings:");
+            var errors = new StringBuilder("Failed to compile student code. Diagnostics:");
             foreach (var diagnostic in compilationResult.Diagnostics)
             {
-                errors.Append($"\n{diagnostic.ToString()}");
+                errors.Append($"\n{diagnostic}");
             }
             throw new TestExecutionException(errors.ToString());
         }
@@ -53,12 +56,24 @@ internal static class Compiler
         var compilationResult = CSharpCompilation.Create(
             assemblyName: testSuite.Name, 
             syntaxTrees: [testSuite.TestSuiteSyntaxTree],
-            references: Basic.Reference.Assemblies.Net100.References.All,
+            // TODO: do it more sophisticated way
+            references: [
+                ..Basic.Reference.Assemblies.Net100.References.All,
+                MetadataReference.CreateFromImage(testSuite.StudentSolutionAssemblyBytes!),
+                MetadataReference.CreateFromFile(typeof(TestCase).Assembly.Location),
+            ],
             options: CompilationOptions
         ).Emit(stream, cancellationToken: testSuite.CancellationToken());
 
         if (!compilationResult.Success)
-            throw new TestExecutionException("Failed to compile test suite.");
+        {
+            var errors = new StringBuilder("Failed to compile test suite. Diagnostics:");
+            foreach (var diagnostic in compilationResult.Diagnostics)
+            {
+                errors.Append($"\n{diagnostic}");
+            }
+            throw new TestExecutionException(errors.ToString());
+        }
         
         stream.Seek(0, SeekOrigin.Begin);
         testSuite.TestSuiteAssemblyBytes = stream.ToArray();

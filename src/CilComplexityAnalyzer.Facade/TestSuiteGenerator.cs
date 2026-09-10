@@ -9,8 +9,8 @@ namespace CilComplexityAnalyzer.Facade;
 [Generator]
 public class TestSuiteGenerator : IIncrementalGenerator
 {
-    private const string TestSuiteBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestSuite";
-    private const string TestCaseBaseFullName = "CilComplexityAnalyzer.TestExecutor.Contract.TestCase";
+    private const string TestSuiteBaseFullName = "CilComplexityAnalyzer.Contract.TestSuite";
+    private const string TestCaseBaseFullName = "CilComplexityAnalyzer.Contract.TestCase";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -41,7 +41,8 @@ public class TestSuiteGenerator : IIncrementalGenerator
         if (suiteSymbol.IsAbstract || !InheritsFrom(suiteSymbol, TestSuiteBaseFullName))
             return null;
 
-        var testSuiteSource = classDecl.SyntaxTree.ToString();
+        string testSuiteSource = classDecl.SyntaxTree.ToString();
+        string rawSource = classDecl.SyntaxTree.ToString();
 
         var studentAttr = suiteSymbol.GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.Name is "StudentSolutionAttribute" or "StudentSolution");
@@ -66,8 +67,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
             .ToImmutableArray();
 
         string ns = suiteSymbol.ContainingNamespace.IsGlobalNamespace
-            ? string.Empty
-            : suiteSymbol.ContainingNamespace.ToDisplayString();
+            ? string.Empty : suiteSymbol.ContainingNamespace.ToDisplayString();
 
         string fullClassName = string.IsNullOrEmpty(ns)
             ? suiteSymbol.Name
@@ -102,7 +102,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine("#nullable enable");
             sb.AppendLine("using Microsoft.VisualStudio.TestTools.UnitTesting;");
             sb.AppendLine("using System.Threading.Tasks;");
-            sb.AppendLine("using CilComplexityAnalyzer.TestExecutor.Contract.Results;");
+            // sb.AppendLine("using CilComplexityAnalyzer.TestExecutor.Contract.Results;");
             sb.AppendLine();
 
             if (!string.IsNullOrEmpty(suite.Namespace) && suite.Namespace != "<global namespace>")
@@ -126,16 +126,16 @@ public class TestSuiteGenerator : IIncrementalGenerator
             sb.AppendLine("[TestClass]");
             sb.AppendLine($"public partial class {suite.ClassName}_Tests");
             sb.AppendLine("{");
-            sb.AppendLine($"    private static {suite.FullClassName} _suite = default!;");
-            sb.AppendLine("    private static global::CilComplexityAnalyzer.TestExecutor.TestExecutor _executor = default!;");
+            sb.AppendLine($"    private static {suite.FullClassName} _suite = new {suite.FullClassName}();");
+            sb.AppendLine("    private static global::CilComplexityAnalyzer.TestExecutor.TestExecutor _executor = new global::CilComplexityAnalyzer.TestExecutor.TestExecutor(_suite);");
             sb.AppendLine();
-            sb.AppendLine("    [ClassInitialize]");
-            sb.AppendLine("    public static void Initialize(TestContext context)");
-            sb.AppendLine("    {");
-            sb.AppendLine($"        _suite = new {suite.FullClassName}();");
-            sb.AppendLine($"        _executor = new global::CilComplexityAnalyzer.TestExecutor.TestExecutor(_suite);");
-            sb.AppendLine($"        _executor.BeginExecution();");
-            sb.AppendLine("    }");
+            // sb.AppendLine("    [ClassInitialize]");
+            // sb.AppendLine("    public static void Initialize(TestContext context)");
+            // sb.AppendLine("    {");
+            // sb.AppendLine($"        _suite = new {suite.FullClassName}();");
+            // sb.AppendLine($"        _executor = new global::CilComplexityAnalyzer.TestExecutor.TestExecutor(_suite);");
+            // sb.AppendLine($"        _executor.BeginExecution();");
+            // sb.AppendLine("    }");
             sb.AppendLine();
 
             for (int i = 0; i < suite.Cases.Length; i++)
@@ -144,6 +144,7 @@ public class TestSuiteGenerator : IIncrementalGenerator
                 sb.AppendLine("    [TestMethod]");
                 sb.AppendLine($"    public async Task {testCase.Name}()");
                 sb.AppendLine("    {");
+                sb.AppendLine("          _executor.BeginExecution();");
                 sb.AppendLine($"         var result = await _executor.GetResult({i});");
                 sb.AppendLine($"         if (result.IsT1)");
                 sb.AppendLine("         {");
@@ -175,10 +176,5 @@ public class TestSuiteGenerator : IIncrementalGenerator
 
     private sealed record CaseInfo(
         string Name
-        /*
-        long InstructionCap,
-        string? MethodName,
-        Location? Location
-         */
     );
 }

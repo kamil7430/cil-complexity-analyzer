@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab09\\Sluzby (2023)\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{13744390-CAAC-4832-9A9C-E5A232A60A46}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab09\\sluzby (2023)\\consoleapp1\\lab10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{13744390-CAAC-4832-9A9C-E5A232A60A46}|ConsoleApp1.csproj|solutionrelative:lab10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{13744390-CAAC-4832-9A9C-E5A232A60A46}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab09\\sluzby (2023)\\consoleapp1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{13744390-CAAC-4832-9A9C-E5A232A60A46}|ConsoleApp1.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Lab10.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab09\\Sluzby (2023)\\ConsoleApp1\\Lab10.cs",
+              "RelativeDocumentMoniker": "Lab10.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab09\\Sluzby (2023)\\ConsoleApp1\\Lab10.cs",
+              "RelativeToolTip": "Lab10.cs",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAAALEAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-07T06:12:50.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab09\\Sluzby (2023)\\ConsoleApp1\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab09\\Sluzby (2023)\\ConsoleApp1\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAJYAAAAAAAAAAAAUwKcAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-07T06:02:28.172Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

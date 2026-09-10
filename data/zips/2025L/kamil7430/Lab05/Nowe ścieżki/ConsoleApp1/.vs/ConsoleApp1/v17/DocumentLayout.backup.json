@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Nowe \u015Bcie\u017Cki\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{4E7CF112-6FA3-4908-9042-F5D5C0272D26}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab05\\nowe \u015Bcie\u017Cki\\consoleapp1\\lab05.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4E7CF112-6FA3-4908-9042-F5D5C0272D26}|ConsoleApp1.csproj|solutionrelative:lab05.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Lab05.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Nowe \u015Bcie\u017Cki\\ConsoleApp1\\Lab05.cs",
+              "RelativeDocumentMoniker": "Lab05.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Nowe \u015Bcie\u017Cki\\ConsoleApp1\\Lab05.cs*",
+              "RelativeToolTip": "Lab05.cs*",
+              "ViewState": "AgIAAGUAAAAAAAAAAAAtwGYAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T06:10:42.827Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

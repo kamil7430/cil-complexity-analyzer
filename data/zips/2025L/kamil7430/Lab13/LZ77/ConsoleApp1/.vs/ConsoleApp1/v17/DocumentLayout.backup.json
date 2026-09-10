@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab13\\LZ77\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{93D35853-A8FD-4503-BCA6-5C7A58E0348F}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab13\\lz77\\consoleapp1\\lz77.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{93D35853-A8FD-4503-BCA6-5C7A58E0348F}|ConsoleApp1.csproj|solutionrelative:lz77.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{93D35853-A8FD-4503-BCA6-5C7A58E0348F}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab13\\lz77\\consoleapp1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{93D35853-A8FD-4503-BCA6-5C7A58E0348F}|ConsoleApp1.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "LZ77.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab13\\LZ77\\ConsoleApp1\\LZ77.cs",
+              "RelativeDocumentMoniker": "LZ77.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab13\\LZ77\\ConsoleApp1\\LZ77.cs*",
+              "RelativeToolTip": "LZ77.cs*",
+              "ViewState": "AgIAADkAAAAAAAAAAAAlwEEAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-04T08:43:14.511Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab13\\LZ77\\ConsoleApp1\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab13\\LZ77\\ConsoleApp1\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-04T08:42:37.218Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

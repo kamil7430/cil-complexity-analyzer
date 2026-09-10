@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab04\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{DE26DFBE-8471-4459-B3C2-F59943286A50}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab04\\consoleapp1\\lab04.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DE26DFBE-8471-4459-B3C2-F59943286A50}|ConsoleApp1.csproj|solutionrelative:lab04.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Lab04.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab04\\ConsoleApp1\\Lab04.cs",
+              "RelativeDocumentMoniker": "Lab04.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab04\\ConsoleApp1\\Lab04.cs",
+              "RelativeToolTip": "Lab04.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAAwEUAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T12:05:37.311Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

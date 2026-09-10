@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Labirynt\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3D51C348-381A-4D46-9314-CEFAC20421D7}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab05\\labirynt\\consoleapp1\\maze.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3D51C348-381A-4D46-9314-CEFAC20421D7}|ConsoleApp1.csproj|solutionrelative:maze.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3D51C348-381A-4D46-9314-CEFAC20421D7}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab05\\labirynt\\consoleapp1\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3D51C348-381A-4D46-9314-CEFAC20421D7}|ConsoleApp1.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Labirynt\\ConsoleApp1\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Labirynt\\ConsoleApp1\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAACYBAAAAAAAAAAAUwCoBAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-20T09:27:59.776Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Maze.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Labirynt\\ConsoleApp1\\Maze.cs",
+              "RelativeDocumentMoniker": "Maze.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab05\\Labirynt\\ConsoleApp1\\Maze.cs",
+              "RelativeToolTip": "Maze.cs",
+              "ViewState": "AgIAAJgAAAAAAAAAAAAuwKEAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-20T09:21:39.147Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

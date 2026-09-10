@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="refresh" content="1;url=html/e75ae4ed-0d4c-3bfc-d5a9-d302c47b342e.htm">
+	<script type="text/javascript">
+		// Use an alternate default page if a topic is specified in the query string
+		var location = window.location;
+		var queryString = location.search;
+		if(queryString != "")
+		{
+			var idx, options = queryString.split(/[\?\=\&]/);
+			for(idx = 0; idx < options.length; idx++)
+			{
+				// Don't allow javascript, or references outside the current site
+				if(options[idx] == "topic" && idx + 1 < options.length && options[idx + 1].match(/^\w[\w\/.-]*$/))
+				{
+					location.replace(location.origin + location.pathname + options[idx + 1]);
+					break;
+				}
+			}
+		}
+		else
+			location.replace("html/e75ae4ed-0d4c-3bfc-d5a9-d302c47b342e.htm");
+	</script>
+	<title>Biblioteka Graphs - Redirect</title>
+</head>
+<body>
+	<p>If you are not redirected automatically, follow this link to the <a href="html/e75ae4ed-0d4c-3bfc-d5a9-d302c47b342e.htm">default topic</a>.</p>
+</body>
+</html>

@@ -1,70 +1,61 @@
-using CilComplexityAnalyzer.Facade.Attributes;
-using CilComplexityAnalyzer.TestExecutor.Contract;
+using System;
+using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.Attributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
 namespace CilComplexityAnalyzer.Facade.Tests;
 
-[TestSuite]
+//[TestSuite]
 [StudentSolution(typeof(Student1Solution))]
 public partial class Lab01Evaluation : TestSuite
 {
+    public override TestSuiteSettings? Settings()
+        => new TestSuiteSettings
+        {
+            Containerized = false,
+        };
+    
     public class Case1 : TestCase
     {
-        public override int TestNumber()
+        private int _liczba = 3;
+        
+        public override int TestNumber() => 0;
+
+        public override TestCaseSettings Settings() => new  TestCaseSettings();
+
+        public override void Arrange()
         {
-            throw new NotImplementedException();
+            _liczba = 5;
         }
 
-        public override TestCaseSettings Settings()
+        public override void Act()
         {
-            /* ... */
-            return null;
+            _liczba *= _liczba;
         }
-        public override void Arrange() { /* ... */ }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
+
+        public override void Assert()
+        {
+            IsTrue(_liczba > 0);
+            IsTrue(_liczba == 25);
+            base.Assert();
+        }
     }
     
     public class Case2 : TestCase
     {
-        // private Graph _graph = new();
-        public override int TestNumber()
-        {
-            throw new NotImplementedException();
-        }
+        public override int TestNumber() => 1;
 
-        public override TestCaseSettings Settings()
-        {
-            /* ... */
-            return null;
-        }
-        public override void Arrange()
-        {
-            // ...
-            // _graph = new Graph();
-            // ...
-        }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
-    }
-    
-    // ...
-    
-    public class CaseN : TestCase
-    {
-        public override int TestNumber()
-        {
-            throw new NotImplementedException();
-        }
+        public override TestCaseSettings Settings()  => new  TestCaseSettings();
+        public override void Arrange() { }
+        public override void Act() {  }
 
-        public override TestCaseSettings Settings()
+        public override void Assert()
         {
-            /* ... */
-            return null;
+            IsTrue(0 < 1);
+            IsTrue(1 < 1);
+            IsTrue(2 < 1);
+            base.Assert();
         }
-        public override void Arrange() { /* ... */ }
-        public override void Act() { /* ... */ }
-        public override void Assert() { /* ... */ }
     }
 }
 

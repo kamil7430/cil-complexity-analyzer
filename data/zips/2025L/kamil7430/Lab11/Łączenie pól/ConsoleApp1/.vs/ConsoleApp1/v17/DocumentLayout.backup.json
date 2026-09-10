@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab11\\\u0141\u0105czenie p\u00F3l\\ConsoleApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{25ADE3B9-C685-450F-AB88-252E2E2BDF86}|ConsoleApp1.csproj|c:\\users\\kamil\\documents\\studia\\2025l\\aisd2\\lab11\\\u0142\u0105czenie p\u00F3l\\consoleapp1\\lab11.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{25ADE3B9-C685-450F-AB88-252E2E2BDF86}|ConsoleApp1.csproj|solutionrelative:lab11.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Lab11.cs",
+              "DocumentMoniker": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab11\\\u0141\u0105czenie p\u00F3l\\ConsoleApp1\\Lab11.cs",
+              "RelativeDocumentMoniker": "Lab11.cs",
+              "ToolTip": "C:\\Users\\kamil\\Documents\\Studia\\2025L\\AiSD2\\Lab11\\\u0141\u0105czenie p\u00F3l\\ConsoleApp1\\Lab11.cs",
+              "RelativeToolTip": "Lab11.cs",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAIwFcAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-20T11:31:16.683Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

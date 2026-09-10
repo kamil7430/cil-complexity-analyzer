@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace CilComplexityAnalyzer.Facade.Attributes.Tests;
 
 public class FakeExecutor
