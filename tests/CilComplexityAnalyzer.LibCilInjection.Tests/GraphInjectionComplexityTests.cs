@@ -2,14 +2,14 @@ using System.Reflection;
 using System.Runtime.Loader;
 using ASD.Graphs;
 using CilComplexityAnalyzer.LibCilInjection.Tests.GraphFunctions;
+using CilComplexityAnalyzer.TestExecutor;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
 [TestClass]
 public class GraphInjectionComplexityTests
 {
-
-[TestMethod]
+    [TestMethod]
     public void Injector_ShouldAccuratelyTrackCilInstructionsForGraphSearcher()
     {
         Assembly originalAssembly = typeof(GraphSearcher).Assembly;
@@ -17,41 +17,47 @@ public class GraphInjectionComplexityTests
 
         byte[] instrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(originalBytes);
 
-        var alc = new AssemblyLoadContext("TestContext", isCollectable: true);
-        using var ms = new MemoryStream(instrumentedBytes);
-        Assembly instrumentedAssembly = alc.LoadFromStream(ms);
+        var alc = new AssemblyLoadContext("TestContext", isCollectible: true);
 
-        Type counterContainer = instrumentedAssembly.GetType("<GlobalCounterContainer>")
-            ?? throw new InvalidOperationException("Klasa <GlobalCounterContainer> nie została odnaleziona!");
+        try
+        {
 
-        FieldInfo counterField = counterContainer.GetField("__InstructionCounter", BindingFlags.Public | BindingFlags.Static)
-            ?? throw new InvalidOperationException("Pole __InstructionCounter nie zostało odnalezione!");
+            using var ms = new MemoryStream(instrumentedBytes);
+            Assembly instrumentedAssembly = alc.LoadFromStream(ms);
 
-        Type searcherType = instrumentedAssembly.GetType(typeof(GraphSearcher).FullName!)!;
-        object searcherInstance = Activator.CreateInstance(searcherType)!;
-        MethodInfo bfsMethod = searcherType.GetMethod("BreadthFirstSearch")!;
+            Type counterContainer = instrumentedAssembly.GetType("<GlobalCounterContainer>")
+                                    ?? throw new InvalidOperationException(
+                                        "Klasa <GlobalCounterContainer> nie została odnaleziona!");
 
-        Graph graph = new Graph(4);
-        graph.AddEdge(0, 1);
-        graph.AddEdge(0, 2);
-        graph.AddEdge(1, 3);
+            FieldInfo counterField =
+                counterContainer.GetField("__InstructionCounter", BindingFlags.Public | BindingFlags.Static)
+                ?? throw new InvalidOperationException("Pole __InstructionCounter nie zostało odnalezione!");
 
-        counterField.SetValue(null, 0L);
+            Type searcherType = instrumentedAssembly.GetType(typeof(GraphSearcher).FullName!)!;
+            object searcherInstance = Activator.CreateInstance(searcherType)!;
+            MethodInfo bfsMethod = searcherType.GetMethod("BreadthFirstSearch")!;
 
-        object? result = bfsMethod.Invoke(searcherInstance, new object[] { graph, 0 });
+            Graph graph = new Graph(4);
+            graph.AddEdge(0, 1);
+            graph.AddEdge(0, 2);
+            graph.AddEdge(1, 3);
 
-        long executedInstructions = (long)counterField.GetValue(null)!;
+            counterField.SetValue(null, 0L);
 
-        Assert.IsNotNull(result);
-        int[] visitedOrder = (int[])result;
-        CollectionAssert.AreEqual(new int[] { 0, 1, 2, 3 }, visitedOrder);
+            object? result = bfsMethod.Invoke(searcherInstance, new object[] { graph, 0 });
 
-        Assert.IsTrue(executedInstructions > 0, 
-            $"Licznik CIL powinien zarejestrować dodatnią liczbę instrukcji, a wyniósł: {executedInstructions}");
+            long executedInstructions = (long)counterField.GetValue(null)!;
 
-        Assert.IsTrue(executedInstructions > 50, 
-            $"Zarejestrowana liczba instrukcji CIL ({executedInstructions}) jest podejrzanie niska.");
+            Assert.IsNotNull(result);
+            int[] visitedOrder = (int[])result;
+            CollectionAssert.AreEqual(new int[] { 0, 1, 2, 3 }, visitedOrder);
 
-        alc.Unload();
+            Assert.IsTrue(executedInstructions > 0, $"Licznik CIL powinien zarejestrować dodatnią liczbę instrukcji, a wyniósł: {executedInstructions}");
+            Assert.IsTrue(executedInstructions > 50, $"Zarejestrowana liczba instrukcji CIL ({executedInstructions}) jest podejrzanie niska.");
+        }
+        finally
+        {
+            alc.Unload();
+        }
     }
 }
