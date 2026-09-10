@@ -26,10 +26,10 @@ internal static class CilInstructionInjector
     internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
-/*
+
         if (testSuite.StudentSolutionAssemblyBytes is null)
         {
-            throw new InvalidOperationException("AssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
+            throw new InvalidOperationException("StudentSolutionAssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
         }
 
         using var inputStream = new MemoryStream(testSuite.StudentSolutionAssemblyBytes);
@@ -46,21 +46,20 @@ internal static class CilInstructionInjector
         // (klasy, interfejsy, struktury, enumy, delegaty, rekordy, typy anonimowe, typy generyczne)
         foreach (var type in mainModule.Types)
         {
-            // Pominięcie wygenerowanej klasy kontenera, interfejsów i typów generowanych automatycznie przez kompilator
-            // (np. typy anonimowe, closure dla lambd/LINQ, generatory async/yield)
-            if (type.Name == "<GlobalCounterContainer>" || type.IsInterface || type.Name.StartsWith("<")) 
+            // Pominięcie wygenerowanej klasy kontenera, interfejsów
+            if (type.Name == "<GlobalCounterContainer>" || type.IsInterface) 
                 continue;
 
             // Przejście po metodach (klas, struktur, rekordów, delegat, typów generycznych)
             // type.Methods pominie enumy
             foreach (var method in type.Methods)
             {
-                // Pominięcie metod bez bajtkodu CIL oraz konstruktory
+                // Pominięcie metod bez bajtkodu CIL
                 // odrzuca delegaty - HasBody == false
-                if (!method.HasBody || method.IsConstructor)
+                if (!method.HasBody)
                     continue;
                 
-                InjectCounter(mainModule, method, globalCounterField, isEntryPoint);
+                InjectCounter(mainModule, method, globalCounterField);
             }
         }
 
@@ -68,8 +67,8 @@ internal static class CilInstructionInjector
         assemblyDef.Write(outputStream);
         testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
 
-        testSuite.Logger?.LogInformation($"[{testSuite.NameOrHash}] CIL instruction injection completed.");
-*/
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
+
         return testSuite;
     }
 
