@@ -2,12 +2,14 @@
   <Folder Name="/src/">
     <Project Path="src/CilComplexityAnalyzer.ContainerWorker/CilComplexityAnalyzer.ContainerWorker.csproj" />
     <Project Path="src/CilComplexityAnalyzer.Contract/CilComplexityAnalyzer.Contract.csproj" />
+    <Project Path="src/CilComplexityAnalyzer.LibCilInjection/CilComplexityAnalyzer.LibCilInjection.csproj" />
     <Project Path="src/CilComplexityAnalyzer.TestExecutor/CilComplexityAnalyzer.TestExecutor.csproj" />
     <Project Path="src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj" />
     <Project Path="src/DataAnalyzer/DataAnalyzer.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />
+    <Project Path="tests/CilComplexityAnalyzer.LibCilInjection.Tests/CilComplexityAnalyzer.LibCilInjection.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
     <Project Path="tests/NewTester/NewTester.csproj" />
   </Folder>

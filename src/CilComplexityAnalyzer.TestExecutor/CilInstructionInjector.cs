@@ -32,9 +32,18 @@ internal static class CilInstructionInjector
             throw new InvalidOperationException("StudentSolutionAssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
         }
 
-        using var inputStream = new MemoryStream(testSuite.StudentSolutionAssemblyBytes);
-        using var outputStream = new MemoryStream();
+        testSuite.StudentSolutionAssemblyBytes = InjectCilToAssemblyBytes(testSuite.StudentSolutionAssemblyBytes);
 
+        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
+
+        return testSuite;
+    }
+
+
+    internal static byte[] InjectCilToAssemblyBytes(byte[] assemblyBytes)
+    {
+        using var inputStream = new MemoryStream(assemblyBytes);
+        using var outputStream = new MemoryStream();
         // Wczytanie skompilowanego assembly z pamięci
         var assemblyDef = AssemblyDefinition.ReadAssembly(inputStream);
         var mainModule = assemblyDef.MainModule;
@@ -65,13 +74,9 @@ internal static class CilInstructionInjector
 
         // Zapisanie zmodyfikowanego assembly z powrotem do pamięci
         assemblyDef.Write(outputStream);
-        testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
-
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
-
-        return testSuite;
+        return outputStream.ToArray();
     }
-
+    
     /// <summary>
     /// Tworzy dedykowaną publiczną klasę statyczną `<GlobalCounterContainer>` zawierającą jedyne pole `__InstructionCounter`.
     /// Użycie `Public` umożliwia swobodne zerowanie i odczyt z poziomu ContainerWorker przez refleksję.
