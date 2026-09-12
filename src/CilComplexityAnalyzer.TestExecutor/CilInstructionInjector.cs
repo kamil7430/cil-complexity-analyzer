@@ -109,10 +109,14 @@ internal static class CilInstructionInjector
         FieldDefinition counterField)
     {
         // Pobranie obiektu, który udostępnia metody do wstawiania, usuwania i podmieniania instrukcji CIL w ciele danej metody 
-        var il = method.Body.GetILProcessor();
+        var body = method.Body;
+        body.SimplifyMacros(); // zmiana krótkich skosów na pełne 32-bitowe skoki
+        var il = body.GetILProcessor();
         var instructions = method.Body.Instructions.ToList();
 
         if (instructions.Count == 0) return;
+
+        var entryMap = new Dictionary<Instruction, Instruction>();
 
         // Inkrementacja licznika przed każdą instrukcją
         foreach (var instr in instructions)
@@ -125,6 +129,8 @@ internal static class CilInstructionInjector
             var add = il.Create(OpCodes.Add);
             // Zdjęcie wyniku ze stosu i zapisanie go z powrotem do pola __InstructionCounter
             var storeCounter = il.Create(OpCodes.Stsfld, counterField);
+            
+            entryMap[instr] = loadCounter;// Zapisujemy, że początkiem dawnej instrukcji 'instr' jest teraz 'loadCounter'
 
             // Wstawienie nowej sekwencji przed analizowaną instrukcję
             il.InsertBefore(instr, loadCounter);
@@ -135,11 +141,57 @@ internal static class CilInstructionInjector
             // Naprawa etykiet skoków (Branch Fixup) 
             // Jeśli jakakolwiek inna instrukcja w metodzie skakała do 'instr',
             // to po wstawieniu inkrementacji musi teraz skakać do 'loadCounter'.
-            RedirectBranches(method, instr, loadCounter);
+            //RedirectBranches(method, instr, loadCounter);
         }
 
+        RedirectAllBranches(body, entryMap);
         // Optymalizacja rozmiarów skoków i przesunięć
-        method.Body.Optimize();
+        body.Optimize();
+    }
+
+    private static void RedirectAllBranches(MethodBody body, Dictionary<Instruction, Instruction> entryMap)
+    {
+        foreach (var i in body.Instructions)
+        {
+            // Pojedyncze skoki
+            if (i.Operand is Instruction target && entryMap.TryGetValue(target, out var newTarget))
+            {
+                i.Operand = newTarget;
+            }
+            // Skoki wielodrożne (switch)
+            else if (i.Operand is Instruction[] targets)
+            {
+                for (int j = 0; j < targets.Length; j++)
+                {
+                    if (entryMap.TryGetValue(targets[j], out var newMultiTarget))
+                    {
+                        targets[j] = newMultiTarget;
+                    }
+                }
+            }
+        }
+
+        // Aktualizacja bloków try/catch/finally
+        if (body.HasExceptionHandlers)
+        {
+            foreach (var handler in body.ExceptionHandlers)
+            {
+                if (handler.TryStart != null && entryMap.TryGetValue(handler.TryStart, out var newTryStart)) 
+                    handler.TryStart = newTryStart;
+                
+                if (handler.TryEnd != null && entryMap.TryGetValue(handler.TryEnd, out var newTryEnd)) 
+                    handler.TryEnd = newTryEnd;
+                
+                if (handler.HandlerStart != null && entryMap.TryGetValue(handler.HandlerStart, out var newHandlerStart)) 
+                    handler.HandlerStart = newHandlerStart;
+                
+                if (handler.HandlerEnd != null && entryMap.TryGetValue(handler.HandlerEnd, out var newHandlerEnd)) 
+                    handler.HandlerEnd = newHandlerEnd;
+                
+                if (handler.FilterStart != null && entryMap.TryGetValue(handler.FilterStart, out var newFilterStart)) 
+                    handler.FilterStart = newFilterStart;
+            }
+        }
     }
 
     /// <summary>
@@ -181,4 +233,6 @@ internal static class CilInstructionInjector
             }
         }
     }
+    
+    
 }
