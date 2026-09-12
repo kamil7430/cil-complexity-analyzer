@@ -60,4 +60,10 @@ public class GraphInjectionComplexityTests
             alc.Unload();
         }
     }
+
+    [TestMethod]
+    public void Injector_ShouldTrackInstructions_ForGenericClassesAndMethods()
+    {
+       //TODO 
+    }
 }
