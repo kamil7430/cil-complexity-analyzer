@@ -16,8 +16,9 @@ internal static class CilInjectorAssertions
     public static readonly OpCode[] InjectedSequenceOpCodes = new[]
     {
         OpCodes.Ldsfld,   // Załadowanie wartości licznika 
-        OpCodes.Ldc_I4_1, // Załadowanie jedynki
-        OpCodes.Conv_I8,  // Konwersja int -> long
+        //OpCodes.Ldc_I4_1, // Załadowanie jedynki
+        OpCodes.Ldc_I8, // Załadowanie jedynki i od razu dobra wielkosc
+        //OpCodes.Conv_I8,  // Konwersja int -> long
         OpCodes.Add,      // Dodanie
         OpCodes.Stsfld    // Zapis do licznika
     };
