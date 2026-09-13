@@ -10,16 +10,16 @@ namespace CilComplexityAnalyzer.TestExecutor;
 // Done, hehe :)
         
 // TODO: In ContainerWorker set __InstructionCounter to 0 at test beginning and extract it after 
-// Not Done, not hehe :(
+// DONE, we have methods
         
 // TODO: Write UnitTests
-// Not Done, not hehe :(
+//DONE
         
 // TODO: inject abort mechanism
 // Not Done, not hehe :(
         
 // TODO: Counting code in external libraries
-// Not Done, not hehe :(
+// Seams to be working
 
 internal static class CilInstructionInjector
 {
@@ -44,27 +44,18 @@ internal static class CilInstructionInjector
     {
         using var inputStream = new MemoryStream(assemblyBytes);
         using var outputStream = new MemoryStream();
-        // Wczytanie skompilowanego assembly z pamięci
         var assemblyDef = AssemblyDefinition.ReadAssembly(inputStream);
         var mainModule = assemblyDef.MainModule;
 
-        // Publiczna klasa statyczna z publicznym polem, dostępna do zerowania z zewnątrz przez refleksję
         var globalCounterField = CreateGlobalCounterField(mainModule);
         
-        // Przejście po definicjach typów w module
-        // (klasy, interfejsy, struktury, enumy, delegaty, rekordy, typy anonimowe, typy generyczne)
-        foreach (var type in mainModule.Types)
+        foreach (var type in GetAllTypesRecursively(mainModule))
         {
-            // Pominięcie wygenerowanej klasy kontenera, interfejsów
             if (type.Name == "<GlobalCounterContainer>" || type.IsInterface) 
                 continue;
 
-            // Przejście po metodach (klas, struktur, rekordów, delegat, typów generycznych)
-            // type.Methods pominie enumy
             foreach (var method in type.Methods)
             {
-                // Pominięcie metod bez bajtkodu CIL
-                // odrzuca delegaty - HasBody == false
                 if (!method.HasBody)
                     continue;
                 
@@ -72,7 +63,6 @@ internal static class CilInstructionInjector
             }
         }
 
-        // Zapisanie zmodyfikowanego assembly z powrotem do pamięci
         assemblyDef.Write(outputStream);
         return outputStream.ToArray();
     }
@@ -99,6 +89,8 @@ internal static class CilInstructionInjector
         // Rejestracja w strukturze modułu
         containerType.Fields.Add(counterField);
         module.Types.Add(containerType);
+        
+        CreateCounterAccessors(module, containerType, counterField);
 
         return counterField;
     }
@@ -110,43 +102,55 @@ internal static class CilInstructionInjector
     {
         // Pobranie obiektu, który udostępnia metody do wstawiania, usuwania i podmieniania instrukcji CIL w ciele danej metody 
         var body = method.Body;
-        body.SimplifyMacros(); // zmiana krótkich skosów na pełne 32-bitowe skoki
+        body.SimplifyMacros(); // zmiana krótkich skosów na pełne 32-bitowe skoki czyli br.s, brtrue.s leave.s będą miały odpowiednie skoki 
         var il = body.GetILProcessor();
         var instructions = method.Body.Instructions.ToList();
 
         if (instructions.Count == 0) return;
 
         var entryMap = new Dictionary<Instruction, Instruction>();
+        Instruction? pendingEntryPoint = null;
 
-        // Inkrementacja licznika przed każdą instrukcją
         foreach (var instr in instructions)
         {
-            // Wczytanie aktualnej wartości pola __InstructionCounter (typu long) na stos obliczeniowy
-            var loadCounter = il.Create(OpCodes.Ldsfld, counterField);
-            // Wrzucenie na stos stałą wartość liczbową 1 typu 64-bitowego
-            var loadOne = il.Create(OpCodes.Ldc_I8, 1L);
-            // Zdjęcie dwóch górnych wartości ze stosu, dodanie ich do siebie i wrzucenie wyniku (__InstructionCounter + 1) z powrotem na stos
-            var add = il.Create(OpCodes.Add);
-            // Zdjęcie wyniku ze stosu i zapisanie go z powrotem do pola __InstructionCounter
-            var storeCounter = il.Create(OpCodes.Stsfld, counterField);
-            
-            entryMap[instr] = loadCounter;// Zapisujemy, że początkiem dawnej instrukcji 'instr' jest teraz 'loadCounter'
+            if (IsPrefixInstruction(instr))
+            {
+                if (pendingEntryPoint == null)
+                {
+                    pendingEntryPoint = InsertCounterBump(il, counterField, instr);
+                }
+                entryMap[instr] = instr;
+                continue;
+            }
 
-            // Wstawienie nowej sekwencji przed analizowaną instrukcję
-            il.InsertBefore(instr, loadCounter);
-            il.InsertBefore(instr, loadOne);
-            il.InsertBefore(instr, add);
-            il.InsertBefore(instr, storeCounter);
+            if (pendingEntryPoint != null)
+            {
+                entryMap[instr] = pendingEntryPoint;
+                pendingEntryPoint = null;
+                continue;
+            }
 
-            // Naprawa etykiet skoków (Branch Fixup) 
-            // Jeśli jakakolwiek inna instrukcja w metodzie skakała do 'instr',
-            // to po wstawieniu inkrementacji musi teraz skakać do 'loadCounter'.
-            //RedirectBranches(method, instr, loadCounter);
+            entryMap[instr] = InsertCounterBump(il, counterField, instr);
         }
 
         RedirectAllBranches(body, entryMap);
-        // Optymalizacja rozmiarów skoków i przesunięć
-        body.Optimize();
+        body.OptimizeMacros();
+    }
+
+    private static Instruction InsertCounterBump(
+        ILProcessor il, FieldDefinition counterField, Instruction before)
+    {
+        var loadCounter = il.Create(OpCodes.Ldsfld, counterField);
+        var loadOne = il.Create(OpCodes.Ldc_I8, 1L);
+        var add = il.Create(OpCodes.Add);
+        var storeCounter = il.Create(OpCodes.Stsfld, counterField);
+
+        il.InsertBefore(before, loadCounter);
+        il.InsertBefore(before, loadOne);
+        il.InsertBefore(before, add);
+        il.InsertBefore(before, storeCounter);
+
+        return loadCounter;
     }
 
     private static void RedirectAllBranches(MethodBody body, Dictionary<Instruction, Instruction> entryMap)
@@ -234,5 +238,75 @@ internal static class CilInstructionInjector
         }
     }
     
+    /// <summary>
+    /// Sprawdza, czy instrukcja jest prefiksem CIL modyfikującym zachowanie następnej instrukcji.
+    /// </summary>
+    private static bool IsPrefixInstruction(Instruction instruction)
+    {
+        var code = instruction.OpCode.Code;
+        return code == Code.Constrained
+               || code == Code.Readonly
+               || code == Code.Unaligned
+               || code == Code.Volatile
+               || code == Code.Tail;
+    }
+
+    /// <summary>
+    ///  Dodaje do kontenera metody statyczne umożliwiające odczyt i zerowanie licznika
+    /// </summary>
+    private static void CreateCounterAccessors(
+        ModuleDefinition module,
+        TypeDefinition containerType,
+        FieldDefinition counterField)
+    {
+        var getMethod = new MethodDefinition(
+            "GetInstructionCount",
+            MethodAttributes.Public | MethodAttributes.Static,
+            module.TypeSystem.Int64);
+
+        var getIl = getMethod.Body.GetILProcessor();
+        getIl.Append(getIl.Create(OpCodes.Ldsfld, counterField));
+        getIl.Append(getIl.Create(OpCodes.Ret));
+        
+    var resetMethod = new MethodDefinition(
+        "ResetInstructionCount",
+        MethodAttributes.Public | MethodAttributes.Static,
+        module.TypeSystem.Void);
+
+        var resetIl = resetMethod.Body.GetILProcessor();
+        resetIl.Append(resetIl.Create(OpCodes.Ldc_I8, 0L));
+        resetIl.Append(resetIl.Create(OpCodes.Stsfld, counterField));
+        resetIl.Append(resetIl.Create(OpCodes.Ret));
+
+        containerType.Methods.Add(getMethod);
+        containerType.Methods.Add(resetMethod);
+
+    }
     
+    /// <summary>
+    /// Zwraca wszystkie typy w module, włącznie z dowolnie zagnieżdżonymi typami
+    /// (maszyny stanów dla yield/async, domknięcia lambd, klasy anonimowe LINQ),
+    /// bo ModuleDefinition.Types zwraca tylko typy najwyższego poziomu.
+    /// </summary>
+    private static IEnumerable<TypeDefinition> GetAllTypesRecursively(ModuleDefinition module)
+    {
+        foreach (var type in module.Types)
+        {
+            yield return type;
+
+            foreach (var nested in GetNestedTypesRecursively(type))
+                yield return nested;
+        }
+    }
+
+    private static IEnumerable<TypeDefinition> GetNestedTypesRecursively(TypeDefinition type)
+    {
+        foreach (var nested in type.NestedTypes)
+        {
+            yield return nested;
+
+            foreach (var deeperNested in GetNestedTypesRecursively(nested))
+                yield return deeperNested;
+        }
+    }
 }

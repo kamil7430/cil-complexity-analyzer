@@ -60,6 +60,15 @@ public class CilInjectorServiceTests
         Assert.IsNotNull(counterField, "Nie znaleziono pola __InstructionCounter wewnątrz <GlobalCounterContainer>.");
         Assert.IsTrue(counterField.IsStatic, "Pole __InstructionCounter powinno być statyczne.");
         Assert.AreEqual("System.Int64", counterField.FieldType.FullName, "Typ pola __InstructionCounter powinien wynosić System.Int64.");
+
+        var getMethod = containerType.Methods.FirstOrDefault(m => m.Name == "GetInstructionCount");
+        Assert.IsNotNull(getMethod, "Nie znaleziono metody GetInstructionCount.");
+        Assert.IsTrue(getMethod.IsStatic && getMethod.IsPublic, "GetInstructionCount powinna być publiczna i statyczna.");
+        Assert.AreEqual("System.Int64", getMethod.ReturnType.FullName, "GetInstructionCount powinna zwracać long.");
+
+        var resetMethod = containerType.Methods.FirstOrDefault(m => m.Name == "ResetInstructionCount");
+        Assert.IsNotNull(resetMethod, "Nie znaleziono metody ResetInstructionCount.");
+        Assert.IsTrue(resetMethod.IsStatic && resetMethod.IsPublic, "ResetInstructionCount powinna być publiczna i statyczna.");
     }
 
     [TestMethod]
@@ -80,10 +89,15 @@ public class CilInjectorServiceTests
             var containerType = instrumentedAssembly.GetType("<GlobalCounterContainer>");
             Assert.IsNotNull(containerType, "Nie znaleziono typu <GlobalCounterContainer> w załadowanym assembly.");
 
-            var counterField = containerType.GetField("__InstructionCounter", BindingFlags.Public | BindingFlags.Static);
-            Assert.IsNotNull(counterField, "Nie znaleziono pola __InstructionCounter.");
+            var resetMethod = containerType.GetMethod(
+                "ResetInstructionCount", BindingFlags.Public | BindingFlags.Static);
+            Assert.IsNotNull(resetMethod, "Nie znaleziono metody ResetInstructionCount.");
 
-            counterField.SetValue(null, 0L);
+            var getMethod = containerType.GetMethod(
+                "GetInstructionCount", BindingFlags.Public | BindingFlags.Static);
+            Assert.IsNotNull(getMethod, "Nie znaleziono metody GetInstructionCount.");
+
+            resetMethod.Invoke(null, null);
 
             var calcType = instrumentedAssembly.GetType("DummyNamespace.Calculator");
             Assert.IsNotNull(calcType, "Nie znaleziono typu DummyNamespace.Calculator.");
@@ -98,7 +112,7 @@ public class CilInjectorServiceTests
             // Assert
             Assert.AreEqual(5, result, "Wywołana metoda powinna zwrócić poprawny wynik dodawania.");
 
-            long counterValue = (long)counterField.GetValue(null)!;
+            long counterValue = (long)getMethod.Invoke(null, null)!;
             Assert.IsTrue(counterValue > 0, $"Licznik instrukcji powinien wynosić więcej niż 0, a wynosił: {counterValue}");
         }
         finally
@@ -106,6 +120,7 @@ public class CilInjectorServiceTests
             context.Unload();
         }
     }
+
     private static void CreateDummyAssembly(string outputPath)
     {
         const string sourceCode = """
