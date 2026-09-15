@@ -11,7 +11,7 @@ public class InstructionCounterStrategy : IInjectionStrategy
 {
     public void Inject(ModuleDefinition module)
     {
-        // Logika Mono.Cecil...
+        module.InjectCounterIncrementation();
     }
 
     public void LoadRuntime(System.Runtime.Loader.AssemblyLoadContext context)

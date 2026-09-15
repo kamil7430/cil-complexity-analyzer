@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 
 internal static class CilInjector
 {
-    public static void Inject(this ModuleDefinition module)
+    public static void InjectCounterIncrementation(this ModuleDefinition module)
     {
         // 1. Bezpieczny import statycznego pola (sam wykrywa, że to long / Int64)
         var counterFieldRef = module.ImportStaticField(
