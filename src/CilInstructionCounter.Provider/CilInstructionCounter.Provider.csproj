@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>CilInjection</RootNamespace>
+        <RootNamespace>CilInstructionCounter</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
         <ProjectReference Include="..\CilInstructionCounter.RunTime\CilInstructionCounter.RunTime.csproj" />
+        <ProjectReference Include="..\CilInjection.Core\CilInjection.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

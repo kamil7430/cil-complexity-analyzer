@@ -1,7 +1,7 @@
-﻿namespace CilComplexityAnalyzer.CilInjection;
+﻿namespace CilInstructionCounter;
 
 using Mono.Cecil;
-using CilComplexityAnalyzer.RunTime;
+using RunTime;
 
 public static class CounterReferenceResolver
 {

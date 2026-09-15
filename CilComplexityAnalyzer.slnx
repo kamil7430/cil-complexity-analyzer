@@ -8,7 +8,7 @@
     <Project Path="src/DataAnalyzer/DataAnalyzer.csproj" />
   </Folder>
   <Folder Name="/src/CilInjection/">
-    <Project Path="src/CilInjection.core/CilInjection.core.csproj" />
+    <Project Path="src/CilInjection.Core/CilInjection.Core.csproj" />
   </Folder>
   <Folder Name="/src/CilInjection/Strategies/" />
   <Folder Name="/src/CilInjection/Strategies/InstructionCounter/">

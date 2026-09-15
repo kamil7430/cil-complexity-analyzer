@@ -1,6 +1,7 @@
 ﻿namespace CilInjection.Core;
 
 using Mono.Cecil;
+using System.Runtime.Loader;
 
 public class InjectionPipeline
 {
@@ -40,11 +41,16 @@ public class InjectionPipeline
     }
 
     /// <summary>
-    /// Zwraca listę ścieżek do plików RunTime.dll wymaganych przez zarejestrowane strategie.
+    /// Ładuje biblioteki RunTime wszystkich zarejestrowanych strategii do podanego kontekstu piaskownicy.
     /// </summary>
-    public IEnumerable<string> GetRequiredRuntimePaths()
+    public void LoadRuntimesInto(System.Runtime.Loader.AssemblyLoadContext context)
     {
-        return _strategies.Select(s => s.GetRuntimeAssemblyPath()).Distinct();
+        ArgumentNullException.ThrowIfNull(context);
+
+        foreach (var strategy in _strategies)
+        {
+            strategy.LoadRuntime(context);
+        }
     }
 
     /// <summary>

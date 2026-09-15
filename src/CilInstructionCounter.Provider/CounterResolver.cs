@@ -1,6 +1,6 @@
-﻿namespace CilComplexityAnalizer.CilInjection;
+﻿namespace CilInstructionCounter;
 
-using CilComplexityAnalyzer.RunTime;
+using RunTime;
 using System.Reflection;
 using System.Runtime.Loader;
 
