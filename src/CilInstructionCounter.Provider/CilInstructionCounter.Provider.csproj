@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
-        <ProjectReference Include="..\CilComplexityAnalyzer.RunTime\CilComplexityAnalyzer.RunTime.csproj" />
+        <ProjectReference Include="..\CilInstructionCounter.RunTime\CilInstructionCounter.RunTime.csproj" />
     </ItemGroup>
 
     <ItemGroup>
