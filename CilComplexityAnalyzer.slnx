@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/CilComplexityAnalizer.CilInjection/CilComplexityAnalizer.CilInjection.csproj" />
     <Project Path="src/CilComplexityAnalyzer.ContainerWorker/CilComplexityAnalyzer.ContainerWorker.csproj" />
     <Project Path="src/CilComplexityAnalyzer.Contract/CilComplexityAnalyzer.Contract.csproj" />
     <Project Path="src/CilComplexityAnalyzer.LibCilInjection/CilComplexityAnalyzer.LibCilInjection.csproj" />
+    <Project Path="src/CilComplexityAnalyzer.RunTime/CilComplexityAnalyzer.RunTime.csproj" />
     <Project Path="src/CilComplexityAnalyzer.TestExecutor/CilComplexityAnalyzer.TestExecutor.csproj" />
     <Project Path="src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj" />
     <Project Path="src/DataAnalyzer/DataAnalyzer.csproj" />

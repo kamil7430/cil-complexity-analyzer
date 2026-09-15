@@ -59,7 +59,7 @@ internal static class CilInstructionInjector
                 if (!method.HasBody)
                     continue;
                 
-                InjectCounter(mainModule, method, globalCounterField);
+                InjectCounter(method, globalCounterField);
             }
         }
 
@@ -96,7 +96,6 @@ internal static class CilInstructionInjector
     }
 
     private static void InjectCounter(
-        ModuleDefinition module, 
         MethodDefinition method, 
         FieldDefinition counterField)
     {
