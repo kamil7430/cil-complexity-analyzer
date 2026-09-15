@@ -1,4 +1,4 @@
-﻿namespace CilComplexityAnalyzer.Runtime;
+﻿namespace CilComplexityAnalyzer.RunTime;
 
 /// <summary>
 /// Centralny kontener pamięci dla zliczania instrukcji CIL.
