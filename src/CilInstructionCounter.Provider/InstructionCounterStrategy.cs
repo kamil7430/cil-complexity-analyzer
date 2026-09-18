@@ -1,26 +1,22 @@
-﻿
+﻿using System.Runtime.Loader;
 
 namespace CilInstructionCounter;
 
 using Mono.Cecil;
 using CilInjection.Core;
-using CilInjection.Core.Extensions;
 using RunTime;
 
-public class InstructionCounterStrategy : IInjectionStrategy
+public class InstructionCounterStrategy : BaseInjectionStrategy<ICounterHandle>
 {
-    public void Inject(ModuleDefinition module)
+    protected override Type RuntimeMarkerType => typeof(GlobalCounterContainer);
+
+    public override void Inject(ModuleDefinition module)
     {
         module.InjectCounterIncrementation();
     }
 
-    public void LoadRuntime(System.Runtime.Loader.AssemblyLoadContext context)
-    {      
-        context.LoadRuntimeFromType(typeof(GlobalCounterContainer));
-    }
-
-    public object CreateHandle(System.Runtime.Loader.AssemblyLoadContext context)
+    public override ICounterHandle BuildHandle(AssemblyLoadContext context)
     {
-        throw new NotImplementedException();
+        return new CounterHandle(context );
     }
 }

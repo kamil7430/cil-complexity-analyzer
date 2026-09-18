@@ -3,6 +3,8 @@
 using Mono.Cecil;
 using System.Runtime.Loader;
 
+/// TODO zrobić metodę która zwraca interfejs do obługi wgranych bibliotek
+
 public class InjectionPipeline
 {
     // Lista zarejestrowanych strategii (pole klasy)
@@ -24,12 +26,11 @@ public class InjectionPipeline
     public byte[] Transform(byte[] assemblyBytes)
     {
         if (_strategies.Count == 0)
-            return assemblyBytes; // Brak strategii = brak zmian
+            return assemblyBytes; 
 
         using var stream = new MemoryStream(assemblyBytes);
         using var module = ModuleDefinition.ReadModule(stream);
 
-        // Aplikujemy każdą strategię po kolei na TYM SAMYM module (jednokrotny odczyt)
         foreach (var strategy in _strategies)
         {
             strategy.Inject(module);
@@ -52,9 +53,5 @@ public class InjectionPipeline
             strategy.LoadRuntime(context);
         }
     }
-
-    /// <summary>
-    /// Pobiera zarejestrowane strategie (np. do późniejszego wygenerowania uchwytów w ALC).
-    /// </summary>
-    public IReadOnlyList<IInjectionStrategy> Strategies => _strategies.AsReadOnly();
 }
+    

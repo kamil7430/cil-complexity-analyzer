@@ -3,7 +3,7 @@
 using System.IO;
 using System.Reflection;
 
-public static class AssemblyLoadContext
+public static class AssemblyLoadContextFromType
 {
     /// <summary>
     /// Ładuje bibliotekę RunTime zawierającą podany typ bezpośrednio do piaskownicy.

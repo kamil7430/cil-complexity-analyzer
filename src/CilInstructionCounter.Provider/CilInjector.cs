@@ -9,12 +9,12 @@ internal static class CilInjector
 {
     public static void InjectCounterIncrementation(this ModuleDefinition module)
     {
-        // 1. Bezpieczny import statycznego pola (sam wykrywa, że to long / Int64)
+        // Bezpieczny import statycznego pola (sam wykrywa, że to long / Int64)
         var counterFieldRef = module.ImportStaticField(
             typeof(GlobalCounterContainer), 
             nameof(GlobalCounterContainer.InstructionCounter));
 
-        // 2. Iniekcja CIL we wszystkich metodach modułu
+        // Iniekcja CIL we wszystkich metodach modułu
         module.InjectInEveryMethodAtInstructionLevel((il, targetInstr) => new[]
         {
             il.Create(OpCodes.Ldsfld, counterFieldRef),
