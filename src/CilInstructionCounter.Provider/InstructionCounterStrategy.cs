@@ -6,14 +6,9 @@ using Mono.Cecil;
 using CilInjection.Core;
 using RunTime;
 
-public class InstructionCounterStrategy : BaseInjectionStrategy<ICounterHandle>
+public class InstructionCounterStrategy(IWeaver weaver) : BaseInjectionStrategy<ICounterHandle>(weaver)
 {
     protected override Type RuntimeMarkerType => typeof(GlobalCounterContainer);
-
-    public override void Inject(ModuleDefinition module)
-    {
-        module.InjectCounterIncrementation();
-    }
 
     public override ICounterHandle BuildHandle(AssemblyLoadContext context)
     {

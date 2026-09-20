@@ -6,10 +6,8 @@ using System.Runtime.Loader;
 
 public interface IInjectionStrategy
 {
-    // CIL Weaving: modyfikuje bajty Cecil
     void Inject(ModuleDefinition module);
 
-    // Ładowanie wymaganej biblioteki RunTime do piaskownicy
     void LoadRuntime(AssemblyLoadContext context);
 }
 
@@ -19,23 +17,27 @@ public interface IInjectionStrategy<out THandle> : IInjectionStrategy
     THandle BuildHandle(AssemblyLoadContext context);
 }
 
-public abstract class BaseInjectionStrategy<THandle> : IInjectionStrategy<THandle>
-    where THandle : class
+public abstract class BaseInjectionStrategy(IWeaver weaver) : IInjectionStrategy
 {
-    /// <summary>
-    /// Typ znajdujący się w bibliotece RunTime.dll danej strategii.
-    /// Służy do automatycznego zlokalizowania i załadowania pliku .dll do ALC.
-    /// </summary>
     protected abstract Type RuntimeMarkerType { get; }
-    
-    public abstract void Inject(ModuleDefinition module);
+
+    public void Inject(ModuleDefinition module)
+    {
+        ArgumentNullException.ThrowIfNull(module);
+        ArgumentNullException.ThrowIfNull(weaver); 
+        weaver.Inject(module);
+    }
 
     public virtual void LoadRuntime(AssemblyLoadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         context.LoadRuntimeFromType(RuntimeMarkerType);
     }
+}
 
+public abstract class BaseInjectionStrategy<THandle>(IWeaver weaver) : BaseInjectionStrategy(weaver), IInjectionStrategy<THandle>
+    where THandle : class
+{
     public abstract THandle BuildHandle(AssemblyLoadContext context);
 }
 

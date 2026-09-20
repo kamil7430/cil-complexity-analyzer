@@ -2,13 +2,14 @@
 
 using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 
 public static class AssemblyLoadContextFromType
 {
     /// <summary>
     /// Ładuje bibliotekę RunTime zawierającą podany typ bezpośrednio do piaskownicy.
     /// </summary>
-    public static Assembly LoadRuntimeFromType(this System.Runtime.Loader.AssemblyLoadContext context, Type markerType)
+    public static Assembly LoadRuntimeFromType(this AssemblyLoadContext context, Type markerType)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(markerType);
