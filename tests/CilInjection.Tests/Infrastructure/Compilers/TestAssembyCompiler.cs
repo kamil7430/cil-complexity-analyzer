@@ -37,7 +37,6 @@ public static class TestAssemblyCompiler
             throw new InvalidOperationException($"Kompilacja dynamicznej biblioteki nie powiodła się:\n{errors}");
         }
 
-        // 3. Ładujemy plik .dll z dysku, aby wyciągnąć z niego obiekt Type
         var assembly = Assembly.LoadFrom(filePath);
         var markerType = assembly.GetType(typeName) 
                          ?? throw new InvalidOperationException($"Nie odnaleziono typu '{typeName}' w dynamicznej bibliotece.");

@@ -1,8 +1,6 @@
-﻿using System.Runtime.Loader;
+﻿namespace CilInstructionCounter;
 
-namespace CilInstructionCounter;
-
-using Mono.Cecil;
+using System.Runtime.Loader;
 using CilInjection.Core;
 using RunTime;
 

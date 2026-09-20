@@ -7,10 +7,8 @@ using System.Runtime.Loader;
 
 public class InjectionPipeline
 {
-    // Lista zarejestrowanych strategii (pole klasy)
     private readonly List<IInjectionStrategy> _strategies = new();
 
-    // Wymaga C# 13 / .NET 9+
     public InjectionPipeline(params IEnumerable<IInjectionStrategy> strategies)
     {
         ArgumentNullException.ThrowIfNull(strategies);
