@@ -1,8 +1,7 @@
-using System.Reflection;
-using System.Runtime.Loader;
-using CilComplexityAnalyzer.TestExecutor;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using System;
+using System.Collections.Generic;
+using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
@@ -39,99 +38,48 @@ public class StructEnumeratorInjectionTests
     [TestMethod]
     public void Injector_ShouldNotThrow_ForForeachOverListStructEnumerator()
     {
-        byte[] assemblyBytes = CompileSource(SourceCode);
-        byte[] instrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(assemblyBytes);
+        byte[] assemblyBytes = DynamicSourceCompiler.CompileSource(SourceCode);
 
-        var alc = new AssemblyLoadContext("ListEnumeratorContext", isCollectible: true);
-        try
-        {
-            using var ms = new MemoryStream(instrumentedBytes);
-            var asm = alc.LoadFromStream(ms);
+        using var sandbox = InstrumentedSandbox.Create(
+            assemblyBytes, nameof(Injector_ShouldNotThrow_ForForeachOverListStructEnumerator));
 
-            var containerType = asm.GetType("<GlobalCounterContainer>")!;
-            var resetMethod = containerType.GetMethod("ResetInstructionCount", BindingFlags.Public | BindingFlags.Static)!;
-            var getMethod = containerType.GetMethod("GetInstructionCount", BindingFlags.Public | BindingFlags.Static)!;
+        var summerType = sandbox.Assembly.GetType("DummyNamespace.ListSummer")!;
+        var instance = Activator.CreateInstance(summerType)!;
+        var sumListMethod = summerType.GetMethod("SumList")!;
 
-            var summerType = asm.GetType("DummyNamespace.ListSummer")!;
-            var instance = Activator.CreateInstance(summerType)!;
-            var sumListMethod = summerType.GetMethod("SumList")!;
+        sandbox.Counter.ResetCounter();
 
-            resetMethod.Invoke(null, null);
+        var list = new List<int> { 1, 2, 3 };
+        var result = sumListMethod.Invoke(instance, new object[] { list });
 
-            var listType = typeof(List<int>);
-            var list = (System.Collections.IList)Activator.CreateInstance(listType)!;
-            list.Add(1); list.Add(2); list.Add(3);
-
-            var result = sumListMethod.Invoke(instance, new object[] { list });
-
-            Assert.AreEqual(6, result);
-            Assert.IsTrue((long)getMethod.Invoke(null, null)! > 0);
-        }
-        finally
-        {
-            alc.Unload();
-        }
+        Assert.AreEqual(6, result);
+        Assert.IsTrue(sandbox.Counter.GetCounter() > 0);
     }
 
     [TestMethod]
     public void Injector_ShouldNotThrow_ForForeachOverDictionaryStructEnumerator()
     {
-        byte[] assemblyBytes = CompileSource(SourceCode);
-        byte[] instrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(assemblyBytes);
+        byte[] assemblyBytes = DynamicSourceCompiler.CompileSource(SourceCode);
 
-        var alc = new AssemblyLoadContext("DictionaryEnumeratorContext", isCollectible: true);
-        try
+        using var sandbox = InstrumentedSandbox.Create(
+            assemblyBytes, nameof(Injector_ShouldNotThrow_ForForeachOverDictionaryStructEnumerator));
+
+        var summerType = sandbox.Assembly.GetType("DummyNamespace.ListSummer")!;
+        var instance = Activator.CreateInstance(summerType)!;
+        var sumDictMethod = summerType.GetMethod("SumDictionaryValues")!;
+
+        sandbox.Counter.ResetCounter();
+
+        var dictionary = new Dictionary<string, int>
         {
-            using var ms = new MemoryStream(instrumentedBytes);
-            var asm = alc.LoadFromStream(ms);
+            { "A", 10 },
+            { "B", 20 },
+            { "C", 30 }
+        };
 
-            var containerType = asm.GetType("<GlobalCounterContainer>")!;
-            var resetMethod = containerType.GetMethod("ResetInstructionCount", BindingFlags.Public | BindingFlags.Static)!;
-            var getMethod = containerType.GetMethod("GetInstructionCount", BindingFlags.Public | BindingFlags.Static)!;
+        var result = sumDictMethod.Invoke(instance, new object[] { dictionary });
 
-            var summerType = asm.GetType("DummyNamespace.ListSummer")!;
-            var instance = Activator.CreateInstance(summerType)!;
-            var sumDictMethod = summerType.GetMethod("SumDictionaryValues")!;
-
-            resetMethod.Invoke(null, null);
-
-            var dictionary = new Dictionary<string, int>
-            {
-                { "A", 10 },
-                { "B", 20 },
-                { "C", 30 }
-            };
-
-            var result = sumDictMethod.Invoke(instance, new object[] { dictionary });
-
-            Assert.AreEqual(60, result);
-            Assert.IsTrue((long)getMethod.Invoke(null, null)! > 0);
-        }
-        finally
-        {
-            alc.Unload();
-        } 
-    }
-
-    private static byte[] CompileSource(string source)
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        var references = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-            .Select(a => MetadataReference.CreateFromFile(a.Location))
-            .Cast<MetadataReference>()
-            .ToList();
-
-        var compilation = CSharpCompilation.Create(
-            "DynamicTestAssembly",
-            new[] { syntaxTree },
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        using var ms = new MemoryStream();
-        var result = compilation.Emit(ms);
-        if (!result.Success)
-            throw new InvalidOperationException(string.Join("\n", result.Diagnostics.Select(d => d.GetMessage())));
-        return ms.ToArray();
+        Assert.AreEqual(60, result);
+        Assert.IsTrue(sandbox.Counter.GetCounter() > 0);
     }
 }

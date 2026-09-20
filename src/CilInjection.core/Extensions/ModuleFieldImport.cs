@@ -18,9 +18,18 @@ public static class ModuleFieldImportExtensions
         ArgumentNullException.ThrowIfNull(targetModule);
         ArgumentNullException.ThrowIfNull(containerType);
         
-        var fieldInfo = containerType.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+        var fieldInfo = containerType.GetField(
+                            fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) 
                         ?? throw new MissingFieldException(containerType.FullName, fieldName);
 
+        // BUG odkryty przy testowaniu bibliotek:
+        // z "module: targetModule" sprawia, że Cecil traktuje do jak referencję JUŻ 
+        // należącą do targetModule i pomija rejestrację assemblyRef w targetModule.AssemblyReferences. Po zapisie
+        // modułu brakuje wpisu Assembly.Ref
+        // dla biblioteki RunTime -> CLR przy JIT-owaniu (takie słowo xD ) szuka typu lokalnie i mamy
+        // TypeLoadException.
+        // TODO: ModuleFieldImportTest dla regresji
+        /*
         var assemblyName = containerType.Assembly.GetName();
 
         var assemblyRef = new AssemblyNameReference(
@@ -41,5 +50,7 @@ public static class ModuleFieldImportExtensions
             declaringType: typeRef);
 
         return targetModule.ImportReference(fieldRef);
+        */
+        return targetModule.ImportReference(fieldInfo);
     }
 }
