@@ -1,9 +1,11 @@
-﻿namespace CilInjecting.Tests.Unit.Core;
+﻿using CilInjecting.Tests.Infrastructure.Fakes;
+
+namespace CilInjecting.Tests.Unit.Core;
 
 using System.Linq;
-using System.Reflection;
-using CilInjecting.Tests.Assertions;
-using CilInjecting.Tests.Infrastructure.Fixtures;
+using CilInjection.Core;
+using Assertions;
+using Infrastructure.Fixtures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
@@ -54,5 +56,41 @@ public class InjectionPipelineTests
         // Assert
         int loadedCount = _env.Alc.Assemblies.Count(a => a.GetName().Name == "SharedRuntime");
         Assert.AreEqual(1, loadedCount, "Biblioteka o tym samym typie markerowym nie powinna być ładowana wielokrotnie.");
+    }
+    
+    [TestMethod]
+    public void ShouldLoadTwoDifferentAssemblies_WhenDifferentStrategiesAreLoaded()
+    {
+        // Arrange
+        const string assemblyName1 = "DifferentRuntime1";
+        const string assemblyName2 = "DifferentRuntime2";
+        
+        Type markerType1 = _env.CreateDefaultDynamicRuntime(assemblyName: assemblyName1, typeName: "MarkerType1");
+        Type markerType2 = _env.CreateDefaultDynamicRuntime(assemblyName: assemblyName2, typeName: "MarkerType2");
+        var strategy1 = _env.CreateStrategy(markerType1);
+        var strategy2 = _env.CreateStrategy(markerType2);
+        
+        var pipeline = _env.CreatePipeline(strategy1, strategy2);
+
+        // Act
+        pipeline.LoadRuntimesInto(_env.Alc);
+
+        // Assert
+        _env.Alc.ShouldHaveLoadedAssembly(assemblyName1);
+        _env.Alc.ShouldHaveLoadedAssembly(assemblyName2);
+    }
+    
+    [TestMethod]
+    public void Transform_ShouldReturnOriginalBytes_WhenNoStrategiesRegistered()
+    {
+        // Arrange
+        var pipeline = _env.CreatePipeline(); 
+        var assemblyBytes = _env.CreateDefaultAssemblyBytes();
+
+        // Act
+        var resultBytes = pipeline.Transform(assemblyBytes);
+
+        // Assert
+        CollectionAssert.AreEqual(assemblyBytes, resultBytes, "Gdy brak strategii, bajty nie powinny ulec zmianie.");
     }
 }

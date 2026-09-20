@@ -6,7 +6,7 @@ using Mono.Cecil;
 
 public class FakeInjectionStrategy : BaseInjectionStrategy
 {
-    protected override Type RuntimeMarkerType { get; }
+    public override Type RuntimeMarkerType { get; }
 
     public FakeInjectionStrategy(Type runtimeMarkerType) 
         : base(new FakeWeaver())

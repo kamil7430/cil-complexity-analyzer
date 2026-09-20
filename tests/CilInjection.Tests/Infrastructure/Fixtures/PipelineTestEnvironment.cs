@@ -27,9 +27,9 @@ public sealed class PipelineTestEnvironment : IDisposable
     /// <summary>
     /// Kompiluje kod C# do pliku tymczasowego na dysku i rejestruje go do automatycznego usunięcia po zakończeniu testu.
     /// </summary>
-    public Type CreateDynamicRuntime(string sourceCode, string typeName, string assemblyName = "TestRuntime")
+    public Type CreateDynamicRuntime(string sourceCode, string assemblyName, string typeName)
     {
-        var (markerType, filePath) = TestAssemblyCompiler.CompileToTempDll(sourceCode, typeName, assemblyName);
+        var (markerType, filePath) = TestAssemblyGenerator.CompileToTempDll(sourceCode, assemblyName, typeName);
         _tempFilePaths.Add(filePath);
         return markerType;
     }
@@ -37,18 +37,27 @@ public sealed class PipelineTestEnvironment : IDisposable
     /// <summary>
     /// Generuje prosty, domyślny runtime C# gdy test wymaga jedynie sprawnej biblioteki .dll bez własnej logiki.
     /// </summary>
-    public Type CreateDefaultDynamicRuntime(string assemblyName = "DefaultTestRuntime")
+    public Type CreateDefaultDynamicRuntime(string? assemblyName = null, string? typeName = null)
     {
-        string sourceCode = $@"
-            namespace {assemblyName};
+        var (markerType, filePath) = TestAssemblyGenerator.CreateDefaultTempDll(assemblyName, typeName);
+        _tempFilePaths.Add(filePath);
+        return markerType;
+    }
+    
+    /// <summary>
+    /// Kompiluje podany kod C# wyłącznie w pamięci RAM i zwraca bajty wygenerowanej biblioteki .dll.
+    /// </summary>
+    public byte[] CreateAssemblyBytes(string sourceCode, string assemblyName = "DynamicTestAssembly")
+    {
+        return TestAssemblyGenerator.CompileToBytes(sourceCode, assemblyName);
+    }
 
-            public static class Container
-            {{
-                public static long Counter;
-                public static long GetCounter() => Counter;
-            }}";
-
-        return CreateDynamicRuntime(sourceCode, $"{assemblyName}.Container", assemblyName);
+    /// <summary>
+    /// Generuje domyślne bajty biblioteki .dll z prostą klasą kontenera bezpośrednio w pamięci RAM.
+    /// </summary>
+    public byte[] CreateDefaultAssemblyBytes(string? assemblyName = null)
+    {
+        return TestAssemblyGenerator.CreateDefaultBytes(assemblyName);
     }
 
     /// <summary>
