@@ -1,4 +1,6 @@
-﻿namespace CilInjecting.Tests.Infrastructure.Compilers;
+﻿using Mono.Cecil;
+
+namespace CilInjecting.Tests.Infrastructure.Compilers;
 
 using System;
 using System.IO;
@@ -39,13 +41,34 @@ public static class TestAssemblyGenerator
         }}", assemblyName, typeName);
     }
         
+    #region Kompilacja do ModuleDefinition w pamięci RAM
+
+    /// <summary>
+    /// Kompiluje kod C# i zwraca go bezpośrednio jako obiekt Mono.Cecil ModuleDefinition.
+    /// </summary>
+    public static ModuleDefinition CompileToModule(string sourceCode, string assemblyName)
+    {
+        var bytes = CompileToBytes(sourceCode, assemblyName);
+        return ModuleDefinition.ReadModule(new MemoryStream(bytes));
+    }
+
+    /// <summary>
+    /// Generuje domyślny moduł Mono.Cecil ModuleDefinition na bazie domyślnej klasy kontenera.
+    /// </summary>
+    public static ModuleDefinition CreateDefaultModule(string? assemblyName = null)
+    {
+        (string sourceCode, assemblyName, _) = DefaultSourceCode(assemblyName, null);
+        return CompileToModule(sourceCode, assemblyName);
+    }
+
+    #endregion
 
     #region Kompilacja do bajtów w pamięci RAM (byte[])
 
     /// <summary>
     /// Kompiluje podany kod C# wyłącznie w pamięci RAM i zwraca bajty biblioteki .dll.
     /// </summary>
-    public static byte[] CompileToBytes(string sourceCode, string assemblyName = "DynamicTestAssembly")
+    public static byte[] CompileToBytes(string sourceCode, string assemblyName)
     {
         var compilation = CreateCompilation(sourceCode, assemblyName);
 
@@ -60,7 +83,7 @@ public static class TestAssemblyGenerator
     /// <summary>
     /// Generuje domyślne bajty biblioteki .dll z prostą klasą kontenera.
     /// </summary>
-    public static byte[] CreateDefaultBytes(string assemblyName = "DefaultTestTarget")
+    public static byte[] CreateDefaultBytes(string? assemblyName = null)
     {
         (string sourceCode, assemblyName, _) = DefaultSourceCode(assemblyName, null);
 
