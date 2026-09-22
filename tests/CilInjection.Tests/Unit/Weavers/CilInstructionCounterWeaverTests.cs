@@ -22,4 +22,44 @@ public class InstructionCounterWeaverTests
         // Assert
         targetModule.ShouldHaveInjectedCounterSequenceComparedTo(originalModule);
     }
+    
+    [TestMethod]
+    public void Inject_ShouldRetargetBranchTargets_ToStartOfInjectedSequence()
+    {
+        const string sourceCode = @"
+        namespace TestTarget;
+
+        public class BranchClass
+        {
+            public int EvaluateCondition(bool condition)
+            {
+                if (condition)
+                {
+                    return 10;
+                }
+                return 20;
+            }
+
+            public string EvaluateSwitch(int option)
+            {
+                return option switch
+                {
+                    1 => ""One"",
+                    2 => ""Two"",
+                    _ => ""Other""
+                };
+            }
+        }";
+        
+        using var originalModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+        using var targetModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+
+        var weaver = new InstructionCounterWeaver();
+
+        // Act
+        weaver.Inject(targetModule);
+
+        // Assert
+        targetModule.ShouldHaveRetargetedBranchTargetsComparedTo(originalModule);
+    }
 }

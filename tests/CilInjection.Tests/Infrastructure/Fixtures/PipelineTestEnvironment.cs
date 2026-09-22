@@ -29,7 +29,7 @@ public sealed class PipelineTestEnvironment : IDisposable
     /// </summary>
     public Type CreateDynamicRuntime(string sourceCode, string assemblyName, string typeName)
     {
-        var (markerType, filePath) = TestAssemblyGenerator.CompileToTempDll(sourceCode, assemblyName, typeName);
+        var (markerType, filePath) = TestAssemblyGenerator.CompileToTempDll(sourceCode, typeName, assemblyName);
         _tempFilePaths.Add(filePath);
         return markerType;
     }

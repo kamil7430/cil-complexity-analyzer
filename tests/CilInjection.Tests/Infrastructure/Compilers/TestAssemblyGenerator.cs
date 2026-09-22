@@ -46,7 +46,7 @@ public static class TestAssemblyGenerator
     /// <summary>
     /// Kompiluje kod C# i zwraca go bezpośrednio jako obiekt Mono.Cecil ModuleDefinition.
     /// </summary>
-    public static ModuleDefinition CompileToModule(string sourceCode, string assemblyName)
+    public static ModuleDefinition CompileToModule(string sourceCode, string assemblyName = "TestAssembly")
     {
         var bytes = CompileToBytes(sourceCode, assemblyName);
         return ModuleDefinition.ReadModule(new MemoryStream(bytes));
@@ -68,7 +68,7 @@ public static class TestAssemblyGenerator
     /// <summary>
     /// Kompiluje podany kod C# wyłącznie w pamięci RAM i zwraca bajty biblioteki .dll.
     /// </summary>
-    public static byte[] CompileToBytes(string sourceCode, string assemblyName)
+    public static byte[] CompileToBytes(string sourceCode, string assemblyName = "TestAssembly")
     {
         var compilation = CreateCompilation(sourceCode, assemblyName);
 
@@ -99,8 +99,8 @@ public static class TestAssemblyGenerator
     /// </summary>
     public static (Type MarkerType, string FilePath) CompileToTempDll(
         string sourceCode,
-        string assemblyName,
-        string typeName)
+        string typeName,
+        string assemblyName = "TestAssembly")
     {
         string filePath = Path.Combine(Path.GetTempPath(), $"{assemblyName}_{Guid.NewGuid():N}.dll");
         string fullTypeName = $"{assemblyName}.{typeName}";
@@ -127,7 +127,7 @@ public static class TestAssemblyGenerator
     {
         (string sourceCode, assemblyName, typeName) = DefaultSourceCode(assemblyName, typeName);
         
-        return CompileToTempDll(sourceCode, assemblyName, typeName);
+        return CompileToTempDll(sourceCode, typeName, assemblyName);
     }
 
     #endregion
