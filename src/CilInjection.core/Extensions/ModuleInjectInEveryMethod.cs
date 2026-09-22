@@ -17,7 +17,7 @@ public static class ModuleInjectInEveryMethod
     {
         ArgumentNullException.ThrowIfNull(module);
 
-        foreach (var type in module.GetAllTypesRecursively())
+        foreach (var type in module.GetTypes())
         {
             if (type.IsInterface) continue;
 
