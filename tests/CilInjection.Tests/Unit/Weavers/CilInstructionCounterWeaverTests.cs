@@ -26,30 +26,40 @@ public class InstructionCounterWeaverTests
     [TestMethod]
     public void Inject_ShouldRetargetBranchTargets_ToStartOfInjectedSequence()
     {
-        const string sourceCode = @"
+        const string sourceCode = $@"
         namespace TestTarget;
 
         public class BranchClass
-        {
-            public int EvaluateCondition(bool condition)
-            {
+        {{
+            public int MethodWithIfStatement(bool condition)
+            {{
                 if (condition)
-                {
+                {{
                     return 10;
-                }
+                }}
                 return 20;
-            }
+            }}
 
-            public string EvaluateSwitch(int option)
-            {
+            public string MethodWithSwitchStatement(int option)
+            {{
                 return option switch
-                {
+                {{
                     1 => ""One"",
                     2 => ""Two"",
                     _ => ""Other""
-                };
-            }
-        }";
+                }};
+            }}
+
+            public int MethodWithForStatement(int a, int b)
+            {{
+                int sum = 0;
+                for(int i = 0; i < a; i++)
+                {{
+                    sum += b;
+                }}
+                return sum;
+            }}
+        }}";
         
         using var originalModule = TestAssemblyGenerator.CompileToModule(sourceCode);
         using var targetModule = TestAssemblyGenerator.CompileToModule(sourceCode);

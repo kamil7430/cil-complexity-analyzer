@@ -8,6 +8,8 @@ using RunTime;
 
 public static class InstructionCounterAssertions
 {
+    private const int BlockSize = 5;
+    
     public static void ShouldHaveInjectedCounterSequenceComparedTo(
         this ModuleDefinition modifiedModule, 
         ModuleDefinition originalModule)
@@ -30,7 +32,7 @@ public static class InstructionCounterAssertions
             var origInstructions = origMethod.Body.Instructions;
             var modInstructions = modMethod.Body.Instructions;
 
-            int expectedCount = origInstructions.Count * 5;
+            int expectedCount = origInstructions.Count * BlockSize;
             Assert.AreEqual(
                 expectedCount, 
                 modInstructions.Count, 
@@ -38,7 +40,7 @@ public static class InstructionCounterAssertions
 
             for (int i = 0; i < origInstructions.Count; i++)
             {
-                int baseIndex = i * 5;
+                int baseIndex = i * BlockSize;
 
                 var ldsfld = modInstructions[baseIndex];
                 var ldcI8 = modInstructions[baseIndex + 1];
@@ -104,7 +106,7 @@ public static class InstructionCounterAssertions
                 if (!IsBranchInstruction(origInst))
                     continue;
 
-                int modBranchIndex = (i * 5) + 4;
+                int modBranchIndex = (i * BlockSize) + 4;
                 var modBranchInst = modInstructions[modBranchIndex];
 
                 AssertOpCodesAreEqual(
@@ -122,7 +124,7 @@ public static class InstructionCounterAssertions
                     for (int t = 0; t < origTargets.Length; t++)
                     {
                         int origTargetIndex = origInstructions.IndexOf(origTargets[t]);
-                        var expectedModTarget = modInstructions[origTargetIndex * 5];
+                        var expectedModTarget = modInstructions[origTargetIndex * BlockSize];
 
                         Assert.AreSame(
                             expectedModTarget, 
@@ -137,7 +139,7 @@ public static class InstructionCounterAssertions
                     var origTarget = (Instruction)origInst.Operand;
                     int origTargetIndex = origInstructions.IndexOf(origTarget);
 
-                    var expectedModTarget = modInstructions[origTargetIndex * 5];
+                    var expectedModTarget = modInstructions[origTargetIndex * BlockSize];
                     var modTarget = (Instruction)modBranchInst.Operand;
 
                     Assert.AreSame(
@@ -203,24 +205,22 @@ public static class InstructionCounterAssertions
         Assert.AreEqual(expected, actual, message);
     }
 
-    private static OpCode GetCanonicalOpCode(OpCode opCode)
+    private static OpCode GetCanonicalOpCode(OpCode opCode) => opCode.Code switch
     {
-        // Mapowanie skoków krótkich (.s) na ich długie odpowiedniki
-        if (opCode == OpCodes.Br_S) return OpCodes.Br;
-        if (opCode == OpCodes.Brfalse_S) return OpCodes.Brfalse;
-        if (opCode == OpCodes.Brtrue_S) return OpCodes.Brtrue;
-        if (opCode == OpCodes.Beq_S) return OpCodes.Beq;
-        if (opCode == OpCodes.Bge_S) return OpCodes.Bge;
-        if (opCode == OpCodes.Bgt_S) return OpCodes.Bgt;
-        if (opCode == OpCodes.Ble_S) return OpCodes.Ble;
-        if (opCode == OpCodes.Blt_S) return OpCodes.Blt;
-        if (opCode == OpCodes.Bne_Un_S) return OpCodes.Bne_Un;
-        if (opCode == OpCodes.Bge_Un_S) return OpCodes.Bge_Un;
-        if (opCode == OpCodes.Bgt_Un_S) return OpCodes.Bgt_Un;
-        if (opCode == OpCodes.Ble_Un_S) return OpCodes.Ble_Un;
-        if (opCode == OpCodes.Blt_Un_S) return OpCodes.Blt_Un;
-        if (opCode == OpCodes.Leave_S) return OpCodes.Leave;
-
-        return opCode;
-    }
+        Code.Br_S => OpCodes.Br,
+        Code.Brfalse_S => OpCodes.Brfalse,
+        Code.Brtrue_S => OpCodes.Brtrue,
+        Code.Beq_S => OpCodes.Beq,
+        Code.Bge_S => OpCodes.Bge,
+        Code.Bgt_S => OpCodes.Bgt,
+        Code.Ble_S => OpCodes.Ble,
+        Code.Blt_S => OpCodes.Blt,
+        Code.Bne_Un_S => OpCodes.Bne_Un,
+        Code.Bge_Un_S => OpCodes.Bge_Un,
+        Code.Bgt_Un_S => OpCodes.Bgt_Un,
+        Code.Ble_Un_S => OpCodes.Ble_Un,
+        Code.Blt_Un_S => OpCodes.Blt_Un,
+        Code.Leave_S => OpCodes.Leave,
+        _ => opCode
+    };
 }
