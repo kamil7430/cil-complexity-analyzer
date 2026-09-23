@@ -72,4 +72,58 @@ public class InstructionCounterWeaverTests
         // Assert
         targetModule.ShouldHaveRetargetedBranchTargetsComparedTo(originalModule);
     }
+    
+    [TestMethod]
+    public void Inject_ShouldRetargetExceptionHandlers_ToStartOfInjectedSequence()
+    {
+        const string sourceCode = @"
+        namespace TestTarget;
+
+        using System;
+
+        public class ExceptionClass
+        {
+            private int _state;
+
+            public void MethodWithTryCatch()
+            {
+                try
+                {
+                    _state = 1;
+                    throw new InvalidOperationException();
+                }
+                catch (InvalidOperationException)
+                {
+                    _state = 2;
+                }
+                catch (Exception)
+                {
+                    _state = 3;
+                }
+            }
+
+            public void MethodWithTryFinally()
+            {
+                try
+                {
+                    _state = 10;
+                }
+                finally
+                {
+                    _state = 20;
+                }
+            }
+        }";
+
+        using var originalModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+        using var targetModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+
+        var weaver = new InstructionCounterWeaver();
+
+        // Act
+        weaver.Inject(targetModule);
+
+        // Assert
+        targetModule.ShouldHaveRetargetedExceptionHandlersComparedTo(originalModule);
+    }
 }

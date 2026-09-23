@@ -40,7 +40,7 @@ public static class InstructionCounterAssertions
 
             for (int i = 0; i < origInstructions.Count; i++)
             {
-                int baseIndex = i * BlockSize;
+                int baseIndex = GetModifiedIndex(i);
 
                 var ldsfld = modInstructions[baseIndex];
                 var ldcI8 = modInstructions[baseIndex + 1];
@@ -48,22 +48,22 @@ public static class InstructionCounterAssertions
                 var stsfld = modInstructions[baseIndex + 3];
                 var originalInst = modInstructions[baseIndex + 4];
 
-                // 1. Ldsfld
+                // Ldsfld
                 Assert.AreEqual(OpCodes.Ldsfld, ldsfld.OpCode, $"[{origMethod.Name}, blok #{i}] Oczekiwano OpCode Ldsfld.");
                 AssertIsCounterFieldReference(ldsfld.Operand, origMethod.Name);
 
-                // 2. Ldc_I8 (1L)
+                // Ldc_I8 (1L)
                 Assert.AreEqual(OpCodes.Ldc_I8, ldcI8.OpCode, $"[{origMethod.Name}, blok #{i}] Oczekiwano OpCode Ldc_I8.");
                 Assert.AreEqual(1L, ldcI8.Operand, $"[{origMethod.Name}, blok #{i}] Stała powinna wynosić 1L.");
 
-                // 3. Add
+                // Add
                 Assert.AreEqual(OpCodes.Add, add.OpCode, $"[{origMethod.Name}, blok #{i}] Oczekiwano OpCode Add.");
 
-                // 4. Stsfld
+                // Stsfld
                 Assert.AreEqual(OpCodes.Stsfld, stsfld.OpCode, $"[{origMethod.Name}, blok #{i}] Oczekiwano OpCode Stsfld.");
                 AssertIsCounterFieldReference(stsfld.Operand, origMethod.Name);
 
-                // 5. Oryginalna instrukcja
+                // Oryginalna instrukcja
                 AssertOpCodesAreEqual(
                     origInstructions[i].OpCode, 
                     originalInst.OpCode, 
@@ -106,7 +106,7 @@ public static class InstructionCounterAssertions
                 if (!IsBranchInstruction(origInst))
                     continue;
 
-                int modBranchIndex = (i * BlockSize) + 4;
+                int modBranchIndex = GetModifiedIndex(i) + 4;
                 var modBranchInst = modInstructions[modBranchIndex];
 
                 AssertOpCodesAreEqual(
@@ -124,7 +124,7 @@ public static class InstructionCounterAssertions
                     for (int t = 0; t < origTargets.Length; t++)
                     {
                         int origTargetIndex = origInstructions.IndexOf(origTargets[t]);
-                        var expectedModTarget = modInstructions[origTargetIndex * BlockSize];
+                        var expectedModTarget = modInstructions[GetModifiedIndex(origTargetIndex)];
 
                         Assert.AreSame(
                             expectedModTarget, 
@@ -139,7 +139,7 @@ public static class InstructionCounterAssertions
                     var origTarget = (Instruction)origInst.Operand;
                     int origTargetIndex = origInstructions.IndexOf(origTarget);
 
-                    var expectedModTarget = modInstructions[origTargetIndex * BlockSize];
+                    var expectedModTarget = modInstructions[GetModifiedIndex(origTargetIndex)];
                     var modTarget = (Instruction)modBranchInst.Operand;
 
                     Assert.AreSame(
@@ -153,6 +153,88 @@ public static class InstructionCounterAssertions
         }
 
         Assert.IsTrue(totalBranchesChecked > 0, "Przetestowane moduły powinny zawierać przynajmniej jedną instrukcję skoku.");
+    }
+    
+    public static void ShouldHaveRetargetedExceptionHandlersComparedTo(
+        this ModuleDefinition modifiedModule, 
+        ModuleDefinition originalModule)
+    {
+        var originalMethods = originalModule.GetTypes()
+            .SelectMany(t => t.Methods)
+            .Where(m => m.HasBody && m.Body.ExceptionHandlers.Count > 0)
+            .ToList();
+
+        Assert.IsTrue(originalMethods.Count > 0, "Oryginalny moduł powinien posiadać przynajmniej jedną metodę z blokami obsługi wyjątków.");
+
+        foreach (var origMethod in originalMethods)
+        {
+            var modMethod = modifiedModule.GetTypes()
+                .SelectMany(t => t.Methods)
+                .FirstOrDefault(m => m.FullName == origMethod.FullName);
+
+            Assert.IsNotNull(modMethod, $"Nie odnaleziono metody '{origMethod.FullName}' w zmodyfikowanym module.");
+
+            var origInstructions = origMethod.Body.Instructions;
+            var modInstructions = modMethod.Body.Instructions;
+
+            var origHandlers = origMethod.Body.ExceptionHandlers;
+            var modHandlers = modMethod.Body.ExceptionHandlers;
+
+            Assert.AreEqual(
+                origHandlers.Count, 
+                modHandlers.Count, 
+                $"[{origMethod.Name}] Niezgodna liczba handlerów wyjątków.");
+
+            for (int h = 0; h < origHandlers.Count; h++)
+            {
+                var origH = origHandlers[h];
+                var modH = modHandlers[h];
+
+                // TryStart - musi wskazywać na Ldsfld pierwszej wstrzykniętej instrukcji bloku try
+                AssertInstructionMappedToBlockStart(origInstructions, modInstructions, origH.TryStart, modH.TryStart, origMethod.Name, h, "TryStart");
+
+                // HandlerStart - musi wskazywać na Ldsfld pierwszej wstrzykniętej instrukcji w catch/finally
+                AssertInstructionMappedToBlockStart(origInstructions, modInstructions, origH.HandlerStart, modH.HandlerStart, origMethod.Name, h, "HandlerStart");
+
+                // FilterStart
+                if (origH.FilterStart != null)
+                {
+                    AssertInstructionMappedToBlockStart(origInstructions, modInstructions, origH.FilterStart, modH.FilterStart, origMethod.Name, h, "FilterStart");
+                }
+
+                // TryEnd oraz HandlerEnd - granice ekskluzywne (wskazują na pierwszą instrukcję PO bloku)
+                AssertInstructionMappedToBlockStart(origInstructions, modInstructions, origH.TryEnd, modH.TryEnd, origMethod.Name, h, "TryEnd");
+                AssertInstructionMappedToBlockStart(origInstructions, modInstructions, origH.HandlerEnd, modH.HandlerEnd, origMethod.Name, h, "HandlerEnd");
+            }
+        }
+    }
+
+    private static int GetModifiedIndex(int origIndex) => origIndex * BlockSize;
+
+    private static void AssertInstructionMappedToBlockStart(
+        Mono.Collections.Generic.Collection<Instruction> origInstructions,
+        Mono.Collections.Generic.Collection<Instruction> modInstructions,
+        Instruction? origTarget,
+        Instruction? modTarget,
+        string methodName,
+        int handlerIndex,
+        string boundaryName)
+    {
+        if (origTarget == null)
+        {
+            Assert.IsNull(modTarget, $"[{methodName}, handler #{handlerIndex}] Wskaźnik {boundaryName} powinien wynosić null.");
+            return;
+        }
+
+        int origIndex = origInstructions.IndexOf(origTarget);
+        Assert.IsTrue(origIndex >= 0, $"[{methodName}, handler #{handlerIndex}] Nie odnaleziono instrukcji docelowej {boundaryName} w oryginalnym module.");
+
+        var expectedModTarget = modInstructions[GetModifiedIndex(origIndex)];
+
+        Assert.AreSame(
+            expectedModTarget, 
+            modTarget, 
+            $"[{methodName}, handler #{handlerIndex}] Wskaźnik {boundaryName} nie został prawidłowo przepięty na początek sekwencji licznika.");
     }
 
     private static void AssertIsCounterFieldReference(object? operand, string methodName)
@@ -201,7 +283,6 @@ public static class InstructionCounterAssertions
             return;
         }
 
-        // Domyślne porównanie dla typów prostych (int, long, string itd.)
         Assert.AreEqual(expected, actual, message);
     }
 
