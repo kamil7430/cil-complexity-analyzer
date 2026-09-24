@@ -1,4 +1,6 @@
-﻿namespace CilInstructionCounter.Tests;
+﻿using Mono.Cecil;
+
+namespace CilInstructionCounter.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assertions;
@@ -125,5 +127,46 @@ public class InstructionCounterWeaverTests
 
         // Assert
         targetModule.ShouldHaveRetargetedExceptionHandlersComparedTo(originalModule);
+    }
+    
+    [TestMethod]
+    public void InjectCilToStudentSolution_WhenExecuted_IncrementsInstructionCounterCorrectly()
+    {
+        // Arrange
+        const string sourceCode = @"
+        namespace StudentSolution;
+        public class Calculator
+        {
+            public int Add(int a, int b) => a + b;
+        }";
+
+        var originalBytes = TestAssemblyGenerator.CompileToBytes(sourceCode);
+        using var module = ModuleDefinition.ReadModule(new MemoryStream(originalBytes));
+        var weaver = new InstructionCounterWeaver();
+
+        // Act
+        weaver.Inject(module);
+
+        using var modifiedStream = new MemoryStream();
+        module.Write(modifiedStream);
+        var modifiedAssembly = System.Reflection.Assembly.Load(modifiedStream.ToArray());
+
+        var calculatorType = modifiedAssembly.GetType("StudentSolution.Calculator");
+        Assert.IsNotNull(calculatorType, "Nie odnaleziono typu Calculator w załadowanym assembly.");
+    
+        var calculatorInstance = Activator.CreateInstance(calculatorType)!;
+        var addMethod = calculatorType.GetMethod("Add")!;
+
+        var result = (int)addMethod.Invoke(calculatorInstance, new object[] { 2, 3 })!;
+
+        var containerType = modifiedAssembly.GetTypes().FirstOrDefault(t => t.Name.Contains("GlobalCounterContainer"));
+        Assert.IsNotNull(containerType, "Nie odnaleziono typu kontenera licznika w załadowanym assembly.");
+    
+        var counterField = containerType.GetField("__InstructionCounter", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var instructionCount = (long)counterField.GetValue(null)!;
+
+        // Assert
+        Assert.AreEqual(5, result, "Metoda Add powinna zwrócić poprawny wynik logiczny (2 + 3 = 5).");
+        Assert.IsTrue(instructionCount > 0, $"Licznik instrukcji powinien być większy od 0, a wynosił: {instructionCount}");
     }
 }
