@@ -20,6 +20,7 @@
     <Project Path="tests/CilComplexityAnalyzer.LibCilInjection.Tests/CilComplexityAnalyzer.LibCilInjection.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
     <Project Path="tests/CilInjection.Tests/CilInjection.Tests.csproj" />
+    <Project Path="tests/CilInjection.TestTargets/CilInjection.TestTargets.csproj" />
     <Project Path="tests/NewTester/NewTester.csproj" />
   </Folder>
 </Solution>

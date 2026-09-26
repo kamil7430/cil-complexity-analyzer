@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="SSH.NET" Version="2026.0.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -19,12 +20,19 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\CilInstructionCounter.Provider\CilInstructionCounter.Provider.csproj" />
         <ProjectReference Include="..\..\src\CilInstructionCounter.RunTime\CilInstructionCounter.RunTime.csproj" />
+        <ProjectReference Include="..\..\tests\CilInjection.TestTargets\CilInjection.TestTargets.csproj" />
         <ProjectReference Include="..\..\src\CilInjection.Core\CilInjection.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Unit\Runtime\" />
-      <Folder Include="Unit\Strategies\" />
+        <Folder Include="Unit\Runtime\" />
+        <Folder Include="Unit\Strategies\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- Ta jedna reguła automatycznie kopiuje wszystkie pliki .cs z projektu CilInjection.TestTargets -->
+        <None Include="..\CilInjection.TestTargets\**\*.cs" Link="TestTargetsSource\%(RecursiveDir)%(FileName)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

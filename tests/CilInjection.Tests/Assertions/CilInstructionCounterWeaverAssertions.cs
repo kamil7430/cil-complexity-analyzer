@@ -265,6 +265,11 @@ public static class InstructionCounterAssertions
     {
         if (expected == null && actual == null) return;
 
+        // Skoki (zarówno pojedyncze jak i switch) są weryfikowane w oddzielnej asercji ShouldHaveRetargetedBranchTargetsComparedTo,
+        // więc ignorujemy ich konkretne wskaźniki w tym miejscu.
+        if (expected is Instruction && actual is Instruction) return;
+        if (expected is Instruction[] && actual is Instruction[]) return;
+
         if (expected is MemberReference expMember && actual is MemberReference actMember)
         {
             Assert.AreEqual(expMember.FullName, actMember.FullName, message);

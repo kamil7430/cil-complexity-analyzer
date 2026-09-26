@@ -1,21 +1,24 @@
-﻿using CilInstructionCounter.RunTime;
-using Mono.Cecil;
-
-namespace CilInstructionCounter.Tests;
+﻿namespace CilInstructionCounter.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assertions;
-using CilInjecting.Tests.Infrastructure.Compilers;
+using CilInjecting.Tests.Infrastructure.Extensions;
+using CilInjecting.Tests.Infrastructure.Loaders;
+using CilInstructionCounter.RunTime;
 
 [TestClass]
 public class InstructionCounterWeaverTests
 {
     [TestMethod]
-    public void Inject_ShouldPrependCounterSequence_BeforeEveryInstructionInModule()
+    [DataRow("Basic/SimpleCalculator.cs")]
+    [DataRow("Basic/EmptyMethods.cs")]
+    [DataRow("ControlFlow/ConditionalBranches.cs")]
+    [DataRow("Exceptions/TryCatchFinally.cs")]
+    public void Inject_ShouldPrependCounterSequence_BeforeEveryInstructionInModule(string relativeFilePath)
     {
         // Arrange
-        using var originalModule = TestAssemblyGenerator.CreateDefaultModule();
-        using var targetModule = TestAssemblyGenerator.CreateDefaultModule();
+        using var originalModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
+        using var targetModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
         
         var weaver = new InstructionCounterWeaver();
 
@@ -27,45 +30,15 @@ public class InstructionCounterWeaverTests
     }
     
     [TestMethod]
-    public void Inject_ShouldRetargetBranchTargets_ToStartOfInjectedSequence()
+    [DataRow("ControlFlow/ConditionalBranches.cs")]
+    [DataRow("ControlFlow/LoopControlFlow.cs")]
+    [DataRow("ControlFlow/ShortBranchExpansion.cs")]
+    [DataRow("ControlFlow/SwitchStatements.cs")]
+    public void Inject_ShouldRetargetBranchTargets_ToStartOfInjectedSequence(string relativeFilePath)
     {
-        const string sourceCode = $@"
-        namespace TestTarget;
-
-        public class BranchClass
-        {{
-            public int MethodWithIfStatement(bool condition)
-            {{
-                if (condition)
-                {{
-                    return 10;
-                }}
-                return 20;
-            }}
-
-            public string MethodWithSwitchStatement(int option)
-            {{
-                return option switch
-                {{
-                    1 => ""One"",
-                    2 => ""Two"",
-                    _ => ""Other""
-                }};
-            }}
-
-            public int MethodWithForStatement(int a, int b)
-            {{
-                int sum = 0;
-                for(int i = 0; i < a; i++)
-                {{
-                    sum += b;
-                }}
-                return sum;
-            }}
-        }}";
-        
-        using var originalModule = TestAssemblyGenerator.CompileToModule(sourceCode);
-        using var targetModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+        // Arrange
+        using var originalModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
+        using var targetModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
 
         var weaver = new InstructionCounterWeaver();
 
@@ -77,49 +50,15 @@ public class InstructionCounterWeaverTests
     }
     
     [TestMethod]
-    public void Inject_ShouldRetargetExceptionHandlers_ToStartOfInjectedSequence()
+    [DataRow("Exceptions/TryCatchFinally.cs")]
+    [DataRow("Exceptions/MultipleCatches.cs")]
+    [DataRow("Exceptions/ExceptionFilters.cs")]
+    [DataRow("Exceptions/NestedExceptions.cs")]
+    public void Inject_ShouldRetargetExceptionHandlers_ToStartOfInjectedSequence(string relativeFilePath)
     {
-        const string sourceCode = @"
-        namespace TestTarget;
-
-        using System;
-
-        public class ExceptionClass
-        {
-            private int _state;
-
-            public void MethodWithTryCatch()
-            {
-                try
-                {
-                    _state = 1;
-                    throw new InvalidOperationException();
-                }
-                catch (InvalidOperationException)
-                {
-                    _state = 2;
-                }
-                catch (Exception)
-                {
-                    _state = 3;
-                }
-            }
-
-            public void MethodWithTryFinally()
-            {
-                try
-                {
-                    _state = 10;
-                }
-                finally
-                {
-                    _state = 20;
-                }
-            }
-        }";
-
-        using var originalModule = TestAssemblyGenerator.CompileToModule(sourceCode);
-        using var targetModule = TestAssemblyGenerator.CompileToModule(sourceCode);
+        // Arrange
+        using var originalModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
+        using var targetModule = TestTargetLoader.CompileSourceToModule(relativeFilePath);
 
         var weaver = new InstructionCounterWeaver();
 
@@ -134,44 +73,22 @@ public class InstructionCounterWeaverTests
     public void Inject_WhenExecutedInRuntime_IncrementsGlobalCounterCorrectly()
     {
         // Arrange
-        const string sourceCode = @"
-        namespace StudentSolution;
-        public class Calculator
-        {
-            public int Add(int a, int b)
-            {
-                return a + b;
-            }
-        }";
-
-        var originalBytes = TestAssemblyGenerator.CompileToBytes(sourceCode);
-        using var module = ModuleDefinition.ReadModule(new MemoryStream(originalBytes));
+        using var module = TestTargetLoader.CompileSourceToModule("Basic/SimpleCalculator.cs");
         var weaver = new InstructionCounterWeaver();
-
-        // Act
+        
         weaver.Inject(module);
 
-        // Zapisanie zmodyfikowanego modułu do pamięci i załadowanie do runtime
-        using var modifiedStream = new MemoryStream();
-        module.Write(modifiedStream);
-        var modifiedAssembly = System.Reflection.Assembly.Load(modifiedStream.ToArray());
-
-        var calculatorType = modifiedAssembly.GetType("StudentSolution.Calculator");
-        Assert.IsNotNull(calculatorType, "Nie odnaleziono typu Calculator w załadowanym assembly.");
-    
-        var calculatorInstance = Activator.CreateInstance(calculatorType)!;
-        var addMethod = calculatorType.GetMethod("Add")!;
-
-        // Resetujemy licznik statyczny przed wykonaniem metody
-        GlobalCounterContainer.InstructionCounter = 0L;
+        var assembly = module.ToAssembly();
+        GlobalCounterContainer.ResetCounter();
 
         // Act
-        var result = (int)addMethod.Invoke(calculatorInstance, new object[] { 2, 3 })!;
+        var result = assembly.InvokeMethod<int>("TestTargets.Basic.SimpleCalculator", "Add", 2, 3);
 
         // Assert
         Assert.AreEqual(5, result, "Metoda Add powinna zwrócić poprawny wynik logiczny (2 + 3 = 5).");
-        Assert.IsTrue(
-            GlobalCounterContainer.InstructionCounter > 0, 
-            $"Licznik instrukcji powinien wzrosnąć po wykonaniu metody, a wynosił: {GlobalCounterContainer.InstructionCounter}");
+        Assert.AreEqual(
+            12L, 
+            GlobalCounterContainer.GetCounter(), 
+            $"Licznik instrukcji powinien wynosić 12, a wynosił: {GlobalCounterContainer.GetCounter()}");
     }
 }

@@ -22,7 +22,7 @@ public static class TestAssemblyGenerator
         MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location)
     };
     
-    private const string DefaultAssemblyName = "DefaultTestRuntime";
+    private const string DefaultAssemblyName = "DefaultTestAssembly";
     private const string DefaultTypeName = "Container";
 
     private static (string, string, string) DefaultSourceCode(string? assemblyName, string? typeName)
@@ -133,10 +133,12 @@ public static class TestAssemblyGenerator
     #endregion
 
     #region Helpery wewnętrzne
-
+    
     private static CSharpCompilation CreateCompilation(string sourceCode, string assemblyName)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+        // Wskazujemy jawnie CSharp10 lub Preview, aby odblokować file-scoped namespaces
+        var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp10);
+        var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, parseOptions);
 
         return CSharpCompilation.Create(
             assemblyName,
