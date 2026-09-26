@@ -1,4 +1,6 @@
-﻿namespace CilInjection.Core;
+﻿using CilInstructionCounter.Core;
+
+namespace CilInjection.Core;
 
 using Extensions;
 using Mono.Cecil;
@@ -7,7 +9,16 @@ using System.Runtime.Loader;
 public interface IInjectionStrategy
 {
     Type RuntimeMarkerType { get; }
-    void Inject(ModuleDefinition module);
+    /// <summary>
+    /// Faza 1: Modyfikacja, zamiana opkodów/operandów, podmiana lub usuwanie istniejących instrukcji IL.
+    /// Wywoływana przed generowaniem jakichkolwiek nowych sekwencji instrukcji.
+    /// </summary>
+    void Transform(MethodTransformationContext context);
+
+    /// <summary>
+    /// Faza 2: Rejestracja instrukcji do wstrzyknięcia PRZED lub PO oryginalnych instrukcjach.
+    /// </summary>
+    void Inject(MethodInjectionContext plan);
 
     void LoadRuntime(AssemblyLoadContext context);
 }
