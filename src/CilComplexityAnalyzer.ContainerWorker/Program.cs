@@ -101,10 +101,20 @@ public class Program
 
         arrangeMethod!.Invoke(testCase, null);
         Debug("Invoked Arrange");
-        
-        actMethod!.Invoke(testCase, null);
-        Debug("Invoked Act");
-        
+
+        try
+        {
+            actMethod!.Invoke(testCase, null);
+            Debug("Invoked Act");
+        }
+        catch (Exception e)
+        {
+            if (e.InnerException is not null)
+            {
+                throw e.InnerException;
+            }
+        }
+
         var complexity = -1L;
         // TODO: assert time elapsed
         // if (complexity > ???)

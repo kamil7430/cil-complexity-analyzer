@@ -1,10 +1,6 @@
-﻿using System;
-
-//using System.Runtime.Intrinsics.Arm;
-
-namespace CilComplexityAnalyzer.Facade.Tests.Submissions
+﻿namespace CilComplexityAnalyzer.Facade.Tests.Submissions
 {
-    public class Lab02 : MarshalByRefObject
+    public class Lab02
     {
         /// <summary>
         /// Etap 1 - Wyznaczenie ścieżki (seam) o minimalnym sumarycznym score.

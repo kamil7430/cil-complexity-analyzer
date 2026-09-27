@@ -1,10 +1,8 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -63,7 +61,14 @@ internal static class Compiler
                 MetadataReference.CreateFromFile(typeof(TestCase).Assembly.Location),
             ],
             options: CompilationOptions
-        ).Emit(stream, cancellationToken: testSuite.CancellationToken());
+        ).Emit(
+            stream, 
+            cancellationToken: testSuite.CancellationToken()/*,
+            manifestResources: [
+                new ResourceDescription("StudentSolution", () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!), true),
+            ]*/
+            // TODO: embed the resources
+        );
 
         if (!compilationResult.Success)
         {
