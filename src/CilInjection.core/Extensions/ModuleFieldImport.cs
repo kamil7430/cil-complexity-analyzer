@@ -21,25 +21,8 @@ public static class ModuleFieldImportExtensions
         var fieldInfo = containerType.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
                         ?? throw new MissingFieldException(containerType.FullName, fieldName);
 
-        var assemblyName = containerType.Assembly.GetName();
-
-        var assemblyRef = new AssemblyNameReference(
-            assemblyName.Name!,
-            assemblyName.Version);
-
-        var typeRef = new TypeReference(
-            @namespace: containerType.Namespace!,
-            name: containerType.Name,
-            module: targetModule,
-            scope: assemblyRef);
-
-        var fieldTypeRef = targetModule.ImportReference(fieldInfo.FieldType);
-
-        var fieldRef = new FieldReference(
-            name: fieldName,
-            fieldType: fieldTypeRef,
-            declaringType: typeRef);
-
-        return targetModule.ImportReference(fieldRef);
+        // Mono.Cecil wdrożył pełną obsługę FieldInfo – sama zbuduje poprawną referencję
+        // do zewnętrznej biblioteki wraz z jej metadanymi (PublicKeyToken, Culture itd.).
+        return targetModule.ImportReference(fieldInfo);
     }
 }

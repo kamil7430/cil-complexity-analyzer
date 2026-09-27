@@ -2,6 +2,7 @@
 
 using Mono.Cecil;
 using System.Runtime.Loader;
+using System.Reflection;
 
 /// TODO zrobić metodę która zwraca interfejs do obługi wgranych bibliotek
 
@@ -49,14 +50,21 @@ public class InjectionPipeline
     /// <summary>
     /// Ładuje biblioteki RunTime wszystkich zarejestrowanych strategii do podanego kontekstu piaskownicy.
     /// </summary>
-    public void LoadRuntimesInto(System.Runtime.Loader.AssemblyLoadContext context)
+    public void LoadRuntimesInto(AssemblyLoadContext alc)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(alc);
 
-        foreach (var strategy in _strategies)
+        foreach (var assembly in GetRuntimeAssembliesToLoad())
         {
-            strategy.LoadRuntime(context);
+            alc.LoadFromAssemblyPath(assembly.Location);
         }
+    }
+    
+    private IEnumerable<Assembly> GetRuntimeAssembliesToLoad()
+    {
+        return _strategies
+            .Select(s => s.RuntimeMarkerType.Assembly)
+            .DistinctBy(a => a.FullName);
     }
 }
     

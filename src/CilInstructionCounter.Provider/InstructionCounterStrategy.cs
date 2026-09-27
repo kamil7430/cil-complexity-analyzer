@@ -6,7 +6,7 @@ using RunTime;
 
 public class InstructionCounterStrategy(IWeaver weaver) : BaseInjectionStrategy<ICounterHandle>(weaver)
 {
-    protected override Type RuntimeMarkerType => typeof(GlobalCounterContainer);
+    public override Type RuntimeMarkerType => typeof(GlobalCounterContainer);
 
     public override ICounterHandle BuildHandle(AssemblyLoadContext context)
     {

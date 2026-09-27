@@ -6,6 +6,7 @@ using System.Runtime.Loader;
 
 public interface IInjectionStrategy
 {
+    Type RuntimeMarkerType { get; }
     void Inject(ModuleDefinition module);
 
     void LoadRuntime(AssemblyLoadContext context);
@@ -19,7 +20,7 @@ public interface IInjectionStrategy<out THandle> : IInjectionStrategy
 
 public abstract class BaseInjectionStrategy(IWeaver weaver) : IInjectionStrategy
 {
-    protected abstract Type RuntimeMarkerType { get; }
+    public abstract Type RuntimeMarkerType { get; }
 
     public void Inject(ModuleDefinition module)
     {
