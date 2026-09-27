@@ -12,5 +12,9 @@
             <_Parameter1>CilComplexityAnalyzer.ContainerWorker.Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
+    </ItemGroup>
     
 </Project>

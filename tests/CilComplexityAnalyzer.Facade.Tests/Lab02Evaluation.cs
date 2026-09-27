@@ -1,18 +1,18 @@
 using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Attributes;
-using CilComplexityAnalyzer.Facade.Attributes;
+using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
-namespace NewTester.Lab02;
+namespace CilComplexityAnalyzer.Facade.Tests;
 
-[TestSuite]
-[StudentSolution(typeof(Submissions.Lab02))]
+// [TestSuite]
+[StudentSolution(typeof(Lab02))]
 public partial class Lab02Evaluation : TestSuite
 {
     public override TestSuiteSettings? Settings()
         => new TestSuiteSettings
         {
-            Containerized = false,
+            Containerized = true,
         };
 
     public class Case0_Stage1_Przyklad : TestCase
@@ -44,7 +44,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage1(_S);
         }
 
@@ -81,7 +81,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage1(_S);
         }
 
@@ -114,7 +114,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage1(_S);
         }
 
@@ -148,7 +148,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage1(_S);
         }
 
@@ -190,7 +190,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage2(_S, _K);
         }
 
@@ -232,7 +232,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage2(_S, _K);
         }
 
@@ -269,7 +269,7 @@ public partial class Lab02Evaluation : TestSuite
 
         public override void Act()
         {
-            var studentLab = new Submissions.Lab02();
+            var studentLab = new Lab02();
             _result = studentLab.Stage2(_S, _K);
         }
 

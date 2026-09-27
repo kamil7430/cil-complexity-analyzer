@@ -72,7 +72,7 @@ internal static class Executor
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
-            var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
+            var result = JsonSerializer.Deserialize<ContainerWorkerUtils.TestResult>(resultBytes)!;
 
             yield return result.Success switch
             {

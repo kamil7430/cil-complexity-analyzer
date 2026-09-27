@@ -1,1 +1,1 @@
-docker build -t container-worker:latest .
+docker build -t container-worker:latest -f Dockerfile ..

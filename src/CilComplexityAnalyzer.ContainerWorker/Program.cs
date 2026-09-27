@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using CilComplexityAnalyzer.ContainerWorkerUtils;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
@@ -145,7 +146,7 @@ public class Program
         Environment.Exit(1);
     }
 
-    [Conditional("DEBUG")]
+    //[Conditional("DEBUG")]
     private static void Debug(string message)
     {
         _originalStdout?.WriteLine(message);
