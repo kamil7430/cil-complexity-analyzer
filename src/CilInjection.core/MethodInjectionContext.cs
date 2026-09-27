@@ -12,10 +12,12 @@ public class MethodInjectionContext
 
     public IReadOnlyList<InstructionInjectionContext> Contexts { get; }
 
-    public MethodInjectionContext(MethodDefinition method, IEnumerable<Instruction> validInstructions)
+    public MethodInjectionContext(MethodDefinition method)
     {
         Method = method;
-        _contexts = validInstructions
+        var instructions = method.Body.Instructions
+            .ToList();
+        _contexts = instructions
             .ToDictionary(inst => inst, inst => new InstructionInjectionContext(inst));
 
         Contexts = _contexts.Values.ToList();

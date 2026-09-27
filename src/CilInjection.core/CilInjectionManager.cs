@@ -1,4 +1,6 @@
-﻿using CilInjection.Core;
+﻿using System.Reflection;
+using System.Runtime.Loader;
+using CilInjection.Core;
 using Mono.Cecil.Rocks;
 
 namespace CilInstructionCounter.Core;
@@ -13,14 +15,27 @@ public class CilInjectionManager
 {
     private readonly List<IInjectionStrategy> _strategies = new();
 
-    public CilInjectionManager AddStrategy(params IEnumerable<IInjectionStrategy> strategies)
+    public CilInjectionManager(params IEnumerable<IInjectionStrategy> strategies)
     {
         ArgumentNullException.ThrowIfNull(strategies);
         _strategies.AddRange(strategies);
     }
 
-    public void Inject(ModuleDefinition module)
+    public CilInjectionManager AddStrategy(IInjectionStrategy strategy)
     {
+        ArgumentNullException.ThrowIfNull(strategy);
+        _strategies.Add(strategy);
+        return this;
+    }
+    
+    public byte[] Transform(byte[] assemblyBytes)
+    {
+        if (_strategies.Count == 0)
+            return assemblyBytes; 
+
+        using var stream = new MemoryStream(assemblyBytes);
+        using var module = ModuleDefinition.ReadModule(stream);
+        
         var methods = module.GetTypes()
             .SelectMany(t => t.Methods)
             .Where(m => m.HasBody && m.Body.Instructions.Count > 0)
@@ -30,43 +45,41 @@ public class CilInjectionManager
         {
             ProcessMethod(method);
         }
+        
+        using var outputStream = new MemoryStream();
+        module.Write(outputStream);
+        return outputStream.ToArray();
     }
 
     private void ProcessMethod(MethodDefinition method)
     {
-        // 1. Rozwinięcie krótkich skoków (br.s -> br)
         method.Body.SimplifyMacros();
 
-        // 2. FAZA 1: Modyfikacje / Usuwanie / Podmiany
+        // FAZA 1: Modyfikacje / Usuwanie / Podmiany
         var transformContext = new MethodTransformationContext(method);
         foreach (var strategy in _strategies)
         {
             strategy.Transform(transformContext);
         }
 
-        // Wyciągamy instrukcje, które NIE zostały usunięte
-        var activeOriginalInstructions = method.Body.Instructions
-            .Where(inst => !transformContext.For(inst).IsRemoved)
-            .ToList();
-
-        // 3. FAZA 2: Wstrzykiwanie kodu (Before / After)
-        var injectionPlan = new MethodInjectionPlan(method, activeOriginalInstructions);
+        // FAZA 2: Wstrzykiwanie kodu
+        var injectionContext = new MethodInjectionContext(method);
         foreach (var strategy in _strategies)
         {
-            strategy.Inject(injectionPlan);
+            strategy.Inject(injectionContext);
         }
 
-        // 4. Aplikacja zmian w IL oraz wyliczenie nowej mapy celów dla skoków
-        ApplyChangesAndRetarget(method, transformContext, injectionPlan);
+        // Aplikacja zmian w IL oraz wyliczenie nowej mapy celów dla skoków
+        ApplyChangesAndRetarget(method, transformContext, injectionContext);
 
-        // 5. Optymalizacja skoków (zwijanie br do br.s tam, gdzie to możliwe)
+        // Optymalizacja skoków (zwijanie br do br.s tam, gdzie to możliwe)
         method.Body.OptimizeMacros();
     }
 
     private void ApplyChangesAndRetarget(
         MethodDefinition method, 
         MethodTransformationContext transformContext, 
-        MethodInjectionPlan injectionPlan)
+        MethodInjectionContext injectionPlan)
     {
         var processor = method.Body.GetILProcessor();
         var originalInstructions = method.Body.Instructions.ToList();
@@ -171,5 +184,25 @@ public class CilInjectionManager
             if (handler.HandlerEnd != null && mapping.TryGetValue(handler.HandlerEnd, out var he)) handler.HandlerEnd = he;
             if (handler.FilterStart != null && mapping.TryGetValue(handler.FilterStart, out var fs)) handler.FilterStart = fs;
         }
+    }
+    
+    /// <summary>
+    /// Ładuje biblioteki RunTime wszystkich zarejestrowanych strategii do podanego kontekstu piaskownicy.
+    /// </summary>
+    public void LoadRuntimesInto(AssemblyLoadContext alc)
+    {
+        ArgumentNullException.ThrowIfNull(alc);
+
+        foreach (var assembly in GetRuntimeAssembliesToLoad())
+        {
+            alc.LoadFromAssemblyPath(assembly.Location);
+        }
+    }
+    
+    private IEnumerable<Assembly> GetRuntimeAssembliesToLoad()
+    {
+        return _strategies
+            .Select(s => s.RuntimeMarkerType.Assembly)
+            .DistinctBy(a => a.FullName);
     }
 }
