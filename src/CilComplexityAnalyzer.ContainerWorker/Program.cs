@@ -113,6 +113,8 @@ public class Program
             {
                 throw e.InnerException;
             }
+
+            throw;
         }
 
         var complexity = -1L;
