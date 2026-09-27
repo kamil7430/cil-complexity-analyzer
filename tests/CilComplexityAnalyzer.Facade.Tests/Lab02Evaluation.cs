@@ -1,11 +1,11 @@
 using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Attributes;
-using NewTester.Lab02.Submissions;
+using CilComplexityAnalyzer.Facade.Attributes;
 
 namespace NewTester.Lab02;
 
-//[TestSuite]
+[TestSuite]
 [StudentSolution(typeof(Submissions.Lab02))]
 public partial class Lab02Evaluation : TestSuite
 {

@@ -1,4 +1,3 @@
-using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Attributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
