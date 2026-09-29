@@ -25,6 +25,7 @@ internal static class CilInstructionInjector
 {
     internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
     {
+        /*
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
 
         if (testSuite.StudentSolutionAssemblyBytes is null)
@@ -68,7 +69,7 @@ internal static class CilInstructionInjector
         testSuite.StudentSolutionAssemblyBytes = outputStream.ToArray();
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
-
+*/
         return testSuite;
     }
 

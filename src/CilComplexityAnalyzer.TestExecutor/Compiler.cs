@@ -63,11 +63,15 @@ internal static class Compiler
             options: CompilationOptions
         ).Emit(
             stream, 
-            cancellationToken: testSuite.CancellationToken()/*,
+            // TODO: ok? Looks ok
             manifestResources: [
-                new ResourceDescription("StudentSolution", () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!), true),
-            ]*/
-            // TODO: embed the resources
+                new ResourceDescription(
+                    "StudentSolution", 
+                    () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!), 
+                    true
+                ),
+            ],
+            cancellationToken: testSuite.CancellationToken()
         );
 
         if (!compilationResult.Success)

@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using CilComplexityAnalyzer.ContainerWorkerUtils;
@@ -13,9 +13,11 @@ public class Program
     
     internal static void Main(string[] _)
     {
+        _originalStdout = Console.Out;
+        
         // load test suite assembly
         var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
-        Debug("Loaded assembly");
+        Debug("Loaded test suite assembly");
         
         Execute(assembly, WriteResult);
     }
@@ -27,6 +29,15 @@ public class Program
             // discard any writes
             _originalStdout = Console.Out;
             Console.SetOut(TextWriter.Null);
+
+            using (var stream = assembly.GetManifestResourceStream("StudentSolution"))
+            {
+                if (stream is null)
+                    throw new DllNotFoundException("Could not find StudentSolution in assembly resources");
+                
+                AssemblyLoadContext.Default.LoadFromStream(stream);
+                Debug("Loaded student solution dll from assembly resources");
+            }
 
             var testCases = FindAllTestCases(assembly);
             Debug($"Found {testCases.Length} TestCase types.");
