@@ -1,13 +1,13 @@
-﻿namespace CilInstructionCounter.Core;
+﻿namespace CilInjection.Core.Contexts;
 
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-public class MethodTransformationContext
+internal class MethodTransformationContext
 {
-    public MethodDefinition Method { get; }
+    private MethodDefinition Method { get; }
     private readonly Dictionary<Instruction, InstructionTransformationContext> _mutations;
 
     public IReadOnlyList<InstructionTransformationContext> Mutations { get; }
@@ -16,10 +16,8 @@ public class MethodTransformationContext
     {
         Method = method;
         _mutations = method.Body.Instructions
-            .ToDictionary(inst => inst, inst => new InstructionTransformationContext(inst));
+            .ToDictionary(inst => inst, inst => new InstructionTransformationContext());
             
         Mutations = _mutations.Values.ToList();
     }
-
-    public InstructionTransformationContext For(Instruction instruction) => _mutations[instruction];
 }
