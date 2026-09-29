@@ -1,25 +1,28 @@
-﻿using CilInjection.Core.Contexts;
+﻿using CilInjection.Core.Abstractions;
+using CilInjection.Core.Contexts;
 
 namespace CilInjection.Core.BaseStrategy;
 
 internal interface IWeaver
 {
-    void Transform(MethodTransformationContext methodTransformationContext);
-    void Inject(MethodInjectionContext methodInjectionContext);
+    void Transform(IMethodTransformationContext methodTransformationContext);
+    void Inject(IMethodInjectionContext methodInjectionContext);
 }
 
 public abstract class BaseWeaver : IWeaver
 {
-    void IWeaver.Transform(MethodTransformationContext methodTransformationContext)
+    void IWeaver.Transform(IMethodTransformationContext methodTransformationContext)
     {
+        ArgumentNullException.ThrowIfNull(methodTransformationContext);
         OnTransform(methodTransformationContext);
     }
-
-    void IWeaver.Inject(MethodInjectionContext methodInjectionContext)
+    
+    void IWeaver.Inject(IMethodInjectionContext methodInjectionContext)
     {
+        ArgumentNullException.ThrowIfNull(methodInjectionContext);
         OnInject(methodInjectionContext);
     }
     
-    protected abstract void OnTransform(MethodTransformationContext methodTransformationContext);
-    protected abstract void OnInject(MethodInjectionContext methodInjectionContext);
+    protected virtual void OnTransform(IMethodTransformationContext methodTransformationContext) { }
+    protected virtual void OnInject(IMethodInjectionContext methodInjectionContext) { }
 }

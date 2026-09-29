@@ -25,23 +25,6 @@ public interface IMethodInjectionContext
     IReadOnlyList<IInstructionInjectionContext> Contexts { get; }
 }
 
-public interface IInstructionTransformationContext
-{
-    Instruction OriginalInstruction { get; }
-    OpCode OpCode { get; set; }
-    object? Operand { get; set; }
-    bool IsRemoved { get; }
-    IReadOnlyList<Instruction>? ReplacementInstructions { get; }
+public interface IInstructionTransformationContext { }
 
-    void Remove();
-    void ReplaceWith(IEnumerable<Instruction> instructions);
-    void ReplaceWith(params Instruction[] instructions);
-}
-
-public interface IMethodTransformationContext
-{
-    MethodDefinition Method { get; }
-    IReadOnlyList<IInstructionTransformationContext> Mutations { get; }
-    
-    IInstructionTransformationContext For(Instruction instruction);
-}
+public interface IMethodTransformationContext { }

@@ -3,14 +3,15 @@ using System.Runtime.Loader;
 using CilInjection.Core.Contexts;
 using CilInjection.Core.BaseStrategy;
 
+namespace CilInjection.Core.Abstractions;
+
 /// <summary>
 /// Wewnętrzny interfejs potoku (używany tylko przez silnik biblioteki)
 /// </summary>
 internal interface IInjectionStrategy
 {
-    Type RuntimeMarkerType { get; }
-    void Transform(MethodTransformationContext methodTransformationContext);
-    void Inject(MethodInjectionContext methodInjectionContext);
+    void Transform(IMethodTransformationContext methodTransformationContext);
+    void Inject(IMethodInjectionContext methodInjectionContext);
     void LoadRuntime(AssemblyLoadContext context);
 }
 
@@ -18,21 +19,24 @@ public abstract class BaseInjectionStrategy : IInjectionStrategy
 {
     private readonly IWeaver _weaver;
     
+    protected BaseInjectionStrategy(BaseWeaver weaver) 
+        : this((IWeaver)weaver) { }
+
     internal BaseInjectionStrategy(IWeaver weaver)
     {
         _weaver = weaver ?? throw new ArgumentNullException(nameof(weaver));
     }
     
-    public abstract Type RuntimeMarkerType { get; }
+    protected abstract Type RuntimeMarkerType { get; }
     
-    void IInjectionStrategy.Transform(MethodTransformationContext methodTransformationContext)
+    void IInjectionStrategy.Transform(IMethodTransformationContext methodTransformationContext)
     {
         ArgumentNullException.ThrowIfNull(methodTransformationContext);
         ArgumentNullException.ThrowIfNull(_weaver); 
         _weaver.Transform(methodTransformationContext);
     }
     
-    void IInjectionStrategy.Inject(MethodInjectionContext methodInjectionContext)
+    void IInjectionStrategy.Inject(IMethodInjectionContext methodInjectionContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
         ArgumentNullException.ThrowIfNull(_weaver); 
