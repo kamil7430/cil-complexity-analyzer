@@ -1,11 +1,12 @@
-﻿namespace CilInjection.Core.Utils;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Contexts;
+using CilInjection.Core.Abstractions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using CilInjection.Core.Contexts;
+
+namespace CilInjection.Core.Utils;
 
 internal class MethodProcessor
 {
@@ -13,7 +14,7 @@ internal class MethodProcessor
     // ToDo
     // private readonly ILTransformer _ilTransformer = new();
 
-    public void ProcessMethod(MethodDefinition method, IReadOnlyList<IInjectionStrategy> strategies)
+    public void ProcessMethod(MethodDefinition method, IReadOnlyList<IEngineStrategy> strategies)
     {
         // Uproszczenie makr skoków krótkich (br.s -> br) przed jakimikolwiek zmianami
         method.Body.SimplifyMacros();

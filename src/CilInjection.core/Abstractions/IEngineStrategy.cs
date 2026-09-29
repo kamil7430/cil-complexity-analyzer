@@ -8,42 +8,49 @@ namespace CilInjection.Core.Abstractions;
 /// <summary>
 /// Wewnętrzny interfejs potoku (używany tylko przez silnik biblioteki)
 /// </summary>
-internal interface IInjectionStrategy
+internal interface IEngineStrategy
 {
     void Transform(IMethodTransformationContext methodTransformationContext);
     void Inject(IMethodInjectionContext methodInjectionContext);
     void LoadRuntime(AssemblyLoadContext context);
 }
 
-public abstract class BaseInjectionStrategy : IInjectionStrategy
+public interface IInjectionStrategy
+{
+    internal IEngineStrategy Engine { get; }
+}
+
+public abstract class BaseEngineStrategy : IEngineStrategy, IInjectionStrategy
 {
     private readonly IWeaver _weaver;
     
-    protected BaseInjectionStrategy(BaseWeaver weaver) 
+    protected BaseEngineStrategy(BaseWeaver weaver) 
         : this((IWeaver)weaver) { }
 
-    internal BaseInjectionStrategy(IWeaver weaver)
+    internal BaseEngineStrategy(IWeaver weaver)
     {
         _weaver = weaver ?? throw new ArgumentNullException(nameof(weaver));
     }
     
+    IEngineStrategy IInjectionStrategy.Engine => this;
+    
     protected abstract Type RuntimeMarkerType { get; }
     
-    void IInjectionStrategy.Transform(IMethodTransformationContext methodTransformationContext)
+    void IEngineStrategy.Transform(IMethodTransformationContext methodTransformationContext)
     {
         ArgumentNullException.ThrowIfNull(methodTransformationContext);
         ArgumentNullException.ThrowIfNull(_weaver); 
         _weaver.Transform(methodTransformationContext);
     }
     
-    void IInjectionStrategy.Inject(IMethodInjectionContext methodInjectionContext)
+    void IEngineStrategy.Inject(IMethodInjectionContext methodInjectionContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
         ArgumentNullException.ThrowIfNull(_weaver); 
         _weaver.Inject(methodInjectionContext);
     }
 
-    void IInjectionStrategy.LoadRuntime(AssemblyLoadContext context)
+    void IEngineStrategy.LoadRuntime(AssemblyLoadContext context)
     {
         OnLoadRuntime(context);
     }

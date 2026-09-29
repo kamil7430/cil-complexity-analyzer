@@ -1,11 +1,13 @@
-﻿namespace CilInjection.Core.Contexts;
+﻿using CilInjection.Core.Abstractions;
+
+namespace CilInjection.Core.Contexts;
 
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-internal class MethodTransformationContext
+internal class MethodTransformationContext : IMethodTransformationContext
 {
     private readonly Dictionary<Instruction, InstructionTransformationContext> _mutations;
 

@@ -1,33 +1,37 @@
 ﻿using CilInjection.Core.Utils;
-
-namespace CilInstructionCounter.Core;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.Loader;
-using CilInjection.Core;
+using CilInjection.Core.Abstractions;
 using Mono.Cecil;
+using CilInjection.Core.Utils;
+
+namespace CilInjection.Core;
 
 public class CilInjectionManager
 {
-    private readonly List<IInjectionStrategy> _strategies = new();
-    private readonly MethodProcessor _methodProcessor;
-    private readonly StrategyRuntimeLoader _runtimeLoader;
-
+    private readonly List<IEngineStrategy> _strategies = new();
+    private readonly MethodProcessor _methodProcessor = new();
+    private readonly StrategyRuntimeLoader _runtimeLoader = new();
+    
     public CilInjectionManager(params IEnumerable<IInjectionStrategy> strategies)
     {
-        ArgumentNullException.ThrowIfNull(strategies);
-        _strategies.AddRange(strategies);
-        _methodProcessor = new MethodProcessor();
-        _runtimeLoader = new StrategyRuntimeLoader();
+        AddStrategies(strategies);
     }
-
+    
     public CilInjectionManager AddStrategy(IInjectionStrategy strategy)
     {
         ArgumentNullException.ThrowIfNull(strategy);
-        _strategies.Add(strategy);
+        var engineStrategy = strategy.Engine;
+        _strategies.Add(engineStrategy);
+        return this;
+    }
+
+    public CilInjectionManager AddStrategies(params IEnumerable<IInjectionStrategy> strategies)
+    {
+        ArgumentNullException.ThrowIfNull(strategies);
+        foreach (var strategy in strategies)
+        {
+            AddStrategy(strategy);
+        }
         return this;
     }
 

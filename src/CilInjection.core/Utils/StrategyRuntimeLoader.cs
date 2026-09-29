@@ -1,28 +1,19 @@
-﻿namespace CilInstructionCounter.Core;
-
+﻿using CilInjection.Core.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Loader;
-using CilInjection.Core;
+
+namespace CilInjection.Core.Utils;
 
 internal class StrategyRuntimeLoader
 {
-    public void LoadInto(AssemblyLoadContext alc, IEnumerable<IInjectionStrategy> strategies)
+    public void LoadInto(AssemblyLoadContext alc, IEnumerable<IEngineStrategy> strategies)
     {
         ArgumentNullException.ThrowIfNull(alc);
 
-        foreach (var assembly in GetRuntimeAssembliesToLoad(strategies))
+        foreach (var strategy in strategies)
         {
-            alc.LoadFromAssemblyPath(assembly.Location);
+            strategy.LoadRuntime(alc);
         }
-    }
-
-    private IEnumerable<Assembly> GetRuntimeAssembliesToLoad(IEnumerable<IInjectionStrategy> strategies)
-    {
-        return strategies
-            .Select(s => s.RuntimeMarkerType.Assembly)
-            .DistinctBy(a => a.FullName);
     }
 }

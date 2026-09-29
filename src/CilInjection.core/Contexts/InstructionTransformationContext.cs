@@ -1,6 +1,8 @@
-﻿namespace CilInjection.Core.Contexts;
+﻿using CilInjection.Core.Abstractions;
 
-internal class InstructionTransformationContext
+namespace CilInjection.Core.Contexts;
+
+internal class InstructionTransformationContext : IInstructionTransformationContext
 {
     // ToDo
 }
