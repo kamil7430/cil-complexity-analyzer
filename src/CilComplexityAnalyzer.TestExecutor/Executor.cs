@@ -12,7 +12,8 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class Executor
 {
-    private const string DockerImageTag = "docker.io/kamil7430/cil-complexity-analyzer-container-worker:main";
+    // private const string DockerImageTag = "docker.io/kamil7430/cil-complexity-analyzer-container-worker:main";
+    private const string DockerImageTag = "container-worker:latest";
     private static readonly Lazy<IImage> DockerImage = new(() => new DockerImage(DockerImageTag));
 
     internal static IEnumerable<Contract.TestResult> Execute(this TestSuite testSuite)
@@ -72,7 +73,7 @@ internal static class Executor
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
-            var result = JsonSerializer.Deserialize<ContainerWorker.TestResult>(resultBytes)!;
+            var result = JsonSerializer.Deserialize<ContainerWorkerUtils.TestResult>(resultBytes)!;
 
             yield return result.Success switch
             {

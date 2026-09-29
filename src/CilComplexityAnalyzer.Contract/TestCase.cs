@@ -1,5 +1,5 @@
 using System.Text;
-using CilComplexityAnalyzer.ContainerWorker;
+using CilComplexityAnalyzer.ContainerWorkerUtils;
 
 namespace CilComplexityAnalyzer.Contract;
 
