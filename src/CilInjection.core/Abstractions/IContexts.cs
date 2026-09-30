@@ -8,7 +8,6 @@ public interface IMetadataContext
 {
     TypeReference ImportType(Type type);
     FieldReference ImportField(FieldInfo fieldInfo);
-    FieldReference ImportField(Type declaringType, string fieldName);
     MethodReference ImportMethod(MethodBase methodBase);
 }
 

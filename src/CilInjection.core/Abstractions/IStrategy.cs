@@ -1,7 +1,7 @@
-﻿using CilInjection.Core.Extensions;
-using System.Runtime.Loader;
+﻿namespace CilInjection.Core.Abstractions;
 
-namespace CilInjection.Core.Abstractions;
+using Utils;
+using System.Runtime.Loader;
 
 /// <summary>
 /// Wewnętrzny interfejs potoku (używany tylko przez silnik biblioteki)
@@ -27,18 +27,17 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
         ArgumentNullException.ThrowIfNull(weaver);
         _engineWeaver = weaver.Engine;
     }
-    
+
     IEngineStrategy IInjectionStrategy.Engine => this;
-    
-    protected abstract Type RuntimeMarkerType { get; }
-    
-    void IEngineStrategy.Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext)
+
+    void IEngineStrategy.Transform(IMethodTransformationContext methodTransformationContext,
+        IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodTransformationContext);
         ArgumentNullException.ThrowIfNull(metadataContext);
         _engineWeaver.Transform(methodTransformationContext, metadataContext);
     }
-    
+
     void IEngineStrategy.Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
@@ -51,9 +50,32 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
         OnLoadRuntime(context);
     }
 
-    protected virtual void OnLoadRuntime(AssemblyLoadContext context)
+    protected virtual void OnLoadRuntime(AssemblyLoadContext context) { }
+}
+
+public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
+{
+    private string SessionId { get; } = Guid.NewGuid().ToString("N")[..8];
+    protected Func<string, string, string> Renamer { get; } = (name, sessionId) => $"{name}_{sessionId}";
+    
+    private readonly byte[] _dynamicDllBytes;
+    
+    protected BaseInjectionStrategyWithRuntime(string runtimeDllPath, IWeaver weaver) : base(weaver)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(runtimeDllPath);
+
+        _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
+            baseDllPath: runtimeDllPath,
+            sessionId: SessionId,
+            renamer: Renamer
+        );
+    }
+    
+    protected override void OnLoadRuntime(AssemblyLoadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        context.LoadRuntimeFromType(RuntimeMarkerType);
+
+        using var memoryStream = new MemoryStream(_dynamicDllBytes);
+        context.LoadFromStream(memoryStream);
     }
 }

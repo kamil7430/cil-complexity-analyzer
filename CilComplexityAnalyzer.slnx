@@ -14,6 +14,7 @@
   <Folder Name="/src/CilInjection/Strategies/InstructionCounter/">
     <Project Path="src/CilInstructionCounter.Provider/CilInstructionCounter.Provider.csproj" />
     <Project Path="src/CilInstructionCounter.RunTime/CilInstructionCounter.RunTime.csproj" />
+    <Project Path="src/Counter.Runtime/Counter.Runtime.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />

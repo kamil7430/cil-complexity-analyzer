@@ -23,17 +23,6 @@ internal class MetadataContext(ModuleDefinition module) : IMetadataContext
         ArgumentNullException.ThrowIfNull(fieldInfo);
         return _module.ImportReference(fieldInfo);
     }
-    
-    public FieldReference ImportField(Type declaringType, string fieldName)
-    {
-        ArgumentNullException.ThrowIfNull(declaringType);
-        ArgumentException.ThrowIfNullOrEmpty(fieldName);
-
-        var fieldInfo = declaringType.GetField(fieldName, MemberLookupFlags)
-                        ?? throw new MissingFieldException(declaringType.FullName, fieldName);
-
-        return ImportField(fieldInfo);
-    }
 
     public MethodReference ImportMethod(MethodBase methodBase)
     {

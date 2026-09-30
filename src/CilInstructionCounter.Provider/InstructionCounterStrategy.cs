@@ -4,12 +4,9 @@ using CilInstructionCounter.RunTime;
 
 namespace CilInstructionCounter;
 
-public class InstructionCounterStrategy(IWeaver weaver) : BaseInjectionStrategy(weaver)
+public class CounterStrategy(IWeaver weaver) : BaseInjectionStrategyWithRuntime(RuntimeDllPath, weaver)
 {
-    private static readonly Type ContainerType = typeof(GlobalCounterContainer);
-    private static readonly string FieldName = nameof(GlobalCounterContainer.InstructionCounter);
-    
-    protected override Type RuntimeMarkerType => ContainerType;
+    private static readonly string RuntimeDllPath = Path.Combine(AppContext.BaseDirectory, "Counter.RunTime.dll");
     
     public ICounterHandle BuildHandle(AssemblyLoadContext context)
     {
