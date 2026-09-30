@@ -9,24 +9,21 @@ internal class MetadataContext(ModuleDefinition module) : IMetadataContext
 {
     private readonly ModuleDefinition _module = module ?? throw new ArgumentNullException(nameof(module));
 
-    private const BindingFlags MemberLookupFlags = 
-        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-
-    public TypeReference ImportType(Type type)
+    public FieldReference ImportField(FieldReference fieldReference)
     {
-        ArgumentNullException.ThrowIfNull(type);
-        return _module.ImportReference(type);
+        ArgumentNullException.ThrowIfNull(fieldReference);
+        return _module.ImportReference(fieldReference);
     }
 
-    public FieldReference ImportField(FieldInfo fieldInfo)
+    public TypeReference ImportType(TypeReference typeReference)
     {
-        ArgumentNullException.ThrowIfNull(fieldInfo);
-        return _module.ImportReference(fieldInfo);
+        ArgumentNullException.ThrowIfNull(typeReference);
+        return _module.ImportReference(typeReference);
     }
 
-    public MethodReference ImportMethod(MethodBase methodBase)
+    public MethodReference ImportMethod(MethodReference methodReference)
     {
-        ArgumentNullException.ThrowIfNull(methodBase);
-        return _module.ImportReference(methodBase);
+        ArgumentNullException.ThrowIfNull(methodReference);
+        return _module.ImportReference(methodReference);
     }
 }

@@ -4,22 +4,14 @@ using System.Reflection;
 using CilInjection.Core.Abstractions;
 using Mono.Cecil.Cil;
 
-public class InstructionCounterWeaver : BaseWeaver
+public class InstructionCounterWeaver : BaseCounterWeaver
 {
-    private readonly FieldInfo _counterFieldInfo;
-    
-    public InstructionCounterWeaver(FieldInfo counterFieldInfo)
-    {
-        ArgumentNullException.ThrowIfNull(counterFieldInfo);
-        _counterFieldInfo = counterFieldInfo;
-    }
-    
     protected override void OnInject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
         ArgumentNullException.ThrowIfNull(metadataContext);
 
-        var counterFieldRef = metadataContext.ImportField(_counterFieldInfo);
+        var counterFieldRef = metadataContext.ImportField(CounterFieldInfo);
 
         foreach (var instructionContext in methodInjectionContext.Contexts)
         {

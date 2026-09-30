@@ -6,9 +6,9 @@ namespace CilInjection.Core.Abstractions;
 
 public interface IMetadataContext
 {
-    TypeReference ImportType(Type type);
-    FieldReference ImportField(FieldInfo fieldInfo);
-    MethodReference ImportMethod(MethodBase methodBase);
+    TypeReference ImportType(TypeReference typeReference);
+    FieldReference ImportField(FieldReference fieldReference);
+    MethodReference ImportMethod(MethodReference methodReference);
 }
 
 public interface IReadOnlyInstructionContext

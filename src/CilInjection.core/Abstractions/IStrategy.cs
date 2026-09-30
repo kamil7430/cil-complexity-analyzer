@@ -1,4 +1,7 @@
-﻿namespace CilInjection.Core.Abstractions;
+﻿
+using Mono.Cecil;
+
+namespace CilInjection.Core.Abstractions;
 
 using Utils;
 using System.Runtime.Loader;
@@ -69,6 +72,55 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
             sessionId: SessionId,
             renamer: Renamer
         );
+    }
+    
+    protected TypeDefinition ResolveRuntimeType(string originalTypeName)
+    {
+        string expectedTypeName = Renamer(originalTypeName, SessionId);
+
+        using var memoryStream = new MemoryStream(_dynamicDllBytes);
+        using var assemblyDef = AssemblyDefinition.ReadAssembly(memoryStream);
+
+        foreach (var module in assemblyDef.Modules)
+        {
+            var typeDef = module.GetTypes().FirstOrDefault(t => t.Name == expectedTypeName);
+            if (typeDef != null)
+            {
+                return typeDef;
+            }
+            module.ImportReference();
+        }
+        throw new MissingMemberException($"Nie znaleziono typu '{originalTypeName}' (oczekiwano: '{expectedTypeName}') w wyklonowanym runtime.");
+    }
+    
+    protected FieldReference ResolveRuntimeField(string originalTypeName, string fieldName)
+    {
+        var typeDef = ResolveRuntimeType(originalTypeName);
+        var fieldDef = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
+        if (fieldDef != null)
+        {
+            return module.ImportReference(fieldDef);
+        }
+        throw new MissingFieldException($"Nie znaleziono pola '{fieldName}' dla typu '{originalTypeName}' (oczekiwano: '{expectedTypeName}') w wyklonowanym runtime.");
+    }
+    
+    protected string ResolveRuntimeTypeName(string originalTypeName)
+    {
+        return Renamer(originalTypeName, SessionId);
+    }
+    
+    protected string ResolveRuntimeTypeFullName(string originalTypeFullName)
+    {
+        var lastDotIndex = originalTypeFullName.LastIndexOf('.');
+        if (lastDotIndex < 0)
+        {
+            return ResolveRuntimeTypeName(originalTypeFullName);
+        }
+
+        var namespacePart = originalTypeFullName.Substring(0, lastDotIndex);
+        var typeNamePart = originalTypeFullName.Substring(lastDotIndex + 1);
+
+        return $"{namespacePart}.{ResolveRuntimeTypeName(typeNamePart)}";
     }
     
     protected override void OnLoadRuntime(AssemblyLoadContext context)
