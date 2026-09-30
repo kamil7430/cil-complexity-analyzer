@@ -4,8 +4,6 @@ using Mono.Cecil;
 using System.Runtime.Loader;
 using System.Reflection;
 
-/// TODO zrobić metodę która zwraca interfejs do obługi wgranych bibliotek
-
 public class InjectionPipeline
 {
     private readonly List<IInjectionStrategy> _strategies = new();

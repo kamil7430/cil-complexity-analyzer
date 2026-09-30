@@ -1,19 +1,17 @@
-﻿namespace CilInstructionCounter;
-
+﻿using CilInjection.Core.Abstractions;
 using System.Runtime.Loader;
-using CilInjection.Core;
-using RunTime;
+using CilInstructionCounter.RunTime;
 
-public class InstructionCounterStrategy : BaseInjectionStrategy<ICounterHandle>
+namespace CilInstructionCounter;
+
+public class InstructionCounterStrategy(IWeaver weaver) : BaseInjectionStrategy(weaver)
 {
-    public override Type RuntimeMarkerType => typeof(GlobalCounterContainer);
-
-    public InstructionCounterStrategy() 
-        : base(new InstructionCounterWeaver()) // Przekazanie wewnętrznego weavera
-    {
-    }
+    private static readonly Type ContainerType = typeof(GlobalCounterContainer);
+    private static readonly string FieldName = nameof(GlobalCounterContainer.InstructionCounter);
     
-    public override ICounterHandle BuildHandle(AssemblyLoadContext context)
+    protected override Type RuntimeMarkerType => ContainerType;
+    
+    public ICounterHandle BuildHandle(AssemblyLoadContext context)
     {
         return new CounterHandle(context );
     }

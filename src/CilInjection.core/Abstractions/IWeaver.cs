@@ -1,28 +1,34 @@
-﻿using CilInjection.Core.Abstractions;
-using CilInjection.Core.Contexts;
+﻿namespace CilInjection.Core.Abstractions;
 
-namespace CilInjection.Core.BaseStrategy;
-
-internal interface IWeaver
+internal interface IEngineWeaver
 {
-    void Transform(IMethodTransformationContext methodTransformationContext);
-    void Inject(IMethodInjectionContext methodInjectionContext);
+    void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
+    void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
 }
 
-public abstract class BaseWeaver : IWeaver
+public interface IWeaver
 {
-    void IWeaver.Transform(IMethodTransformationContext methodTransformationContext)
+    internal IEngineWeaver Engine { get; }
+}
+
+public abstract class BaseWeaver : IEngineWeaver, IWeaver
+{
+    IEngineWeaver IWeaver.Engine => this;
+    
+    void IEngineWeaver.Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodTransformationContext);
-        OnTransform(methodTransformationContext);
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        OnTransform(methodTransformationContext, metadataContext);
     }
     
-    void IWeaver.Inject(IMethodInjectionContext methodInjectionContext)
+    void IEngineWeaver.Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
-        OnInject(methodInjectionContext);
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        OnInject(methodInjectionContext, metadataContext);
     }
     
-    protected virtual void OnTransform(IMethodTransformationContext methodTransformationContext) { }
-    protected virtual void OnInject(IMethodInjectionContext methodInjectionContext) { }
+    protected virtual void OnTransform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext) { }
+    protected virtual void OnInject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext) { }
 }

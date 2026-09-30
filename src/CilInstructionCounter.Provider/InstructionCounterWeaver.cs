@@ -1,13 +1,31 @@
-﻿using CilInjection.Core;
+﻿using CilInjection.Core.Abstractions;
+using CilInstructionCounter.RunTime;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace CilInstructionCounter;
 
-using Mono.Cecil;
-
-public class InstructionCounterWeaver : IWeaver
+public class InstructionCounterWeaver(Type containerType, string fieldName) : BaseWeaver
 {
-    public void Inject(ModuleDefinition module)
+    private readonly Type _containerType = containerType ?? throw new ArgumentNullException(nameof(containerType));
+    private readonly string _fieldName = fieldName ?? throw new ArgumentNullException(nameof(fieldName));
+    
+    protected override void OnInject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
     {
-        module.InjectCounterIncrementation();
+        ArgumentNullException.ThrowIfNull(methodInjectionContext);
+        ArgumentNullException.ThrowIfNull(metadataContext);
+
+        var counterFieldRef = metadataContext.ImportField(_containerType, _fieldName);
+
+        foreach (var instructionContext in methodInjectionContext.Contexts)
+        {
+            instructionContext.AddBefore(
+            [
+                Instruction.Create(OpCodes.Ldsfld, counterFieldRef),
+                Instruction.Create(OpCodes.Ldc_I8, 1L),
+                Instruction.Create(OpCodes.Add),
+                Instruction.Create(OpCodes.Stsfld, counterFieldRef)
+            ]);
+        }
     }
 }

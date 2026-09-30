@@ -1,7 +1,5 @@
 ﻿using CilInjection.Core.Extensions;
 using System.Runtime.Loader;
-using CilInjection.Core.Contexts;
-using CilInjection.Core.BaseStrategy;
 
 namespace CilInjection.Core.Abstractions;
 
@@ -10,8 +8,8 @@ namespace CilInjection.Core.Abstractions;
 /// </summary>
 internal interface IEngineStrategy
 {
-    void Transform(IMethodTransformationContext methodTransformationContext);
-    void Inject(IMethodInjectionContext methodInjectionContext);
+    void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
+    void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
     void LoadRuntime(AssemblyLoadContext context);
 }
 
@@ -20,34 +18,32 @@ public interface IInjectionStrategy
     internal IEngineStrategy Engine { get; }
 }
 
-public abstract class BaseEngineStrategy : IEngineStrategy, IInjectionStrategy
+public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrategy
 {
-    private readonly IWeaver _weaver;
-    
-    protected BaseEngineStrategy(BaseWeaver weaver) 
-        : this((IWeaver)weaver) { }
+    private readonly IEngineWeaver _engineWeaver;
 
-    internal BaseEngineStrategy(IWeaver weaver)
+    protected BaseInjectionStrategy(IWeaver weaver)
     {
-        _weaver = weaver ?? throw new ArgumentNullException(nameof(weaver));
+        ArgumentNullException.ThrowIfNull(weaver);
+        _engineWeaver = weaver.Engine;
     }
     
     IEngineStrategy IInjectionStrategy.Engine => this;
     
     protected abstract Type RuntimeMarkerType { get; }
     
-    void IEngineStrategy.Transform(IMethodTransformationContext methodTransformationContext)
+    void IEngineStrategy.Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodTransformationContext);
-        ArgumentNullException.ThrowIfNull(_weaver); 
-        _weaver.Transform(methodTransformationContext);
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        _engineWeaver.Transform(methodTransformationContext, metadataContext);
     }
     
-    void IEngineStrategy.Inject(IMethodInjectionContext methodInjectionContext)
+    void IEngineStrategy.Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
     {
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
-        ArgumentNullException.ThrowIfNull(_weaver); 
-        _weaver.Inject(methodInjectionContext);
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        _engineWeaver.Inject(methodInjectionContext, metadataContext);
     }
 
     void IEngineStrategy.LoadRuntime(AssemblyLoadContext context)

@@ -1,10 +1,16 @@
-﻿using CilInjection.Core.Contexts;
+﻿using System.Reflection;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace CilInjection.Core.Abstractions;
 
-using System.Collections.Generic;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+public interface IMetadataContext
+{
+    TypeReference ImportType(Type type);
+    FieldReference ImportField(FieldInfo fieldInfo);
+    FieldReference ImportField(Type declaringType, string fieldName);
+    MethodReference ImportMethod(MethodBase methodBase);
+}
 
 public interface IReadOnlyInstructionContext
 {

@@ -19,11 +19,13 @@ internal class MethodProcessor
         // Uproszczenie makr skoków krótkich (br.s -> br) przed jakimikolwiek zmianami
         method.Body.SimplifyMacros();
 
+        var metadataContext = new MetadataContext(method.Module);
+        
         // FAZA 1: Modyfikacje in-place / podmiany / usuwanie instrukcji
         var transformContext = new MethodTransformationContext(method);
         foreach (var strategy in strategies)
         {
-            strategy.Transform(transformContext);
+            strategy.Transform(transformContext, metadataContext);
         }
         
         // ToDo
@@ -33,7 +35,7 @@ internal class MethodProcessor
         var injectionContext = new MethodInjectionContext(method);
         foreach (var strategy in strategies)
         {
-            strategy.Inject(injectionContext);
+            strategy.Inject(injectionContext, metadataContext);
         }
         
         _ilInjector.ApplyInjections(method, injectionContext);
