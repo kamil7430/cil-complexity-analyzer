@@ -58,10 +58,12 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
 
 public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
 {
-    private string SessionId { get; } = Guid.NewGuid().ToString("N")[..8];
-    protected Func<string, string, string> Renamer { get; } = (name, sessionId) => $"{name}_{sessionId}";
+    private static readonly string SessionId = Guid.NewGuid().ToString("N")[..8];
+    private static readonly Func<string, string, string> Renamer = (name, sessionId) => $"{name}_{sessionId}";
     
     private readonly byte[] _dynamicDllBytes;
+    
+    private Dictionary<string, string> TypeMapping { get; } = new(StringComparer.Ordinal);
     
     protected BaseInjectionStrategyWithRuntime(string runtimeDllPath, IWeaver weaver) : base(weaver)
     {
@@ -70,57 +72,24 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
         _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
             baseDllPath: runtimeDllPath,
             sessionId: SessionId,
-            renamer: Renamer
+            renamer: Renamer,
+            typeNameDictionary: TypeMapping
         );
     }
     
-    protected TypeDefinition ResolveRuntimeType(string originalTypeName)
+    private string GetMappedFullName(string originalFullTypeName)
     {
-        string expectedTypeName = Renamer(originalTypeName, SessionId);
-
-        using var memoryStream = new MemoryStream(_dynamicDllBytes);
-        using var assemblyDef = AssemblyDefinition.ReadAssembly(memoryStream);
-
-        foreach (var module in assemblyDef.Modules)
+        if (TypeMapping.TryGetValue(originalFullTypeName, out var newFullName))
         {
-            var typeDef = module.GetTypes().FirstOrDefault(t => t.Name == expectedTypeName);
-            if (typeDef != null)
-            {
-                return typeDef;
-            }
-            module.ImportReference();
+            return newFullName;
         }
-        throw new MissingMemberException($"Nie znaleziono typu '{originalTypeName}' (oczekiwano: '{expectedTypeName}') w wyklonowanym runtime.");
+        throw new KeyNotFoundException($"Nie znalezino mapowania dla typu: {originalFullTypeName}");
     }
     
-    protected FieldReference ResolveRuntimeField(string originalTypeName, string fieldName)
+    protected FieldReference ResolveRuntimeField(string originalFullTypeName, string fieldName)
     {
-        var typeDef = ResolveRuntimeType(originalTypeName);
-        var fieldDef = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
-        if (fieldDef != null)
-        {
-            return module.ImportReference(fieldDef);
-        }
-        throw new MissingFieldException($"Nie znaleziono pola '{fieldName}' dla typu '{originalTypeName}' (oczekiwano: '{expectedTypeName}') w wyklonowanym runtime.");
-    }
-    
-    protected string ResolveRuntimeTypeName(string originalTypeName)
-    {
-        return Renamer(originalTypeName, SessionId);
-    }
-    
-    protected string ResolveRuntimeTypeFullName(string originalTypeFullName)
-    {
-        var lastDotIndex = originalTypeFullName.LastIndexOf('.');
-        if (lastDotIndex < 0)
-        {
-            return ResolveRuntimeTypeName(originalTypeFullName);
-        }
-
-        var namespacePart = originalTypeFullName.Substring(0, lastDotIndex);
-        var typeNamePart = originalTypeFullName.Substring(lastDotIndex + 1);
-
-        return $"{namespacePart}.{ResolveRuntimeTypeName(typeNamePart)}";
+        string newFullTypeName = GetMappedFullName(originalFullTypeName);
+        return RuntimeMetadataHelper.ResolveFieldFromBytes(_dynamicDllBytes, newFullTypeName, fieldName);
     }
     
     protected override void OnLoadRuntime(AssemblyLoadContext context)
@@ -130,4 +99,6 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
         using var memoryStream = new MemoryStream(_dynamicDllBytes);
         context.LoadFromStream(memoryStream);
     }
+    
+    
 }

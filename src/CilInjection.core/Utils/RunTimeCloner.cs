@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Mono.Cecil;
 
-public static class RuntimeCloner
+internal static class RuntimeCloner
 {
     /// <summary>
     /// Klonuje całą bibliotekę runtime w pamięci, unikalnie modyfikując nazwę assembly 
@@ -12,15 +12,19 @@ public static class RuntimeCloner
     /// </summary>
     /// <param name="baseDllPath">Ścieżka do bazowego pliku DLL.</param>
     /// <param name="sessionId">Unikalny identyfikator sesji (np. Guid).</param>
-    /// <param name="typeRenamer">Opcjonalna funkcja definiująca nową nazwę dla każdego typu na podstawie jego starej nazwy.</param>
+    /// <param name="renamer">Funkcja, która przyjmuje starą nazwę i identyfikator sesji, a zwraca nową nazwę.</param>
+    /// <param name="typeNameDictionary">Słownik wyjściowy przechowujący mapowanie starych nazw typów na nowe.</param>
     public static byte[] CreateDynamicRuntimeBytes(
         string baseDllPath,
         string sessionId,
-        Func<string, string, string> renamer)
+        Func<string, string, string> renamer,
+        Dictionary<string, string> typeNameDictionary)
+
     {
         ArgumentException.ThrowIfNullOrEmpty(baseDllPath);
         ArgumentException.ThrowIfNullOrEmpty(sessionId);
         ArgumentNullException.ThrowIfNull(renamer);
+        ArgumentNullException.ThrowIfNull(typeNameDictionary);
 
         var readerParameters = new ReaderParameters { ReadWrite = true };
 
@@ -33,31 +37,24 @@ public static class RuntimeCloner
 
         foreach (var module in assemblyDefinition.Modules)
         {
-            // Zmieniamy nazwę samego modułu, jeśli jest powiązana z assembly
             if (module.Name == oldAssemblyName + ".dll" || module.Name == oldAssemblyName)
             {
                 module.Name = newAssemblyName + ".dll";
             }
-
-            // Mapujemy stare pełne nazwy typów na nowe, aby móc potem zaktualizować TypeReference
-            var typeMapping = new Dictionary<string, (string NewNamespace, string NewName)>();
-
             foreach (var type in module.GetTypes())
             {
                 if (type.Name == "<Module>") continue;
-
-                var oldFullName = type.FullName;
                 
-                // Modyfikujemy nazwę oraz przestrzeń nazw (np. dodając sufix sesji do obu)
-                var newTypeName = renamer(type.Name, sessionId);
+                string oldFullName = type.FullName;
+                
                 var newNamespace = string.IsNullOrEmpty(type.Namespace) 
                     ? sessionId 
-                    : renamer(type.Namespace, sessionId); // Możesz dostosować logikę transformacji namespace
+                    : renamer(type.Namespace, sessionId); 
 
-                type.Name = newTypeName;
                 type.Namespace = newNamespace;
-
-                typeMapping[oldFullName] = (newNamespace, newTypeName);
+                
+                string newFullName = type.FullName; 
+                typeNameDictionary[oldFullName] = newFullName;
             }
 
             foreach (var asmRef in module.AssemblyReferences)
@@ -69,7 +66,6 @@ public static class RuntimeCloner
             }
         }
 
-        // Zapisujemy zmodyfikowany assembly do strumienia pamięci
         using var outputStream = new MemoryStream();
         assemblyDefinition.Write(outputStream);
 
