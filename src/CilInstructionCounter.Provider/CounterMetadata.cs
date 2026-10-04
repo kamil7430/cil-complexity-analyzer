@@ -2,10 +2,10 @@
 
 namespace CilInstructionCounter;
 
-internal static class CounterMetadata
+internal class CounterMetadata
 {
-    public const string TypeName = nameof(GlobalCounterContainer);
-    public const string FieldName = nameof(GlobalCounterContainer.Counter);
-    public const string GetMethodName = nameof(GlobalCounterContainer.GetCounter);
-    public const string ResetMethodName = nameof(GlobalCounterContainer.ResetCounter);
-}
+    public static readonly string StaticTypeName = typeof(GlobalCounterContainer).FullName!;
+    public static readonly string FieldName = nameof(GlobalCounterContainer.Counter);
+    public static readonly string GetMethodName = nameof(GlobalCounterContainer.GetCounter);
+    public static readonly string ResetMethodName = nameof(GlobalCounterContainer.ResetCounter);
+} 
