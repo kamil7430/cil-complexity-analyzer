@@ -15,9 +15,4 @@ public class CounterStrategy : BaseInjectionStrategyWithRuntime
         var counterFieldRef = ResolveRuntimeField(CounterMetadata.TypeName, CounterMetadata.FieldName);
         weaver.Initialize(counterFieldRef);
     }
-    
-    public ICounterHandle BuildHandle(AssemblyLoadContext context)
-    {
-        return new CounterHandle(context );
-    }
 }

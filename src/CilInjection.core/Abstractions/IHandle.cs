@@ -5,18 +5,16 @@ namespace CilInjection.Core.Abstractions;
 
 internal interface IHandle
 {
-    void Initialize(AssemblyLoadContext context);
-    void Initialize(AssemblyLoadContext context, Func<string,string> translateFunction);
+    void BindContext(AssemblyLoadContext context, Func<string, string> nameResolver);
 }
 
 public abstract class BaseRuntimeHandle : IHandle
 {
     private readonly Dictionary<string, Type> _types = new();
-
-    protected BaseRuntimeHandle(AssemblyLoadContext context, params List<string> typeNames)
-    {
-        LoadTypesFromContext(context, typeNames);
-    }
+    private AssemblyLoadContext? _context;
+    private Func<string,string> _nameResolver = (s) => s;
+    
+    protected virtual void OnBound() { }
 
     protected TDelegate BindMethod<TDelegate>(
         string typeName, 
@@ -36,55 +34,81 @@ public abstract class BaseRuntimeHandle : IHandle
         var targetType = GetTypeOrThrow(typeName);
         return GetField(targetType, fieldName, bindingFlags);
     }
+    
+    protected TResult ExecuteBound<TDelegate, TResult>(TDelegate? boundDelegate, Func<TDelegate, TResult> action) 
+        where TDelegate : Delegate
+    {
+        if (boundDelegate == null)
+        {
+            throw new InvalidOperationException(
+                $"Próbujesz wywołać metodę na handle '{GetType().Name}', ale nie została ona poprawnie powiązana w metodzie OnBound().");
+        }
+        return action(boundDelegate);
+    }
 
-    public void Initialize(AssemblyLoadContext context)
+    protected void ExecuteBound(Delegate? boundDelegate, Action<Delegate> action)
+    {
+        if (boundDelegate == null)
+        {
+            throw new InvalidOperationException(
+                $"Próbujesz wywołać akcję na handle '{GetType().Name}', ale nie została ona poprawnie powiązana w metodzie OnBound().");
+        }
+        action(boundDelegate);
+    }
+    
+    void IHandle.BindContext(AssemblyLoadContext context, Func<string, string> nameResolver)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(nameResolver);
         
+        _context = context;
+        _nameResolver = nameResolver;
+        OnBound();
     }
     
     private Type GetTypeOrThrow(string typeName)
     {
+        typeName = _nameResolver(typeName);
         if (_types.TryGetValue(typeName, out var type))
         {
             return type;
         }
 
-        throw new KeyNotFoundException($"Typ '{typeName}' nie został zarejestrowany w procesie inicjalizacji Handle.");
+        return LoadTypeFromContext(GetContextOrThrow(), typeName);
+    }
+
+    private AssemblyLoadContext GetContextOrThrow()
+    {
+        if (_context == null)
+        {
+            throw new InvalidOperationException(
+                "Próbujesz powiązać metodę lub pole w momencie, gdy Handle nie został jeszcze zainicjowany. " +
+                "Upewnij się, że wywołujesz BindMethod / BindField wyłącznie wewnątrz metody OnBound().");
+        }
+        return _context;
     }
     
-    private void LoadTypesFromContext(AssemblyLoadContext context, List<string> typeNames)
+    private Type LoadTypeFromContext(AssemblyLoadContext context, string typeName)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(typeNames);
-
-        var missingTypes = new HashSet<string>(typeNames);
+        ArgumentNullException.ThrowIfNull(typeName);
 
         foreach (var assembly in context.Assemblies)
         {
-            foreach (var typeName in missingTypes.ToList())
-            {
-                var type = assembly.GetType(typeName);
-                if (type != null)
-                {
-                    _types[typeName] = type;
-                    missingTypes.Remove(typeName);
-                }
-            }
             
-            if (missingTypes.Count == 0)
+            var type = assembly.GetType(typeName);
+            if (type != null)
             {
-                break;
+                _types[typeName] = type;
+                return type;
             }
         }
         
-        if (missingTypes.Count > 0)
-        {
-            throw new InvalidOperationException(
-                $"Nie odnaleziono następujących typów w podanym AssemblyLoadContext: {string.Join(", ", missingTypes)}");
-        }
+        throw new InvalidOperationException(
+            $"Nie odnaleziono {typeName} w podanym AssemblyLoadContext");
+        
     }
-
+    
     private static MethodInfo GetMethod(Type targetType, string methodName, BindingFlags bindingFlags)
     {
         ArgumentNullException.ThrowIfNull(targetType);

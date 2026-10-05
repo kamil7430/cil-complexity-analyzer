@@ -14,11 +14,10 @@ public interface ICounterHandle
 
 internal class CounterHandle : BaseRuntimeHandle, ICounterHandle
 {
-    private readonly Func<long> _getCounter;
-    private readonly Action _resetCounter;
+    private Func<long> _getCounter;
+    private Action _resetCounter;
 
-    public CounterHandle(AssemblyLoadContext context) 
-        : base(context, CounterMetadata.TypeName, OtherTypeMetadata.TypeName) // Możesz podać wiele typów po przecinku!
+    protected override void OnBound()
     {
         _getCounter = BindMethod<Func<long>>(CounterMetadata.TypeName, CounterMetadata.GetMethodName);
         _resetCounter = BindMethod<Action>(CounterMetadata.TypeName, CounterMetadata.ResetMethodName);
