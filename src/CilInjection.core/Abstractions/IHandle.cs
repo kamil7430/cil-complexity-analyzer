@@ -3,9 +3,9 @@ using System.Runtime.Loader;
 
 namespace CilInjection.Core.Abstractions;
 
-internal interface IHandle
+public interface IHandle
 {
-    void BindContext(AssemblyLoadContext context, Func<string, string> nameResolver);
+    internal void BindContext(AssemblyLoadContext context, Func<string, string> nameResolver);
 }
 
 public abstract class BaseRuntimeHandle : IHandle
