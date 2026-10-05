@@ -100,8 +100,13 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
         context.LoadFromStream(memoryStream);
     }
     
-    public void InitiateHandle(IHandle handle, AssemblyLoadContext context) 
+    protected THandle CreateHandle<THandle>(AssemblyLoadContext context, Func<THandle> factory) 
+        where THandle : BaseRuntimeHandle
     {
-        handle.BindContext(context, GetMappedFullName);
-    } 
+        var handle = factory();
+
+        ((IHandle)handle).BindContext(context, GetMappedFullName);
+
+        return handle;
+    }
 }

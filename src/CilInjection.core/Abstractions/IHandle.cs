@@ -3,17 +3,20 @@ using System.Runtime.Loader;
 
 namespace CilInjection.Core.Abstractions;
 
-public interface IHandle
+public interface IHandleFactory
 {
     internal void BindContext(AssemblyLoadContext context, Func<string, string> nameResolver);
 }
 
-public abstract class BaseRuntimeHandle : IHandle
+public abstract class BaseRuntimeHandleFactory<THandle> : IHandleFactory
 {
     private readonly Dictionary<string, Type> _types = new();
     private AssemblyLoadContext? _context;
     private Func<string,string> _nameResolver = (s) => s;
     
+    protected bool IsBound => _context != null;
+
+    protected abstract THandle CreateHandle();
     protected virtual void OnBound() { }
 
     protected TDelegate BindMethod<TDelegate>(
@@ -35,28 +38,7 @@ public abstract class BaseRuntimeHandle : IHandle
         return GetField(targetType, fieldName, bindingFlags);
     }
     
-    protected TResult ExecuteBound<TDelegate, TResult>(TDelegate? boundDelegate, Func<TDelegate, TResult> action) 
-        where TDelegate : Delegate
-    {
-        if (boundDelegate == null)
-        {
-            throw new InvalidOperationException(
-                $"Próbujesz wywołać metodę na handle '{GetType().Name}', ale nie została ona poprawnie powiązana w metodzie OnBound().");
-        }
-        return action(boundDelegate);
-    }
-
-    protected void ExecuteBound(Delegate? boundDelegate, Action<Delegate> action)
-    {
-        if (boundDelegate == null)
-        {
-            throw new InvalidOperationException(
-                $"Próbujesz wywołać akcję na handle '{GetType().Name}', ale nie została ona poprawnie powiązana w metodzie OnBound().");
-        }
-        action(boundDelegate);
-    }
-    
-    void IHandle.BindContext(AssemblyLoadContext context, Func<string, string> nameResolver)
+    void IHandleFactory.BindContext(AssemblyLoadContext context, Func<string, string> nameResolver)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nameResolver);

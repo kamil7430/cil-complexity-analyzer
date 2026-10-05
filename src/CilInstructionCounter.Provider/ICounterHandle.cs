@@ -14,8 +14,8 @@ public interface ICounterHandle
 
 internal class CounterHandle : BaseRuntimeHandle, ICounterHandle
 {
-    private Func<long> _getCounter;
-    private Action _resetCounter;
+    private Func<long>? _getCounter;
+    private Action? _resetCounter;
 
     protected override void OnBound()
     {
@@ -23,6 +23,6 @@ internal class CounterHandle : BaseRuntimeHandle, ICounterHandle
         _resetCounter = BindMethod<Action>(CounterMetadata.TypeName, CounterMetadata.ResetMethodName);
     }
 
-    public long GetCounter() => _getCounter();
+    public long GetCounter() => _getCounter?.Invoke() ?? 0;
     public void ResetCounter() => _resetCounter();
 }
