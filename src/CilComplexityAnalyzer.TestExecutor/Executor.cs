@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.Contract;
@@ -50,7 +51,7 @@ internal static class Executor
                 $"(timeout is {timeoutMs} ms).");
 
             byte[]? resultBytes = null;
-            while (resultBytes is null)
+            while (resultBytes is null || resultBytes.Length <= 0)
             {
                 if (globalTimeout <= DateTime.UtcNow)
                 {
@@ -64,13 +65,15 @@ internal static class Executor
                 {
                     resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i), testSuite.CancellationToken())
                         .Result;
+                    
+                    if (resultBytes.Length <= 0)
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
                 catch (AggregateException e)
                 {
                     if (e.InnerException is not FileNotFoundException)
                         throw e.InnerException ?? e;
                 }
-                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
             var result = JsonSerializer.Deserialize<ContainerWorkerUtils.TestResult>(resultBytes)!;
