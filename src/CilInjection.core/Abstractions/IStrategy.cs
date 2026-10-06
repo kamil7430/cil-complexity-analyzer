@@ -56,19 +56,19 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
     protected virtual void OnLoadRuntime(AssemblyLoadContext context) { }
 }
 
-public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
+public abstract class BaseInjectionStrategyWithRuntime<THandleInterface> : BaseInjectionStrategy
+where THandleInterface : IHandle
 {
     private static readonly string SessionId = Guid.NewGuid().ToString("N")[..8];
     private static readonly Func<string, string, string> Renamer = (name, sessionId) => $"{name}_{sessionId}";
     
     private readonly byte[] _dynamicDllBytes;
-    
     private Dictionary<string, string> TypeMapping { get; } = new(StringComparer.Ordinal);
     
     protected BaseInjectionStrategyWithRuntime(string runtimeDllPath, IWeaver weaver) : base(weaver)
     {
         ArgumentException.ThrowIfNullOrEmpty(runtimeDllPath);
-
+        
         _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
             baseDllPath: runtimeDllPath,
             sessionId: SessionId,
@@ -77,14 +77,16 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
         );
     }
     
-    private string GetMappedFullName(string originalFullTypeName)
+    public THandleInterface CreateHandle(AssemblyLoadContext context) 
     {
-        if (TypeMapping.TryGetValue(originalFullTypeName, out var newFullName))
-        {
-            return newFullName;
-        }
-        throw new KeyNotFoundException($"Nie znalezino mapowania dla typu: {originalFullTypeName}");
+        var handleFactory = CreateHandleInstance();
+            
+        ((IHandle)handleFactory).BindContext(context, GetMappedFullName);
+
+        return handleFactory;
     }
+    
+    protected abstract THandleInterface CreateHandleInstance();
     
     protected FieldReference ResolveRuntimeField(string originalFullTypeName, string fieldName)
     {
@@ -100,13 +102,12 @@ public abstract class BaseInjectionStrategyWithRuntime : BaseInjectionStrategy
         context.LoadFromStream(memoryStream);
     }
     
-    protected THandle CreateHandle<THandle>(AssemblyLoadContext context, Func<THandle> factory) 
-        where THandle : BaseRuntimeHandle
+    private string GetMappedFullName(string originalFullTypeName)
     {
-        var handle = factory();
-
-        ((IHandle)handle).BindContext(context, GetMappedFullName);
-
-        return handle;
+        if (TypeMapping.TryGetValue(originalFullTypeName, out var newFullName))
+        {
+            return newFullName;
+        }
+        throw new KeyNotFoundException($"Nie znalezino mapowania dla typu: {originalFullTypeName}");
     }
 }

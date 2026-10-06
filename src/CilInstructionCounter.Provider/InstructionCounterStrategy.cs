@@ -6,7 +6,7 @@ using Mono.Cecil;
 
 namespace CilInstructionCounter;
 
-public class BaseCounterStrategy : BaseInjectionStrategyWithRuntime
+public class BaseCounterStrategy : BaseInjectionStrategyWithRuntime<ICounterHandle>
 {
     private static readonly string RuntimeDllPath = Path.Combine(AppContext.BaseDirectory, "Counter.RunTime.dll");
     
@@ -15,9 +15,9 @@ public class BaseCounterStrategy : BaseInjectionStrategyWithRuntime
         var counterFieldRef = ResolveRuntimeField(CounterMetadata.TypeName, CounterMetadata.FieldName);
         weaver.Initialize(counterFieldRef);
     }
-    
-    public ICounterHandle CreateHandle(AssemblyLoadContext context)
+
+    protected override ICounterHandle CreateHandleInstance()
     {
-        return CreateHandle(context, () => new CounterHandle());
+        return new BaseCounterHandle();
     }
 }

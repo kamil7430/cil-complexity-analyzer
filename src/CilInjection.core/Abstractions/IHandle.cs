@@ -3,20 +3,19 @@ using System.Runtime.Loader;
 
 namespace CilInjection.Core.Abstractions;
 
-public interface IHandleFactory
+public interface IHandle
 {
     internal void BindContext(AssemblyLoadContext context, Func<string, string> nameResolver);
 }
 
-public abstract class BaseRuntimeHandleFactory<THandle> : IHandleFactory
+public abstract class BaseRuntimeHandle : IHandle
 {
     private readonly Dictionary<string, Type> _types = new();
     private AssemblyLoadContext? _context;
     private Func<string,string> _nameResolver = (s) => s;
     
     protected bool IsBound => _context != null;
-
-    protected abstract THandle CreateHandle();
+    
     protected virtual void OnBound() { }
 
     protected TDelegate BindMethod<TDelegate>(
@@ -38,7 +37,7 @@ public abstract class BaseRuntimeHandleFactory<THandle> : IHandleFactory
         return GetField(targetType, fieldName, bindingFlags);
     }
     
-    void IHandleFactory.BindContext(AssemblyLoadContext context, Func<string, string> nameResolver)
+    void IHandle.BindContext(AssemblyLoadContext context, Func<string, string> nameResolver)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nameResolver);

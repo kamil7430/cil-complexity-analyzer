@@ -6,13 +6,13 @@ using CilInstructionCounter;
 
 namespace CilInstructionCounter;
 
-public interface ICounterHandle
+public interface ICounterHandle : IHandle
 {
     long GetCounter();
     void ResetCounter();
 }
 
-internal class CounterHandle : BaseRuntimeHandle, ICounterHandle
+internal class BaseCounterHandle : BaseRuntimeHandle, ICounterHandle
 {
     private Func<long>? _getCounter;
     private Action? _resetCounter;
@@ -22,7 +22,7 @@ internal class CounterHandle : BaseRuntimeHandle, ICounterHandle
         _getCounter = BindMethod<Func<long>>(CounterMetadata.TypeName, CounterMetadata.GetMethodName);
         _resetCounter = BindMethod<Action>(CounterMetadata.TypeName, CounterMetadata.ResetMethodName);
     }
-
+    
     public long GetCounter() => _getCounter?.Invoke() ?? 0;
     public void ResetCounter() => _resetCounter();
 }
