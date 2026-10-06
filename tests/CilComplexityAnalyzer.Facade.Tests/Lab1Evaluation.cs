@@ -1,4 +1,3 @@
-using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Attributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
@@ -12,7 +11,7 @@ public partial class Lab01Evaluation : TestSuite
     public override TestSuiteSettings? Settings()
         => new TestSuiteSettings
         {
-            Containerized = false,
+            Containerized = true,
         };
     
     public class Case1 : TestCase
