@@ -19,7 +19,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\CilInstructionCounter.Provider\CilInstructionCounter.Provider.csproj" />
-        <ProjectReference Include="..\..\src\CilInstructionCounter.RunTime\CilInstructionCounter.RunTime.csproj" />
         <ProjectReference Include="..\..\tests\CilInjection.TestTargets\CilInjection.TestTargets.csproj" />
         <ProjectReference Include="..\..\src\CilInjection.Core\CilInjection.Core.csproj" />
     </ItemGroup>

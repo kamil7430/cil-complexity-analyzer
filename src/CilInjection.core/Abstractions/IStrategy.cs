@@ -9,11 +9,11 @@ using System.Runtime.Loader;
 /// <summary>
 /// Wewnętrzny interfejs potoku (używany tylko przez silnik biblioteki)
 /// </summary>
-internal interface IEngineStrategy
+public interface IEngineStrategy
 {
-    void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
-    void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
-    void LoadRuntime(AssemblyLoadContext context);
+    internal void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
+    internal void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
+    internal void LoadRuntime(AssemblyLoadContext context);
 }
 
 public interface IInjectionStrategy
@@ -65,12 +65,21 @@ where THandleInterface : IHandle
     private readonly byte[] _dynamicDllBytes;
     private Dictionary<string, string> TypeMapping { get; } = new(StringComparer.Ordinal);
     
-    protected BaseInjectionStrategyWithRuntime(string runtimeDllPath, IWeaver weaver) : base(weaver)
+    protected BaseInjectionStrategyWithRuntime(string resourceName, IWeaver weaver) : base(weaver)
     {
-        ArgumentException.ThrowIfNullOrEmpty(runtimeDllPath);
+        ArgumentException.ThrowIfNullOrEmpty(resourceName);
+        
+        var dllPath = Path.Combine(AppContext.BaseDirectory, resourceName);
+        
+        if (!File.Exists(dllPath))
+        {
+            throw new FileNotFoundException($"Nie znaleziono pliku runtime DLL w katalogu wyjściowym: {dllPath}");
+        }
+        
+        using var resourceStream = new FileStream(dllPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         
         _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
-            baseDllPath: runtimeDllPath,
+            baseDllStream : resourceStream,
             sessionId: SessionId,
             renamer: Renamer,
             typeNameDictionary: TypeMapping

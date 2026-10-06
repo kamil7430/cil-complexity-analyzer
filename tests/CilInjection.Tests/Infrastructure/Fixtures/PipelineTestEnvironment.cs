@@ -44,6 +44,7 @@ public sealed class PipelineTestEnvironment : IDisposable
         return markerType;
     }
     
+    
     /// <summary>
     /// Kompiluje podany kod C# wyłącznie w pamięci RAM i zwraca bajty wygenerowanej biblioteki .dll.
     /// </summary>

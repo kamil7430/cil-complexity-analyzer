@@ -1,16 +1,12 @@
-﻿using System.Diagnostics.Metrics;
-using CilInjection.Core.Abstractions;
-using System.Runtime.Loader;
-using Counter.RunTime;
-using Mono.Cecil;
+﻿using CilInjection.Core.Abstractions;
 
 namespace CilInstructionCounter;
 
 public class BaseCounterStrategy : BaseInjectionStrategyWithRuntime<ICounterHandle>
 {
-    private static readonly string RuntimeDllPath = Path.Combine(AppContext.BaseDirectory, "Counter.RunTime.dll");
+    private static readonly string ResourceName = "Counter.RunTime.dll";
     
-    public BaseCounterStrategy(ICounterWeaver weaver) : base(RuntimeDllPath, weaver)
+    public BaseCounterStrategy(ICounterWeaver weaver) : base(ResourceName, weaver)
     {
         var counterFieldRef = ResolveRuntimeField(CounterMetadata.TypeName, CounterMetadata.FieldName);
         weaver.Initialize(counterFieldRef);
