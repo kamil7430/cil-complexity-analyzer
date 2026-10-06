@@ -1,4 +1,5 @@
-﻿using CilComplexityAnalyzer.Contract;
+﻿using System.Diagnostics;
+using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.Results;
 using Microsoft.Extensions.Logging;
 
@@ -36,6 +37,20 @@ public class TestExecutor
                 return;
             _started = true;
         }
+
+        // Skip our whole CIL-injecting-magic when the debugger is attached
+        if (Debugger.IsAttached)
+        {
+            _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Debugger is attached. The tests will fail.");
+            FillResultsWithFailures("Debugger is attached.");
+
+            foreach (var testCase in _testSuite.TestCases.Value)
+            {
+                testCase.Arrange();
+                testCase.Act();
+                testCase.Assert();
+            }
+        }
         
         Task.Run(() =>
         {
@@ -51,11 +66,7 @@ public class TestExecutor
                     .LinkTestSuite();
                     
                 foreach (var result in _testSuite.Execute())
-                {
-                    _results[_i] = result;
-                    _resultsTcs[_i].SetResult(true);
-                    _i++;
-                }
+                    SetResult(_i++, result);
             }
             catch (TestExecutionException e)
             {
@@ -74,14 +85,16 @@ public class TestExecutor
         });
     }
 
+    private void SetResult(int i, TestResult result)
+    {
+        _results[i] = result;
+        _resultsTcs[i].SetResult(true);
+    }
+
     private void FillResultsWithFailures(string message)
     {
         for (; _i < _results.Length; _i++)
-        {
-            _results[_i] = new Failure(message);
-            _resultsTcs[_i].SetResult(true);
-            _i++;
-        }
+            SetResult(_i, new Failure(message));
     }
 
     public async Task<TestResult> GetResult(int i)

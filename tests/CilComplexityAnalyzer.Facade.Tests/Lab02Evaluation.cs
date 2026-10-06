@@ -12,7 +12,7 @@ public partial class Lab02Evaluation : TestSuite
     public override TestSuiteSettings? Settings()
         => new TestSuiteSettings
         {
-            Containerized = true,
+            Containerized = false,
         };
 
     public class Case0_Stage1_Przyklad : TestCase
