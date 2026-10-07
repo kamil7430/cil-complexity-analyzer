@@ -6,7 +6,7 @@ public interface IFakeHandle : IHandle
 {
 }
 
-internal class BaseCounterHandle : BaseRuntimeHandle, IFakeHandle
+internal class FakeHandle : BaseRuntimeHandle, IFakeHandle
 {
     protected override void OnBound()
     {
