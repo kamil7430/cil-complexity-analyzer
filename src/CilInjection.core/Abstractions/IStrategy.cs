@@ -65,25 +65,22 @@ where THandleInterface : IHandle
     private readonly byte[] _dynamicDllBytes;
     private Dictionary<string, string> TypeMapping { get; } = new(StringComparer.Ordinal);
     
-    protected BaseInjectionStrategyWithRuntime(string resourceName, IWeaver weaver) : base(weaver)
+    protected BaseInjectionStrategyWithRuntime(byte[] baseDllBytes, IWeaver weaver) : base(weaver)
     {
-        ArgumentException.ThrowIfNullOrEmpty(resourceName);
-        
-        var dllPath = Path.Combine(AppContext.BaseDirectory, resourceName);
-        
-        if (!File.Exists(dllPath))
-        {
-            throw new FileNotFoundException($"Nie znaleziono pliku runtime DLL w katalogu wyjściowym: {dllPath}");
-        }
-        
-        using var resourceStream = new FileStream(dllPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        ArgumentNullException.ThrowIfNull(baseDllBytes);
         
         _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
-            baseDllStream : resourceStream,
+            baseDllBytes: baseDllBytes,
             sessionId: SessionId,
             renamer: Renamer,
             typeNameDictionary: TypeMapping
         );
+    }
+    
+    // Alternatywny konstruktor pomocniczy delegujący do głównego przez util wczytujący z dysku
+    protected BaseInjectionStrategyWithRuntime(string resourceName, IWeaver weaver) 
+        : this(RuntimeFileReader.ReadDllBytesFromBasePath(resourceName), weaver)
+    {
     }
     
     public THandleInterface CreateHandle(AssemblyLoadContext context) 

@@ -1,14 +1,51 @@
-﻿namespace CilInstructionCounter.Tests;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Assertions;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CilInjecting.Tests.Infrastructure.Extensions;
 using CilInjecting.Tests.Infrastructure.Loaders;
-using CilInstructionCounter.RunTime;
+using CilInjection.Core.Tests.Fakes;
+using CilInjection.Tests.Infrastructure.Fakes;
+using CilInstructionCounter;
+using CilInstructionCounter.Tests.Assertions;
+using Counter.RunTime;
+using Mono.Cecil.Cil;
+
+namespace CilInjection.Tests.Unit.Weavers;
 
 [TestClass]
 public class InstructionCounterWeaverTests
 {
+    [TestMethod]
+    public void Inject_Should_Add_Counter_Instructions_Before_Target()
+    {
+        // Arrange
+        var fieldRef = CecilTestHelper.CreateDummyFieldReference("CounterMetadata", "_counter");
+        
+        ICounterWeaver weaver = new InstructionCounterWeaver();
+        weaver.Initialize(fieldRef);
+
+        var injectionContext = new FakeMethodInjectionContext();
+        // Symulujemy instrukcję docelową w metodzie (np. zwykły Ret lub Nop)
+        var instructionCtx = injectionContext.AddContext(OpCodes.Ret);
+
+        var metadataContext = new FakeMetadataContext();
+
+        // Act
+        // Wywołujemy wewnętrzny interfejs IEngineWeaver ukryty za fasadą IWeaver
+        weaver.Engine.Inject(injectionContext, metadataContext);
+
+        // Assert
+        var fakeInstructionContext = (FakeInstructionInjectionContext)injectionContext.Contexts[0];
+        
+        // Sprawdzamy czy dodano dokładnie 4 instrukcje przed celem (Ldsfld, Ldc_I8, Add, Stsfld)
+        Assert.AreEqual(1, injectionContext.Contexts.Count);
+        Assert.AreEqual(4, fakeInstructionContext.BeforeInstructions.Count);
+        
+        Assert.AreEqual(OpCodes.Ldsfld, fakeInstructionContext.BeforeInstructions[0].OpCode);
+        Assert.AreEqual(OpCodes.Ldc_I8, fakeInstructionContext.BeforeInstructions[1].OpCode);
+        Assert.AreEqual(1L, fakeInstructionContext.BeforeInstructions[1].Operand);
+        Assert.AreEqual(OpCodes.Add, fakeInstructionContext.BeforeInstructions[2].OpCode);
+        Assert.AreEqual(OpCodes.Stsfld, fakeInstructionContext.BeforeInstructions[3].OpCode);
+    }
+    
     [TestMethod]
     [DataRow("Basic/SimpleCalculator.cs")]
     [DataRow("Basic/EmptyMethods.cs")]

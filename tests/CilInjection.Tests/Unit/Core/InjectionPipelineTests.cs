@@ -1,22 +1,18 @@
-﻿using CilInjecting.Tests.Infrastructure.Fakes;
-
-namespace CilInjecting.Tests.Unit.Core;
-
-using System.Linq;
-using CilInjection.Core;
-using Assertions;
-using Infrastructure.Fixtures;
+﻿using CilInjecting.Tests.Assertions;
+using CilInjection.Tests.Infrastructure.Fixtures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace CilInjection.Tests.Unit.Core;
+
 [TestClass]
-public class InjectionPipelineTests
+public class InjectionManagerTests
 {
-    private PipelineTestEnvironment _env = null!;
+    private ManagerTestEnvironment _env = null!;
 
     [TestInitialize]
     public void TestInitialize()
     {
-        _env = new PipelineTestEnvironment();
+        _env = new ManagerTestEnvironment();
     }
 
     [TestCleanup]
@@ -29,8 +25,8 @@ public class InjectionPipelineTests
     public void Should_LoadDynamicRuntime_IntoAssemblyLoadContext()
     {
         // Arrange
-        Type markerType = _env.CreateDefaultDynamicRuntime("CustomRuntime");
-        var strategy = _env.CreateStrategy(markerType);
+        byte[] dllBytes = _env.CreateDefaultAssemblyBytes(assemblyName: "CustomRuntime");
+        var strategy = _env.CreateStrategy(dllBytes);
         var pipeline = _env.CreatePipeline(strategy);
 
         // Act
@@ -44,9 +40,9 @@ public class InjectionPipelineTests
     public void Should_NotLoadDuplicateAssemblies_WhenMultipleStrategiesShareRuntime()
     {
         // Arrange
-        Type sharedMarkerType = _env.CreateDefaultDynamicRuntime("SharedRuntime");
-        var strategy1 = _env.CreateStrategy(sharedMarkerType);
-        var strategy2 = _env.CreateStrategy(sharedMarkerType);
+        byte[] dllBytes = _env.CreateDefaultAssemblyBytes(assemblyName: "CustomRuntime");
+        var strategy1 = _env.CreateStrategy(dllBytes);
+        var strategy2 = _env.CreateStrategy(dllBytes);
         
         var pipeline = _env.CreatePipeline(strategy1, strategy2);
 
@@ -54,7 +50,7 @@ public class InjectionPipelineTests
         pipeline.LoadRuntimesInto(_env.Alc);
 
         // Assert
-        int loadedCount = _env.Alc.Assemblies.Count(a => a.GetName().Name == "SharedRuntime");
+        int loadedCount = _env.Alc.Assemblies.Count(a => a.GetName().Name == "CustomRuntime");
         Assert.AreEqual(1, loadedCount, "Biblioteka o tym samym typie markerowym nie powinna być ładowana wielokrotnie.");
     }
     
@@ -65,10 +61,10 @@ public class InjectionPipelineTests
         const string assemblyName1 = "DifferentRuntime1";
         const string assemblyName2 = "DifferentRuntime2";
         
-        Type markerType1 = _env.CreateDefaultDynamicRuntime(assemblyName: assemblyName1, typeName: "MarkerType1");
-        Type markerType2 = _env.CreateDefaultDynamicRuntime(assemblyName: assemblyName2, typeName: "MarkerType2");
-        var strategy1 = _env.CreateStrategy(markerType1);
-        var strategy2 = _env.CreateStrategy(markerType2);
+        byte[] dllBytes1 = _env.CreateDefaultAssemblyBytes(assemblyName: assemblyName1);
+        byte[] dllBytes2 = _env.CreateDefaultAssemblyBytes(assemblyName: assemblyName2);
+        var strategy1 = _env.CreateStrategy(dllBytes1);
+        var strategy2 = _env.CreateStrategy(dllBytes2);
         
         var pipeline = _env.CreatePipeline(strategy1, strategy2);
 

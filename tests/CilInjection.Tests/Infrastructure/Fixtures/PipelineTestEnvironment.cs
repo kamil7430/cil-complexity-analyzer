@@ -1,49 +1,26 @@
-﻿namespace CilInjecting.Tests.Infrastructure.Fixtures;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using CilInjection.Core.Abstractions;
+using CilInjection.Tests.Infrastructure.Fakes;
 using System.Runtime.Loader;
 using CilInjection.Core;
 using CilInjecting.Tests.Infrastructure.Compilers;
-using CilInjecting.Tests.Infrastructure.Fakes;
+
+namespace CilInjection.Tests.Infrastructure.Fixtures;
 
 /// <summary>
 /// Środowisko pomocnicze dla testów silnika InjectionPipeline.
 /// Odpowiada za cykl życia AssemblyLoadContext, dynamiczną kompilację bibliotek C# oraz automatyczne czyszczenie plików .dll z dysku.
 /// </summary>
-public sealed class PipelineTestEnvironment : IDisposable
+public sealed class ManagerTestEnvironment : IDisposable
 {
     private readonly List<string> _tempFilePaths = new();
     private bool _disposed;
 
     public AssemblyLoadContext Alc { get; }
 
-    public PipelineTestEnvironment(string contextName = "PipelineTestALC")
+    public ManagerTestEnvironment(string contextName = "ManagerTestALC")
     {
         Alc = new AssemblyLoadContext($"{contextName}_{Guid.NewGuid():N}", isCollectible: true);
     }
-
-    /// <summary>
-    /// Kompiluje kod C# do pliku tymczasowego na dysku i rejestruje go do automatycznego usunięcia po zakończeniu testu.
-    /// </summary>
-    public Type CreateDynamicRuntime(string sourceCode, string assemblyName, string typeName)
-    {
-        var (markerType, filePath) = TestAssemblyGenerator.CompileToTempDll(sourceCode, typeName, assemblyName);
-        _tempFilePaths.Add(filePath);
-        return markerType;
-    }
-
-    /// <summary>
-    /// Generuje prosty, domyślny runtime C# gdy test wymaga jedynie sprawnej biblioteki .dll bez własnej logiki.
-    /// </summary>
-    public Type CreateDefaultDynamicRuntime(string? assemblyName = null, string? typeName = null)
-    {
-        var (markerType, filePath) = TestAssemblyGenerator.CreateDefaultTempDll(assemblyName, typeName);
-        _tempFilePaths.Add(filePath);
-        return markerType;
-    }
-    
     
     /// <summary>
     /// Kompiluje podany kod C# wyłącznie w pamięci RAM i zwraca bajty wygenerowanej biblioteki .dll.
@@ -64,17 +41,17 @@ public sealed class PipelineTestEnvironment : IDisposable
     /// <summary>
     /// Tworzy atrape strategii opartą o podany typ markerowy.
     /// </summary>
-    public FakeInjectionStrategy CreateStrategy(Type markerType)
+    public FakeStrategyWithRuntime CreateStrategy(byte[] dllBytes)
     {
-        return new FakeInjectionStrategy(markerType);
+        return new FakeStrategyWithRuntime(dllBytes, new FakeWeaver());
     }
 
     /// <summary>
     /// Tworzy instancję InjectionPipeline ze wskazanymi strategiami.
     /// </summary>
-    public InjectionPipeline CreatePipeline(params IInjectionStrategy[] strategies)
+    public CilInjectionManager CreatePipeline(params IInjectionStrategy[] strategies)
     {
-        return new InjectionPipeline(strategies);
+        return new CilInjectionManager(strategies);
     }
 
     public void Dispose()
@@ -100,4 +77,25 @@ public sealed class PipelineTestEnvironment : IDisposable
 
         _disposed = true;
     }
+    
+    
+    /*/// <summary>
+    /// Kompiluje kod C# do pliku tymczasowego na dysku i rejestruje go do automatycznego usunięcia po zakończeniu testu.
+    /// </summary>
+    public Type CreateDynamicRuntime(string sourceCode, string assemblyName, string typeName)
+    {
+        var (markerType, filePath) = TestAssemblyGenerator.CompileToTempDll(sourceCode, typeName, assemblyName);
+        _tempFilePaths.Add(filePath);
+        return markerType;
+    }
+
+    /// <summary>
+    /// Generuje prosty, domyślny runtime C# gdy test wymaga jedynie sprawnej biblioteki .dll bez własnej logiki.
+    /// </summary>
+    public Type CreateDefaultDynamicRuntime(string? assemblyName = null)
+    {
+        var (markerType, filePath) = TestAssemblyGenerator.CreateDefaultTempDll(assemblyName, typeName);
+        _tempFilePaths.Add(filePath);
+        return markerType;
+    }*/
 }
