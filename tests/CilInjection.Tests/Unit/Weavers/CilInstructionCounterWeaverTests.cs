@@ -29,7 +29,6 @@ public class InstructionCounterWeaverTests
         var metadataContext = new FakeMetadataContext();
 
         // Act
-        // Wywołujemy wewnętrzny interfejs IEngineWeaver ukryty za fasadą IWeaver
         weaver.Engine.Inject(injectionContext, metadataContext);
 
         // Assert
