@@ -1,6 +1,21 @@
 # Dokument etapu 1: Wymagania i zakres projektu  
 
-**Projekt inżynierski -- Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
+**Projekt inżynierski -- Wyział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
+
+**Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
+
+**Tytuł w języku angielskim**: *Design and implementation of a testing framework for automated verification and profiling of programming assignments.*
+
+**Autorzy:**
+  * **Kacper Grobel** – `kacper.grobel@pw.edu.pl`
+  * **Kamil Błażejczyk** – `kamil.blazejczyk@pw.edu.pl`
+  * **Kornel Dzieża** – `kornel.dzieza@pw.edu.pl`
+ 
+**Promotorzy:** 
+  * **Mgr inż. Tomasz Herman** - `tomasz.herman@mini.pw.edu.pl`
+  * **Dr inż. Michał Dębski**
+
+**Główne repozytorium:** `https://github.com/kamil7430/cil-complexity-analyzer`
 
 ## 1. Historia zmian i metadane dokumentu  
 
@@ -8,17 +23,12 @@
 |-|-|-|-|
 |**1.0**|15.10.2026|Kamil Błażejczyk / Kornel Dzieża / Kacper Grobel|Wersja bazowa dokumentu|
 
-**Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
-
-**Tytuł w języku angielskim**: *Design and implementation of a testing framework for automated verification and profiling of programming assignments.*
-
-**Autorzy:** Kamil Błażejczyk, Kacper Grobel, Kornel Dzieża.
-
 ## 2. Abstrakt  
 
 Dokument określa wymagania i zakres projektu, czyli narzędzie do deterministycznej oceny złożoności algorytmów w C#. Pomiar będzie polegał na zliczaniu instrukcji w kodzie CIL, dzięki czemu wynik nie będzie zależny ani szybkości ani od maszyny, na której będzie uruchamiany kod, obciążenia systemu ani dokładności zegara maszyny. Projekt jest dedykowany automatycznemu sprawdzaniu prac studnetów na przedmiocie ASD2 i będzie działać z Github Actions.
 
-Dokument zawiera: słownik pojęć, cele i zakres MVP, wymagania funkcjonalne w postaci *user stories*, mierzalne wymagania niefunkcjonalne, harmonogram, analizę ryzyka. Stanowi podstawę do implementacji projektu oraz kolejnych laboratoriów z przedmiotu *Projekt zespołowy*. 
+Dokument zawiera: słownik pojęć, cele i zakres MVP, wymagania funkcjonalne w postaci User Stories, mierzalne wymagania niefunkcjonalne, harmonogram, analizę ryzyka. Stanowi podstawę do implementacji projektu oraz kolejnych Labolatoriów z przedmiotu Projekt Zespołowy. 
+
 
 ## 3. Sformułowanie problemu inżynierskiego
 
@@ -322,11 +332,23 @@ flowchart
 
 ## 12. Podział ról
 
-|Osoba|Zakres|
-|-|-|
-|Kamil Błażejczyk|Architektura systemu, środowisko uruchomieniowe do testów, konteneryzacja, CI/CD|
-|Kacper Grobel|Biblioteka do manipulacji kodem na poziomie kodu IL.|
-|Kornel Dzieża|Generator automatyczny testów (Roslyn), dostosowanie manipulacji IL do bibliotek|
+* **R (Responsible / Wykonawca):** Osoba wykonująca zadanie (bezpośredni autor kodu / dokumentacji).
+* **A (Accountable / Odpowiedzialny za wynik):** Osoba ostatecznie odpowiedzialna za jakość dostarczenia i terminowość.
+* **C (Consulted / Konsultowany):** Ekspert dziedzinowy, z którym konsultowane są kwestie techniczne i recenzja.
+* **I (Informed / Informowany):** Osoba na bieżąco informowana o postępach i ostatecznych decyzjach.
+
+| Zadanie / Element projektu (Task / Deliverable)             |      Kacper      |      Kamil       |      Kornel      | 
+| :------------------------------------------------------------------- | :-------------: | :-------------: | :-------------: |
+| **Zarządzanie zakresem i harmonogramem**                    |   **R**   |        **A / R**        |        R        |  
+| **Projekt głównej architektury i kontrakty API**            | C |        **A / R**        |        C       |     
+| **Silnik wplatania instrukcji CIL**            | **A / R** |        I        |        I       |     
+| **Infrastruktura kontenerowa**                    |        I        | **A / R** |        I       | 
+| **Generator kodu testów i obsługa atrybutów**                    |        I        | C |        **A / R**       | 
+| **Integracja z GitHub Actions i CI/CD**                    |        C        | **A / R** |        I       | 
+| **Integracja z IDE oraz fasada testowa (MSTest / xUnit)**                    |              |  |             | 
+| **Przygotowanie paczki do APD i ostateczna akceptacja**                    |              |  |             | 
+| **Pisanie pracy inżynierskiej (Rozdziały wstępne i metodologia)**                    |              |  |             | 
+| **Pisanie pracy inżynierskiej (Opis implementacji i wyniki eksperymentów)**                    |              |  |             | 
 
 ## 13. Formalna akceptacja promotora
 Zatwierdzenie zakresu i MVP: Promotor zapoznał się ze specyfikacją wymagań i zatwierdza zakres MVP jako fundament projektu inżynierskiego.
