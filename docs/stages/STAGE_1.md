@@ -265,7 +265,7 @@ Każde wymaganie ma metrykę i sposób weryfikacji, zgodnie z podejściem FURPS.
 Ścieżka krytyczna determinuje najwcześniejszą możliwą datę ukończenia projektu.
 
 ```mermaid
-flowchart
+flowchart LR
     subgraph Critical ["Ścieżka krytyczna"]
         direction TB
         A["Projektowanie systemu (W01-W04)"] --> B["Implementacja core’owej\nfunkcjonalności (W06–W07)"]
@@ -274,6 +274,7 @@ flowchart
     end
     
     subgraph Parallel ["Ścieżka niekrytyczna\n(możliwość pracy równoległej)"]
+        direction TB
         E["Poprawki fasady po\nkonsultacji z biznesem"]
         F["Testy jednostkowe\nsilnika analizy złożoności"]
         G["Wstępne testy integracyjne (szkice)"]
