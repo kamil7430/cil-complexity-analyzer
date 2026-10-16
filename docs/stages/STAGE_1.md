@@ -1,6 +1,6 @@
 # Dokument etapu 1: Wymagania i zakres projektu  
 
-**Projekt inżynierski -- Wyział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
+**Projekt inżynierski -- Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
 
 **Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
 
@@ -25,10 +25,9 @@
 
 ## 2. Abstrakt  
 
-Dokument określa wymagania i zakres projektu, czyli narzędzie do deterministycznej oceny złożoności algorytmów w C#. Pomiar będzie polegał na zliczaniu instrukcji w kodzie CIL, dzięki czemu wynik nie będzie zależny ani szybkości ani od maszyny, na której będzie uruchamiany kod, obciążenia systemu ani dokładności zegara maszyny. Projekt jest dedykowany automatycznemu sprawdzaniu prac studnetów na przedmiocie ASD2 i będzie działać z Github Actions.
+Dokument określa wymagania i zakres projektu, którym jest narzędzie do deterministycznej oceny złożoności algorytmów napisanych w języku C#. Pomiar będzie polegał na zliczaniu instrukcji w kodzie CIL, dzięki czemu wynik nie będzie zależny ani od szybkości maszyny, na której będzie uruchamiany kod, ani od obciążenia systemu, czy też dokładności zegara. Projekt jest dedykowany automatycznemu sprawdzaniu prac studnetów na przedmiocie ASD2 i będzie działać z Github Actions.
 
-Dokument zawiera: słownik pojęć, cele i zakres MVP, wymagania funkcjonalne w postaci User Stories, mierzalne wymagania niefunkcjonalne, harmonogram, analizę ryzyka. Stanowi podstawę do implementacji projektu oraz kolejnych Labolatoriów z przedmiotu Projekt Zespołowy. 
-
+Dokument zawiera: słownik pojęć, cele i zakres MVP, wymagania funkcjonalne w postaci *user stories*, mierzalne wymagania niefunkcjonalne, harmonogram, analizę ryzyka. Stanowi podstawę do implementacji projektu oraz kolejnych laboratoriów z przedmiotu *Projekt zespołowy*. 
 
 ## 3. Sformułowanie problemu inżynierskiego
 
