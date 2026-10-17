@@ -1,6 +1,6 @@
 # Dokument etapu 1: Wymagania i zakres projektu  
 
-**Projekt inżynierski -- Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
+**Projekt inżynierski — Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
 
 **Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
 
@@ -19,13 +19,13 @@
 
 ## 1. Historia zmian i metadane dokumentu  
 
-|Wersja|Data|Autorzy|Opis zmian|
-|-|-|-|-|
-|**1.0**|15.10.2026|Kamil Błażejczyk / Kornel Dzieża / Kacper Grobel|Wersja bazowa dokumentu|
+| Wersja  | Data       | Autorzy                                          | Opis zmian              |
+|---------|------------|--------------------------------------------------|-------------------------|
+| **1.0** | 15.10.2026 | Kamil Błażejczyk / Kornel Dzieża / Kacper Grobel | Wersja bazowa dokumentu |
 
 ## 2. Abstrakt  
 
-Dokument określa wymagania i zakres projektu, którym jest narzędzie do deterministycznej oceny złożoności algorytmów napisanych w języku C#. Pomiar będzie polegał na zliczaniu instrukcji w kodzie CIL, dzięki czemu wynik nie będzie zależny ani od szybkości maszyny, na której będzie uruchamiany kod, ani od obciążenia systemu, czy też dokładności zegara. Projekt jest dedykowany automatycznemu sprawdzaniu prac studnetów na przedmiocie ASD2 i będzie działać z Github Actions.
+Dokument określa wymagania i zakres projektu, którym jest narzędzie do deterministycznej oceny złożoności algorytmów napisanych w języku C#. Pomiar będzie polegał na zliczaniu instrukcji w kodzie CIL, dzięki czemu wynik nie będzie zależny ani od szybkości maszyny, na której będzie uruchamiany kod, ani od obciążenia systemu, czy też dokładności zegara. Projekt jest dedykowany automatycznemu sprawdzaniu prac studentów na przedmiocie ASD2 i będzie działać z Github Actions.
 
 Dokument zawiera: słownik pojęć, cele i zakres MVP, wymagania funkcjonalne w postaci *user stories*, mierzalne wymagania niefunkcjonalne, harmonogram, analizę ryzyka. Stanowi podstawę do implementacji projektu oraz kolejnych laboratoriów z przedmiotu *Projekt zespołowy*. 
 
@@ -41,27 +41,27 @@ Celem projektu jest zaprojektowanie i zaimplementowanie bezpiecznej, zintegrowan
 
 ## 5. Słownik pojęć  
 
-|Pojęcie|Definicja|
-|-|-|
-|CIL (Common Intermediate Language)|Język pośredni, do którego kompiluje się kod C# przed wykonaniem przez środowisko .NET.|
-|IL weaving / wplatanie instrukcji|Modyfikacja skompilowanego zestawu (assembly) przez dodanie instrukcji CIL, np. liczników operacji, bez zmiany kodu źródłowego.|
-|IDE (Integrated Development Environment)|Program służący do tworzenia, modyfikowania, testowania i konserwacji oprogramowania.|
-|Boilerplate code|Frgmenty kodu, które wielokrotnie powtarzają się w programie w podobnych lub identycznych formach.|
-|Mono.Cecil|Biblioteka do odczytu i modyfikacji kodu CIL, używana jako Injector instrukcji.|
-|Roslyn|Platforma kompilatora .NET, używana do analizy składni, kompilacji w pamięci i Source Generators.|
-|Source Generator|Komponent Roslyn generujący kod w takcie kompilacji. Tutaj tworzy kod testów z atrybutów.|
-|Atrybut złożoności|Autorski atrybut C# opisujący wymaganą złożoność czasową i pamięciową testowanego rozwiązania.|
-|Złożoność obliczeniowa|Zależność liczby operacji lub zajętej pamięci od rozmiaru danych wejściowych.|
-|Test Framework|Warstwa fasadowa: definicja testów, integracja z IDE i uruchamiane przez wrapper MSTest.|
-|Test Coordinator|Część Test Executora zarządzająca przebiegiem testu i składająca wynik.|
-|Container Worker|Proces w konterze Docker, w którym uruchamiany jest kod studenta.|
-|Piaskownica| Izolowane środowisko kontenerowane, które blokuje niedozwolone wywołania systemowe i zatrzymuje proces po ich wykryciu.|
-|Test niejawny| Test, którego dane i konfiguracja nie są widoczne dla studenta i są przekazywane z CI/CD w szyfrowanych zmiennych.|
-|CI/CD|Continuous Integration / Continuous Deployment, czyli automatyczne budowanie i testowanie przy każdej zmianie kodu.|
-|Github Actions|System CI/CD Github. Platforma jest udostępniana jako akcja.|
-|APD| Archiwum Prac Dyplomowych PW, czyli portal do złożenia, weryfikacji antyplagiatowej i archiwizacji pracy.| 
-|ASD2|Przedmiot „Algorytmy i Struktury Danych 2”, dla którego jest dedykowany ten projekt|
-| CL | Terminal (eng. Command Line) |
+| Pojęcie                                  | Definicja                                                                                                                       |
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| CIL (Common Intermediate Language)       | Język pośredni, do którego kompiluje się kod C# przed wykonaniem przez środowisko .NET.                                         |
+| IL weaving / wplatanie instrukcji        | Modyfikacja skompilowanego zestawu (assembly) przez dodanie instrukcji CIL, np. liczników operacji, bez zmiany kodu źródłowego. |
+| IDE (Integrated Development Environment) | Program służący do tworzenia, modyfikowania, testowania i konserwacji oprogramowania.                                           |
+| Boilerplate code                         | Frgmenty kodu, które wielokrotnie powtarzają się w programie w podobnych lub identycznych formach.                              |
+| Mono.Cecil                               | Biblioteka do odczytu i modyfikacji kodu CIL, używana jako Injector instrukcji.                                                 |
+| Roslyn                                   | Platforma kompilatora .NET, używana do analizy składni, kompilacji w pamięci i Source Generators.                               |
+| Source Generator                         | Komponent Roslyn generujący kod w takcie kompilacji. Tutaj tworzy kod testów z atrybutów.                                       |
+| Atrybut złożoności                       | Autorski atrybut C# opisujący wymaganą złożoność czasową i pamięciową testowanego rozwiązania.                                  |
+| Złożoność obliczeniowa                   | Zależność liczby operacji lub zajętej pamięci od rozmiaru danych wejściowych.                                                   |
+| Test Framework                           | Warstwa fasadowa: definicja testów, integracja z IDE i uruchamiane przez wrapper MSTest.                                        |
+| Test Coordinator                         | Część Test Executora zarządzająca przebiegiem testu i składająca wynik.                                                         |
+| Container Worker                         | Proces w konterze Docker, w którym uruchamiany jest kod studenta.                                                               |
+| Piaskownica                              | Izolowane środowisko kontenerowane, które blokuje niedozwolone wywołania systemowe i zatrzymuje proces po ich wykryciu.         |
+| Test niejawny                            | Test, którego dane i konfiguracja nie są widoczne dla studenta i są przekazywane z CI/CD w szyfrowanych zmiennych.              |
+| CI/CD                                    | Continuous Integration / Continuous Deployment, czyli automatyczne budowanie i testowanie przy każdej zmianie kodu.             |
+| Github Actions                           | System CI/CD Github. Platforma jest udostępniana jako akcja.                                                                    |
+| APD                                      | Archiwum Prac Dyplomowych PW, czyli portal do złożenia, weryfikacji antyplagiatowej i archiwizacji pracy.                       | 
+| ASD2                                     | Przedmiot „Algorytmy i Struktury Danych 2”, dla którego jest dedykowany ten projekt                                             |
+| CL                                       | Terminal (eng. Command Line)                                                                                                    |
 
 ## 6. Podsumowanie menedżerskie
 
@@ -69,9 +69,9 @@ Projekt dostarcza framework do tworzenia i przeprowadzania automatycznych testó
 
 ### 6.1 Problem
 
-Ocena zadań z ASD2 opiera się obecnie na systemie weryfikującym, który został napisany w archaicznej -- jak na współczesne standardy -- wersji czwartej .NET Frameworka. Wymusza to na studentach wykorzystanie starej platformy, nieobsługującej współczesnych wersji języka C#. 
+Ocena zadań z ASD2 opiera się obecnie na systemie weryfikującym, który został napisany w archaicznej — jak na współczesne standardy — wersji czwartej .NET Frameworka. Wymusza to na studentach wykorzystanie starej platformy, nieobsługującej współczesnych wersji języka C#. 
 
-Ponadto, obecna sprawdzarka jest bardzo wrażliwa na nadużycia ze strony studentów. Dla przykładu, w bardzo prosty sposób można zawiesić cały system -- poprzez zwykłe wypisanie komunikatu na standardowe wyjście (`stdout`). Tak więc obecne rozwiązanie nie jest niezawodne, czy odporne na złośliwe wejście.
+Ponadto obecna sprawdzarka jest bardzo wrażliwa na nadużycia ze strony studentów. Dla przykładu, w bardzo prosty sposób można zawiesić cały system — poprzez zwykłe wypisanie komunikatu na standardowe wyjście (`stdout`). Tak więc obecne rozwiązanie nie jest niezawodne, czy odporne na złośliwe wejście.
 
 Kolejnym problemem jest niedeterministycznie liczony czas działania rozwiązania, który jest zależny od obłożenia serwera. Powoduje to sytuację, w której student po wysłaniu kodu do sprawdzarki może dostać odmienne wyniki (jeżeli chodzi o złożoność) w zależności od godziny, w której zgłosił swoje rozwiązanie do sprawdzenia.
 
@@ -85,11 +85,11 @@ Nowa platforma, która modyfikuje skompilowany kod rozwiązania (wplata instrukc
 
 ### 7.1 Zakres MVP
 
-MVP obejmuje pięć elementów z zgłoszenia tematu:
+MVP obejmuje pięć elementów ze zgłoszenia tematu:
 
 1.  Generator kodu testów,
 2.  Silnik wplatający instrukcje CIL i zliczających operacje oraz alokacje,
-3.  Obsługa testów niejawnych uruchamianych poza komputerem użytwkownika,
+3.  Obsługa testów niejawnych uruchamianych poza komputerem użytkownika,
 4.  Izolowana piaskownica kontenerowana z monitorowaniem wywołań systemowych i filtrowaniem niedozwolonych wywołań (np. operacji wejścia i wyjścia),
 5.  Wdrożenie systemu z Github Actions, sprawdzona na zestawach zadań z ASD2.  
     
@@ -102,10 +102,10 @@ MVP obejmuje pięć elementów z zgłoszenia tematu:
 
 Wymagania opisano jako *user stories*. Role:
 - **Prowadzący**: autor zadania i testów, 
-- **Student**: autor testowenego rozwiązania, 
+- **Student**: autor testowanego rozwiązania, 
 - **Opiekun systemu**: osoba dbająca o poprawne działanie systemu i jego rozwój.
 
-### 8.1 US-01: Definicja testu złożoności artybutami
+### 8.1 US-01: Definicja testu złożoności atrybutami
 - **Jako**: Prowadzący 
 - **chcę**: w prosty sposób definiować testy z użyciem fasady
 - **aby**: ograniczyć czas marnowany na pisanie *boilerplate code*.
@@ -151,7 +151,7 @@ Kryteria akceptacji:
 - **When**: rozwiązanie zostaje wykonane
 - **Then**: wynik testu raportuje osobno poprawność i złożoność.
 
-### 8.5 US-05: Czytelny komunikat błędu kompilacji i analizy statycznej
+### 8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej
 - **Jako**: Student
 - **chcę**: dostać zrozumiały komunikat, gdy mój kod się nie kompiluje, 
 - **aby**: go poprawić.
@@ -165,7 +165,7 @@ Kryteria akceptacji:
 
 ### 8.6 US-06: Blokowanie niedozwolonych operacji
 - **Jako**: Prowadzący 
-- **chcę**: zablokować w rozwiązaniach operacje wejścia-wyjścia i inne niedozowolone wywołania,
+- **chcę**: zablokować w rozwiązaniach operacje wejścia-wyjścia i inne niedozwolone wywołania,
 - **aby**: kod studenta nie mógł czytać testów ani nadużywać systemu.
 
 Kryteria akceptacji:
@@ -177,7 +177,7 @@ Kryteria akceptacji:
 ### 8.7 US-07: Kontrola bibliotek i namespace'ów
 - **Jako**: Prowadzący
 - **chcę**: zablokować w rozwiązaniach studentów możliwość wykorzystywania niedozwolonych bibliotek,
-- **aby**: student wymyślił własne rozwiązanie korzystając wyłącznie z dozwolonych bibliotek (standardowych).
+- **aby**: student wymyślił własne rozwiązanie, korzystając wyłącznie z dozwolonych bibliotek (standardowych).
 
 Kryteria akceptacji:
 
@@ -197,7 +197,7 @@ Kryteria akceptacji:
 
 - **Given**: lista rozwiązań wielu studentów,
 - **When**: Test Executor uruchamia testy,
-- **Then**: każde rozwiązanie jest wykonwane w osobnym kontenerze Docker, a awaria jednego nie przerywa pozostałych.
+- **Then**: każde rozwiązanie jest wykonywane w osobnym kontenerze Docker, a awaria jednego nie przerywa pozostałych.
  
 ### 8.9 US-09: Testy niejawne
 - **Jako**: Prowadzący,
@@ -208,7 +208,7 @@ Kryteria akceptacji:
 
 - **Given**: konfiguracja testu niejawnego przekazana przez mechanizmy CI/CD,
 - **When**: akcja uruchamia testy,
-- **Then**: dane wejściowe są przekazywane tylko do środowiska wykonawczego. Do studenta trafiają wyłącznie otrzymane wyniki zderzone z oczekiwanymi, nie dane do testów niejawnych.
+- **Then**: dane wejściowe są przekazywane tylko do środowiska wykonawczego. Do studenta trafiają wyłącznie otrzymane wyniki zderzone z oczekiwanymi, a nie dane do testów niejawnych.
 
 ### 8.10 US-10: Uruchomienie jako akcja GitHub Actions
 - **Jako**: Opiekun systemu,
@@ -219,31 +219,27 @@ Kryteria akceptacji:
 
 - **Given**: repozytorium z workflow używającym akcji platformy,
 - **When**: Student wysyła kod do repozytorium,
-- **Then**: workflow uruchamia testy i publikuje wynik (poprawność, złożoność, komunikat błędu) w terminalu bądź na stronie internetowej.
+- **Then**: workflow uruchamia testy i publikuje wynik (poprawność, złożoność, komunikat o błędzie) w terminalu bądź na stronie internetowej.
 
 
 ## 9. Wymagania niefunkcjonalne
 
 Każde wymaganie ma metrykę i sposób weryfikacji, zgodnie z podejściem FURPS. Wartości 
 
-| ID     | Kategoria      | Wymaganie                              | Metryka docelowa                                                                                                                                            | Weryfikacja                                             |
-| ------ | -------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| NFR-01 | Reliability    | Deterministyczny pomiar                | Liczniki operacji i alokacji identyczne w 100% z 10 kolejnych uruchomień tego samego kodu i danych                                                          | Test automatyczny z powtórzeniami, na różnych maszynach |
-| NFR-02| Functionality| Trafność oceny złożoności | Poprawny werdykt dla $\ge$ 95% rozwiązań wzorcowych i celowo błędnych z zestawu referencyjnego ($O(n)$, $O(nlogn)$, $O(n^2)$) | Zestaw referencujny z zadań ASD2 |
-| NFR-03 | Performance    | Narzut instrumentacji| Wykonanie z licznikami nie więcej niż 5× wolniejsze niż bez nich| Benchmark na zestawie referencyjnym |
-| NFR-04 | Preformance | Czas oceny jednego rozwiązania | $\le$ 30 s razem z uruchomieniem kontenera, dla typowego zadania ASD2 | Pomiar w CL, 20 uruchomień |
-| NFR-05 | Reliability | Izolacja i blokada zakazanych operacji | 100% próbek z zestawu testowego zablokowanych (I/O, sieć, uruchomienie procesów, odczyt plików testów) | Zestaw złośliwych próbek uruchamiany w CL |
-| NFR-06 | Reliability | Odporność na błędny kod | 0 nieobsłużonych wyjątków Executora dla kodu niekompilującego się, z nieskończoną pętlą i z nadmierną alokacją. Proces przerwany po limicie czasu i pamięci | Testy integracyjne z kodem uszkodzonym |
-| NFR-07 | Functionality | Ochrona testów niejawnych | 0 wystąpień danych niejawnych w repozytorium, logach i wynikach | Skan logów i artefaktów po przebiegu CL |
-| NFR-08 | Usability | Integracja z IDE | Testy widoczne i uruchamianlne w co najmniej jednym IDE obsługującym MSTest lub xUnit, bez dodatkowej wtyczki | Test ręczny według scenaiusza US-02 |
-| NFR-09 | Supportability | Powtarzalne wdrożenie | Wymagane tylko .NET 10 i Docker. Dodanie akcji do nowego repozytorium zajmuje $\le$ 15 min według instrukcji | Próba na czystym repozytorium i czystej maszynie |
-| NFR-10 | Supportablitity | Jakość kodu i testy | Pokrycie testami jednostkowymi z $\ge$ 70% kodu platformy, wszystkie testy zielone w CL przed scaleniem | Raport poktrycia CL | 
-
-
+| ID     | Kategoria       | Wymaganie                              | Metryka docelowa                                                                                                                                            | Weryfikacja                                             |
+|--------|-----------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| NFR-01 | Reliability     | Deterministyczny pomiar                | Liczniki operacji i alokacji identyczne w 100% z 10 kolejnych uruchomień tego samego kodu i danych                                                          | Test automatyczny z powtórzeniami, na różnych maszynach |
+| NFR-02 | Functionality   | Trafność oceny złożoności              | Poprawny werdykt dla $\ge$ 95% rozwiązań wzorcowych i celowo błędnych z zestawu referencyjnego ($O(n)$, $O(nlogn)$, $O(n^2)$)                               | Zestaw referencujny z zadań ASD2                        |
+| NFR-03 | Performance     | Narzut instrumentacji                  | Wykonanie z licznikami nie więcej niż 5× wolniejsze niż bez nich                                                                                            | Benchmark na zestawie referencyjnym                     |
+| NFR-04 | Preformance     | Czas oceny jednego rozwiązania         | $\le$ 30 s razem z uruchomieniem kontenera, dla typowego zadania ASD2                                                                                       | Pomiar w CL, 20 uruchomień                              |
+| NFR-05 | Reliability     | Izolacja i blokada zakazanych operacji | 100% próbek z zestawu testowego zablokowanych (I/O, sieć, uruchomienie procesów, odczyt plików testów)                                                      | Zestaw złośliwych próbek uruchamiany w CL               |
+| NFR-06 | Reliability     | Odporność na błędny kod                | 0 nieobsłużonych wyjątków Executora dla kodu niekompilującego się, z nieskończoną pętlą i z nadmierną alokacją. Proces przerwany po limicie czasu i pamięci | Testy integracyjne z kodem uszkodzonym                  |
+| NFR-07 | Functionality   | Ochrona testów niejawnych              | 0 wystąpień danych niejawnych w repozytorium, logach i wynikach                                                                                             | Skan logów i artefaktów po przebiegu CL                 |
+| NFR-08 | Usability       | Integracja z IDE                       | Testy widoczne i uruchamianlne w co najmniej jednym IDE obsługującym MSTest lub xUnit, bez dodatkowej wtyczki                                               | Test ręczny według scenaiusza US-02                     |
+| NFR-09 | Supportability  | Powtarzalne wdrożenie                  | Wymagane tylko .NET 10 i Docker. Dodanie akcji do nowego repozytorium zajmuje $\le$ 15 min według instrukcji                                                | Próba na czystym repozytorium i czystej maszynie        |
+| NFR-10 | Supportablitity | Jakość kodu i testy                    | Pokrycie testami jednostkowymi z $\ge$ 70% kodu platformy, wszystkie testy zielone w CL przed scaleniem                                                     | Raport poktrycia CL                                     | 
 
 ## 10. Harmonogram projektu
-
-
 
 ### 10.1. Założenia harmonogramu
 
@@ -253,20 +249,20 @@ Każde wymaganie ma metrykę i sposób weryfikacji, zgodnie z podejściem FURPS.
 
 ### 10.2. Harmonogram w ujęciu tygodniowym
 
-|Tydzień|Cel|Zakres pracy|Odpowie-dzialny|Bufor ryzyka|
-| :----------------: | :------------------------ | :----------------------------------------------------------------------------------- | :-------------------: | :---------------: |
-| **W01–W02** |Koncepcja i start projektu| Uzgodnienie zakresu z promotorem, stworzenie repozytorium gita, praca nad specyfikacją i dokumentacją zakresu projektu|Kornel Dzieża|--|
-|   **W03**   | **Etap 1 (Lab)**|Oddanie dokumentu ze specyfikacją, zakresem MVP, wymaganiami niefunkcjonalnymi, harmonogramem i rejestrem ryzyk|Kornel Dzieża|3 dni|
-|   **W04**   |Projektowanie architektury rozwiązania|Praca nad dokumentacją architektury systemu, analiza potrzeb biznesowych w kontekście fasady, podział systemu na moduły|Kamil Błażejczyk|--|
-|   **W05**   | **Etap 2 (Lab)**   |Oddanie dokumentacji architektury systemu|Kamil Błażejczyk|3 dni|
-| **W06–W07** |Implementacja core'owej funkcjonalności|Implementacja silnika analizy złożoności algorytmu i modułów odpowiedzialnych za uruchomienie testów|Kacper Grobel|--|
-|   **W08**   | **Etap 3 (Lab)**   |Oddanie core'owej funkcjonalności (pierwsze przykłady działające end-to-end)|Kacper Grobel|3 dni|
-| **W09–W10** |Implementacja fasady|Podłączenie fasady do modułów uruchamiających testy, skonfigurowanie Github Actions.|Kamil Błażejczyk|   --|
-|   **W11**   | **Etap 4 (Lab)**   |Oddanie wersji *prerelease* i raport z testów integracyjnych, prezentacja pełnego E2E|Kamil Błażejczyk|3 dni|
-|   **W12**   | **FEATURE FREEZE**  |Całkowite powstrzymanie się od dodawania nowych funkcjonalności. System w 100% stabilny.|wszyscy|2 tyg.|
-|   **W13**   | **Etap 5 (Lab)**   | **Ostateczna akceptacja aplikacji** w laboratorium MiNI, jednostronicowa instrukcja obsługi|wszyscy|--|
-|   **W14–W15**   |Dokończenie pracy|Pisanie pracy w LaTeX, deklaracja użycia AI, antyplagiat, akceptacja od promotora|Kornel Dzieża|5 dni|
-| **Styczeń** |Wysłanie artefaktów do APD|Stworzenie paczki do APD, wysłanie pracy, recenzje|wszyscy|do 1 lutego 2027|
+|   Tydzień   | Cel                                     | Zakres pracy                                                                                                            | Odpowie-dzialny  |   Bufor ryzyka   |
+|:-----------:|:----------------------------------------|:------------------------------------------------------------------------------------------------------------------------|:----------------:|:----------------:|
+| **W01–W02** | Koncepcja i start projektu              | Uzgodnienie zakresu z promotorem, stworzenie repozytorium gita, praca nad specyfikacją i dokumentacją zakresu projektu  |  Kornel Dzieża   |        --        |
+|   **W03**   | **Etap 1 (Lab)**                        | Oddanie dokumentu ze specyfikacją, zakresem MVP, wymaganiami niefunkcjonalnymi, harmonogramem i rejestrem ryzyk         |  Kornel Dzieża   |      3 dni       |
+|   **W04**   | Projektowanie architektury rozwiązania  | Praca nad dokumentacją architektury systemu, analiza potrzeb biznesowych w kontekście fasady, podział systemu na moduły | Kamil Błażejczyk |        --        |
+|   **W05**   | **Etap 2 (Lab)**                        | Oddanie dokumentacji architektury systemu                                                                               | Kamil Błażejczyk |      3 dni       |
+| **W06–W07** | Implementacja core'owej funkcjonalności | Implementacja silnika analizy złożoności algorytmu i modułów odpowiedzialnych za uruchomienie testów                    |  Kacper Grobel   |        --        |
+|   **W08**   | **Etap 3 (Lab)**                        | Oddanie core'owej funkcjonalności (pierwsze przykłady działające end-to-end)                                            |  Kacper Grobel   |      3 dni       |
+| **W09–W10** | Implementacja fasady                    | Podłączenie fasady do modułów uruchamiających testy, skonfigurowanie Github Actions.                                    | Kamil Błażejczyk |        --        |
+|   **W11**   | **Etap 4 (Lab)**                        | Oddanie wersji *prerelease* i raport z testów integracyjnych, prezentacja pełnego E2E                                   | Kamil Błażejczyk |      3 dni       |
+|   **W12**   | **FEATURE FREEZE**                      | Całkowite powstrzymanie się od dodawania nowych funkcjonalności. System w 100% stabilny.                                |     wszyscy      |      2 tyg.      |
+|   **W13**   | **Etap 5 (Lab)**                        | **Ostateczna akceptacja aplikacji** w laboratorium MiNI, jednostronicowa instrukcja obsługi                             |     wszyscy      |        --        |
+| **W14–W15** | Dokończenie pracy                       | Pisanie pracy w LaTeX, deklaracja użycia AI, antyplagiat, akceptacja od promotora                                       |  Kornel Dzieża   |      5 dni       |
+| **Styczeń** | Wysłanie artefaktów do APD              | Stworzenie paczki do APD, wysłanie pracy, recenzje                                                                      |     wszyscy      | do 1 lutego 2027 |
 
 ### 10.3. Identyfikacja ścieżki krytycznej
 
@@ -295,27 +291,27 @@ flowchart
 
 ### 11.1 Rejestr ryzyk projektowych i technicznych
 
-|ID|Ryzyko|Prawdop. (L/M/H)|Wpływ (L/M/H/Crit)|Właściciel ryzyka|Strategia ograniczenia|
-|-|-|-|-|-|-|
-| **RSK-01** | **Niewydolność docelowego hardware'u**                     |         M         |          H          | Kornel D. | 0 |
-| **RSK-02** | **Niekompatybilność z oprogramowaniem komputerów labolatoryjnych** |         L         |        Crit        | Kamil B. | 0 |
-| **RSK-03** | **Wyciek kodu źródłowego**   |         M         |       L        | wscyscy | Prywatne repozytorium projektu oraz dostępność tylko skompilowanej wersji blioteki.                         |
-| **RSK-04** | **Awaria serwerów GitHub**   |         L         |       H        | wszyscy | Przechowywanie aktualnej lokalnej kopii repozytorium na urządzeniach osobistych                         |
-| **RSK-05** | **Choroba/Odejście członka zespołu** | L | Crit | wszyscy |Dobry podział systemu na moduły.|
+| ID         | Ryzyko                                                             | Prawdop. (L/M/H) | Wpływ (L/M/H/Crit) | Właściciel ryzyka | Strategia ograniczenia                                                              |
+|------------|--------------------------------------------------------------------|------------------|--------------------|-------------------|-------------------------------------------------------------------------------------|
+| **RSK-01** | **Niewydolność docelowego hardware'u**                             | M                | H                  | Kornel D.         | 0                                                                                   |
+| **RSK-02** | **Niekompatybilność z oprogramowaniem komputerów labolatoryjnych** | L                | Crit               | Kamil B.          | 0                                                                                   |
+| **RSK-03** | **Wyciek kodu źródłowego**                                         | M                | L                  | wscyscy           | Prywatne repozytorium projektu oraz dostępność tylko skompilowanej wersji blioteki. |
+| **RSK-04** | **Awaria serwerów GitHub**                                         | L                | H                  | wszyscy           | Przechowywanie aktualnej lokalnej kopii repozytorium na urządzeniach osobistych     |
+| **RSK-05** | **Choroba/Odejście członka zespołu**                               | L                | Crit               | wszyscy           | Dobry podział systemu na moduły.                                                    |
 
 ### 11.2 Plany awaryjne dla modułów wysokiego ryzyka
 
-#### 11.2.1 Protokół awaryjny 1: Niemożliwosć obliczenia złożoności metod zapomocą zmiany kodu IL
+#### 11.2.1 Protokół awaryjny 1: Niemożliwość obliczenia złożoności metod za pomocą zmiany kodu IL
 
-* **Plan A (Główny):** Zliczanie narzutu obliczeniowego poprzez zliczanie ilosci występujących instrukcji z uwzględnieniem ich złożoności.
+* **Plan A (Główny):** Zliczanie narzutu obliczeniowego poprzez zliczanie ilości występujących instrukcji z uwzględnieniem ich złożoności.
 * **Plan B Trigger:** Niemożliwość określenia złożoności pojedynczej instrukcji IL albo niemożliwość zaimplementowania licznika w skompilowanym kodzie.
-* **Plan B (Contingency):** Obliczanie złożoności za pomocą upłyniętego czasu.
+* **Plan B (Contingency):** Obliczanie złożoności za pomocą upływu czasu.
 
 #### 11.2.2 Protokół awaryjny 2: Niemożliwość wglądu lub modyfikacji kodu zewnętrznych bibliotek
 
-* **Plan A (Główny):** Dynamiczne przechwytywanie zewnętrznych plików .dll w locie i modyfikowanie ich kodu poprzez wtrzykiwanie instrukcji bezpośrednio w środowisku wykonawczym.
+* **Plan A (Główny):** Dynamiczne przechwytywanie zewnętrznych plików .dll w locie i modyfikowanie ich kodu poprzez wstrzykiwanie instrukcji bezpośrednio w środowisku wykonawczym.
 * **Plan B Trigger:** Napotkanie ograniczeń środowiska .NET uniemożliwiających dostanie się do kodu bibliotek.
-* **Plan B (Contingency):** Wcześniejsze statyczne przygotowanie i modyfikacja wymaganych bibliotek (pochodzących z dostępnej dla studenta puli) przed testem, po czym dynamiczna podmiana standardowych odwołań w kodzie studenta na te pre-kompilowane, zmodyfikowane wersje
+* **Plan B (Contingency):** Wcześniejsze statyczne przygotowanie i modyfikacja wymaganych bibliotek (pochodzących z dostępnej dla studenta puli) przed testem, po czym dynamiczna podmiana standardowych odwołań w kodzie studenta na te prekompilowane, zmodyfikowane wersje
 * **Plan C Trigger:** Problem z podmianą całych plików .dll lub brak możliwości ich wcześniejszego bezpiecznego zmapowania w środowisku testowym.
 * **Plan C (Contingency):** Zaimplementowanie własnych warstw pośrednich (wrapperów) na wszystkie wymagane biblioteki zewnętrzne. Wrapper ten wewnątrz swoich metod zlicza złożoność operacji.
 * **Plan D Trigger:** Zbyt wysoka złożoność implementacyjna, duży narzut czasowy lub trudności techniczne w przygotowaniu i utrzymaniu kompletnych wrapperów dla wszystkich bibliotek zewnętrznych.
@@ -336,18 +332,18 @@ flowchart
 * **C (Consulted / Konsultowany):** Ekspert dziedzinowy, z którym konsultowane są kwestie techniczne i recenzja.
 * **I (Informed / Informowany):** Osoba na bieżąco informowana o postępach i ostatecznych decyzjach.
 
-| Zadanie / Element projektu (Task / Deliverable)             |      Kacper      |      Kamil       |      Kornel      | 
-| :------------------------------------------------------------------- | :-------------: | :-------------: | :-------------: |
-| **Zarządzanie zakresem i harmonogramem**                    |   **R**   |        **A / R**        |        R        |  
-| **Projekt głównej architektury i kontrakty API**            | C |        **A / R**        |        C       |     
-| **Silnik wplatania instrukcji CIL**            | **A / R** |        I        |        I       |     
-| **Infrastruktura kontenerowa**                    |        I        | **A / R** |        I       | 
-| **Generator kodu testów i obsługa atrybutów**                    |        I        | C |        **A / R**       | 
-| **Integracja z GitHub Actions i CI/CD**                    |        C        | **A / R** |        I       | 
-| **Integracja z IDE oraz fasada testowa (MSTest / xUnit)**                    |              |  |             | 
-| **Przygotowanie paczki do APD i ostateczna akceptacja**                    |              |  |             | 
-| **Pisanie pracy inżynierskiej (Rozdziały wstępne i metodologia)**                    |              |  |             | 
-| **Pisanie pracy inżynierskiej (Opis implementacji i wyniki eksperymentów)**                    |              |  |             | 
+| Zadanie / Element projektu                                              |  Kacper   |   Kamil   |  Kornel   | 
+|:------------------------------------------------------------------------|:---------:|:---------:|:---------:|
+| Zarządzanie zakresem i harmonogramem                                    |   **R**   | **A / R** |     R     |  
+| Projekt głównej architektury i kontrakty                                |     C     | **A / R** |     C     |     
+| Silnik wplatania instrukcji CIL                                         | **A / R** |     I     |     C     |     
+| Infrastruktura kontenerowa                                              |     I     | **A / R** |     C     | 
+| Generator kodu testów i obsługa atrybutów                               |     I     |     C     | **A / R** | 
+| Integracja z GitHub Actions i CI/CD                                     |     C     | **A / R** |     I     | 
+| Integracja z IDE oraz fasada testowa (MSTest / xUnit)                   |     I     |     R     | **A / R** | 
+| Przygotowanie paczki do APD i ostateczna akceptacja                     | **A / R** |     R     |     R     | 
+| Pisanie pracy inżynierskiej (Rozdziały wstępne i metodologia)           | **A / R** |     R     |     R     | 
+| Pisanie pracy inżynierskiej (Opis implementacji i wyniki eksperymentów) |     R     |     R     | **A / R** | 
 
 ## 13. Formalna akceptacja promotora
 Zatwierdzenie zakresu i MVP: Promotor zapoznał się ze specyfikacją wymagań i zatwierdza zakres MVP jako fundament projektu inżynierskiego.
