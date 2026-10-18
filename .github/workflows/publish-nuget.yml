@@ -31,7 +31,7 @@ jobs:
         id: login
         uses: NuGet/login@v1
         with:
-          user: dziezak
+          user: LibraryUser
 
       - name: Publish packages
         shell: bash
