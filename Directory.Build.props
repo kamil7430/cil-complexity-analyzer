@@ -3,7 +3,6 @@
 		<Version>0.1.0</Version>
 		<Authors>CIL Complexity Analyzer Team</Authors>
 		<Company>CIL Complexity Analyzer</Company>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 
 		<RepositoryUrl>
 			https://github.com/kamil7430/cil-complexity-analyzer
