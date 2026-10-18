@@ -1,5 +1,42 @@
 # Dokument etapu 1: Wymagania i zakres projektu  
 
+- [[#1. Historia zmian i metadane dokumentu|1. Historia zmian i metadane dokumentu]]
+- [[#2. Abstrakt|2. Abstrakt]]
+- [[#3. Sformułowanie problemu inżynierskiego|3. Sformułowanie problemu inżynierskiego]]
+- [[#4. Spis treści|4. Spis treści]]
+- [[#5. Słownik pojęć|5. Słownik pojęć]]
+- [[#6. Podsumowanie menedżerskie|6. Podsumowanie menedżerskie]]
+	- [[#6. Podsumowanie menedżerskie#6.1 Problem|6.1 Problem]]
+	- [[#6. Podsumowanie menedżerskie#6.2 Rozwiązanie|6.2 Rozwiązanie]]
+- [[#7. Zakres projektu|7. Zakres projektu]]
+	- [[#7. Zakres projektu#7.1 Zakres MVP|7.1 Zakres MVP]]
+	- [[#7. Zakres projektu#7.2 Poza zakresem MVP|7.2 Poza zakresem MVP]]
+- [[#8. Wymagania funkcjonale|8. Wymagania funkcjonale]]
+	- [[#8. Wymagania funkcjonale#8.1 US-01: Definicja testu złożoności atrybutami|8.1 US-01: Definicja testu złożoności atrybutami]]
+	- [[#8. Wymagania funkcjonale#8.2 US-02: Uruchamianie testów w IDE|8.2 US-02: Uruchamianie testów w IDE]]
+	- [[#8. Wymagania funkcjonale#8.3 US-03: Pomiar złożoności przez zliczanie instrukcji|8.3 US-03: Pomiar złożoności przez zliczanie instrukcji]]
+	- [[#8. Wymagania funkcjonale#8.4 US-04: Sprawdzenie poprawności wyniku|8.4 US-04: Sprawdzenie poprawności wyniku]]
+	- [[#8. Wymagania funkcjonale#8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej|8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej]]
+	- [[#8. Wymagania funkcjonale#8.6 US-06: Blokowanie niedozwolonych operacji|8.6 US-06: Blokowanie niedozwolonych operacji]]
+	- [[#8. Wymagania funkcjonale#8.7 US-07: Kontrola bibliotek i namespace'ów|8.7 US-07: Kontrola bibliotek i namespace'ów]]
+	- [[#8. Wymagania funkcjonale#8.8 US-08: Izolowane wykonanie kodu|8.8 US-08: Izolowane wykonanie kodu]]
+	- [[#8. Wymagania funkcjonale#8.9 US-09: Testy niejawne|8.9 US-09: Testy niejawne]]
+	- [[#8. Wymagania funkcjonale#8.10 US-10: Uruchomienie jako akcja GitHub Actions|8.10 US-10: Uruchomienie jako akcja GitHub Actions]]
+- [[#9. Wymagania niefunkcjonalne|9. Wymagania niefunkcjonalne]]
+- [[#10. Harmonogram projektu|10. Harmonogram projektu]]
+	- [[#10. Harmonogram projektu#10.1. Założenia harmonogramu|10.1. Założenia harmonogramu]]
+	- [[#10. Harmonogram projektu#10.2. Harmonogram w ujęciu tygodniowym|10.2. Harmonogram w ujęciu tygodniowym]]
+	- [[#10. Harmonogram projektu#10.3. Identyfikacja ścieżki krytycznej|10.3. Identyfikacja ścieżki krytycznej]]
+- [[#11. Wstępny rejestr ryzyk|11. Wstępny rejestr ryzyk]]
+	- [[#11. Wstępny rejestr ryzyk#11.1 Rejestr ryzyk projektowych i technicznych|11.1 Rejestr ryzyk projektowych i technicznych]]
+	- [[#11. Wstępny rejestr ryzyk#11.2 Plany awaryjne dla modułów wysokiego ryzyka|11.2 Plany awaryjne dla modułów wysokiego ryzyka]]
+		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.1 Protokół awaryjny 1: Niemożliwość obliczenia złożoności metod za pomocą zmiany kodu IL|11.2.1 Protokół awaryjny 1: Niemożliwość obliczenia złożoności metod za pomocą zmiany kodu IL]]
+		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.2 Protokół awaryjny 2: Niemożliwość wglądu lub modyfikacji kodu zewnętrznych bibliotek|11.2.2 Protokół awaryjny 2: Niemożliwość wglądu lub modyfikacji kodu zewnętrznych bibliotek]]
+		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.3 Protokół awaryjny 3: Nieakceptowalny narzut czasowy generowany przez wtrącanie kodu IL|11.2.3 Protokół awaryjny 3: Nieakceptowalny narzut czasowy generowany przez wtrącanie kodu IL]]
+- [[#12. Podział ról|12. Podział ról]]
+- [[#13. Formalna akceptacja promotora|13. Formalna akceptacja promotora]]
+
+
 **Projekt inżynierski — Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
 
 **Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
