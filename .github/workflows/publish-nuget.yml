@@ -1,7 +1,9 @@
 name: Publish NuGet Packages
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - feat/nuget-support
 
 permissions:
   contents: read
