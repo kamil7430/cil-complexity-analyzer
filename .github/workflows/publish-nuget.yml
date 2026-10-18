@@ -26,16 +26,21 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build -c Release --no-restore
 
       - name: Pack
-        run: dotnet pack --configuration Release --no-build
+        run: dotnet pack -c Release --no-build
 
-      - name: Publish packages
+      - name: Publish to NuGet
+        shell: bash
         run: |
-          find src -name "*.nupkg" \
-            ! -name "DataAnalyzer*" \
-            -exec dotnet nuget push {} \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate \
-            \;
+          set -e
+
+          for package in $(find src -name "*.nupkg" ! -name "DataAnalyzer*"); do
+            echo "Publishing $package"
+
+            dotnet nuget push "$package" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate \
+              --api-key github
+          done
