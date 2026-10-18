@@ -1,42 +1,5 @@
 # Dokument etapu 1: Wymagania i zakres projektu  
 
-- [[#1. Historia zmian i metadane dokumentu|1. Historia zmian i metadane dokumentu]]
-- [[#2. Abstrakt|2. Abstrakt]]
-- [[#3. Sformułowanie problemu inżynierskiego|3. Sformułowanie problemu inżynierskiego]]
-- [[#4. Spis treści|4. Spis treści]]
-- [[#5. Słownik pojęć|5. Słownik pojęć]]
-- [[#6. Podsumowanie menedżerskie|6. Podsumowanie menedżerskie]]
-	- [[#6. Podsumowanie menedżerskie#6.1 Problem|6.1 Problem]]
-	- [[#6. Podsumowanie menedżerskie#6.2 Rozwiązanie|6.2 Rozwiązanie]]
-- [[#7. Zakres projektu|7. Zakres projektu]]
-	- [[#7. Zakres projektu#7.1 Zakres MVP|7.1 Zakres MVP]]
-	- [[#7. Zakres projektu#7.2 Poza zakresem MVP|7.2 Poza zakresem MVP]]
-- [[#8. Wymagania funkcjonale|8. Wymagania funkcjonale]]
-	- [[#8. Wymagania funkcjonale#8.1 US-01: Definicja testu złożoności atrybutami|8.1 US-01: Definicja testu złożoności atrybutami]]
-	- [[#8. Wymagania funkcjonale#8.2 US-02: Uruchamianie testów w IDE|8.2 US-02: Uruchamianie testów w IDE]]
-	- [[#8. Wymagania funkcjonale#8.3 US-03: Pomiar złożoności przez zliczanie instrukcji|8.3 US-03: Pomiar złożoności przez zliczanie instrukcji]]
-	- [[#8. Wymagania funkcjonale#8.4 US-04: Sprawdzenie poprawności wyniku|8.4 US-04: Sprawdzenie poprawności wyniku]]
-	- [[#8. Wymagania funkcjonale#8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej|8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej]]
-	- [[#8. Wymagania funkcjonale#8.6 US-06: Blokowanie niedozwolonych operacji|8.6 US-06: Blokowanie niedozwolonych operacji]]
-	- [[#8. Wymagania funkcjonale#8.7 US-07: Kontrola bibliotek i namespace'ów|8.7 US-07: Kontrola bibliotek i namespace'ów]]
-	- [[#8. Wymagania funkcjonale#8.8 US-08: Izolowane wykonanie kodu|8.8 US-08: Izolowane wykonanie kodu]]
-	- [[#8. Wymagania funkcjonale#8.9 US-09: Testy niejawne|8.9 US-09: Testy niejawne]]
-	- [[#8. Wymagania funkcjonale#8.10 US-10: Uruchomienie jako akcja GitHub Actions|8.10 US-10: Uruchomienie jako akcja GitHub Actions]]
-- [[#9. Wymagania niefunkcjonalne|9. Wymagania niefunkcjonalne]]
-- [[#10. Harmonogram projektu|10. Harmonogram projektu]]
-	- [[#10. Harmonogram projektu#10.1. Założenia harmonogramu|10.1. Założenia harmonogramu]]
-	- [[#10. Harmonogram projektu#10.2. Harmonogram w ujęciu tygodniowym|10.2. Harmonogram w ujęciu tygodniowym]]
-	- [[#10. Harmonogram projektu#10.3. Identyfikacja ścieżki krytycznej|10.3. Identyfikacja ścieżki krytycznej]]
-- [[#11. Wstępny rejestr ryzyk|11. Wstępny rejestr ryzyk]]
-	- [[#11. Wstępny rejestr ryzyk#11.1 Rejestr ryzyk projektowych i technicznych|11.1 Rejestr ryzyk projektowych i technicznych]]
-	- [[#11. Wstępny rejestr ryzyk#11.2 Plany awaryjne dla modułów wysokiego ryzyka|11.2 Plany awaryjne dla modułów wysokiego ryzyka]]
-		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.1 Protokół awaryjny 1: Niemożliwość obliczenia złożoności metod za pomocą zmiany kodu IL|11.2.1 Protokół awaryjny 1: Niemożliwość obliczenia złożoności metod za pomocą zmiany kodu IL]]
-		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.2 Protokół awaryjny 2: Niemożliwość wglądu lub modyfikacji kodu zewnętrznych bibliotek|11.2.2 Protokół awaryjny 2: Niemożliwość wglądu lub modyfikacji kodu zewnętrznych bibliotek]]
-		- [[#11.2 Plany awaryjne dla modułów wysokiego ryzyka#11.2.3 Protokół awaryjny 3: Nieakceptowalny narzut czasowy generowany przez wtrącanie kodu IL|11.2.3 Protokół awaryjny 3: Nieakceptowalny narzut czasowy generowany przez wtrącanie kodu IL]]
-- [[#12. Podział ról|12. Podział ról]]
-- [[#13. Formalna akceptacja promotora|13. Formalna akceptacja promotora]]
-
-
 **Projekt inżynierski — Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
 
 **Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
@@ -44,13 +7,13 @@
 **Tytuł w języku angielskim**: *Design and implementation of a testing framework for automated verification and profiling of programming assignments.*
 
 **Autorzy:**
-  * **Kacper Grobel** – `kacper.grobel@pw.edu.pl`
-  * **Kamil Błażejczyk** – `kamil.blazejczyk@pw.edu.pl`
-  * **Kornel Dzieża** – `kornel.dzieza@pw.edu.pl`
+  * **Kacper Grobel** – `kacper.grobel.stud@pw.edu.pl`
+  * **Kamil Błażejczyk** – `kamil.blazejczyk.stud@pw.edu.pl`
+  * **Kornel Dzieża** – `kornel.dzieza.stud@pw.edu.pl`
  
 **Promotorzy:** 
-  * **Mgr inż. Tomasz Herman** - `tomasz.herman@mini.pw.edu.pl`
-  * **Dr inż. Michał Dębski**
+  * **Mgr inż. Tomasz Herman** – `tomasz.herman@pw.edu.pl`
+  * **Dr inż. Michał Dębski** – `michal.debski@pw.edu.pl
 
 **Główne repozytorium:** `https://github.com/kamil7430/cil-complexity-analyzer`
 
@@ -73,6 +36,38 @@ Celem projektu jest zaprojektowanie i zaimplementowanie bezpiecznej, zintegrowan
 ## 4. Spis treści  
 
   
+- [1. Historia zmian i metadane dokumentu](#1-historia-zmian-i-metadane-dokumentu)
+- [2. Abstrakt](#2-abstrakt)
+- [3. Sformułowanie problemu inżynierskiego](#3-sformułowanie-problemu-inżynierskiego)
+- [4. Spis treści](#4-spis-treści)
+- [5. Słownik pojęć](#5-słownik-pojęć)
+- [6. Podsumowanie menedżerskie](#6-podsumowanie-menedżerskie)
+  - [6.1 Problem](#61-problem)
+  - [6.2 Rozwiązanie](#62-rozwiązanie)
+- [7. Zakres projektu](#7-zakres-projektu)
+  - [7.1 Zakres MVP](#71-zakres-mvp)
+  - [7.2 Poza zakresem MVP](#72-poza-zakresem-mvp)
+- [8. Wymagania funkcjonale](#8-wymagania-funkcjonele)
+  - [8.1 US-01: Definicja testu złożoności atrybutami](#81-us-01-definicja-testu-złożoności-atrybutami)
+  - [8.2 US-02: Uruchamianie testów w IDE](#82-us-02-uruchamianie-testów-w-ide)
+  - [8.3 US-03: Pomiar złożoności przez zliczanie instrukcji](#83-us-03-pomiar-złożoności-przez-zliczanie-instrukcji)
+  - [8.4 US-04: Sprawdzenie poprawności wyniku](#84-us-04-sprawdzenie-poprawności-wyniku)
+  - [8.5 US-05: Czytelny komunikat o błędzie kompilacji i analizy statycznej](#85-us-05-czytelny-komunikat-o-błędzie-kompilacji-i-analizy-statycznej)
+  - [8.6 US-06: Blokowanie niedozwolonych operacji](#86-us-06-blokowanie-niedozwolonych-operacji)
+  - [8.7 US-07: Kontrola bibliotek i namespace'ów](#87-us-07-kontrola-bibliotek-i-namespaceów)
+  - [8.8 US-08: Izolowane wykonanie kodu](#88-us-08-izolowane-wykonanie-kodu)
+  - [8.9 US-09: Testy niejawne](#89-us-09-testy-niejawne)
+  - [8.10 US-10: Uruchomienie jako akcja GitHub Actions](#810-us-10-uruchomienie-jako-akcja-github-actions)
+- [9. Wymagania niefunkcjonalne](#9-wymagania-niefunkcjonalne)
+- [10. Harmonogram projektu](#10-harmonogram-projektu)
+  - [10.1. Założenia harmonogramu](#101-założenia-harmonogramu)
+  - [10.2. Harmonogram w ujęciu tygodniowym](#102-harmonogram-w-ujęciu-tygodniowym)
+  - [10.3. Identyfikacja ścieżki krytycznej](#103-identyfikacja-ścieżki-krytycznej)
+- [11. Wstępny rejestr ryzyk](#11-wstępny-rejestr-ryzyk)
+  - [11.1 Rejestr ryzyk projektowych i technicznych](#111-rejestr-ryzyk-projektowych-i-technicznych)
+  - [11.2 Plany awaryjne dla modułów wysokiego ryzyka](#112-plany-awaryjne-dla-modułów-wysokiego-ryzyka)
+- [12. Podział ról](#12-podział-ról)
+- [13. Formalna akceptacja promotora](#13-formalna-akceptacja-promotora)
 
   
 
@@ -129,7 +124,7 @@ MVP obejmuje pięć elementów ze zgłoszenia tematu:
 3.  Obsługa testów niejawnych uruchamianych poza komputerem użytkownika,
 4.  Izolowana piaskownica kontenerowana z monitorowaniem wywołań systemowych i filtrowaniem niedozwolonych wywołań (np. operacji wejścia i wyjścia),
 5.  Wdrożenie systemu z Github Actions, sprawdzona na zestawach zadań z ASD2.  
-    
+
 ### 7.2 Poza zakresem MVP
 
 1.  Obsługa języków innych niż C#,
