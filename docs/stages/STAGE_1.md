@@ -13,7 +13,7 @@
  
 **Promotorzy:** 
   * **Mgr inż. Tomasz Herman** – `tomasz.herman@pw.edu.pl`
-  * **Dr inż. Michał Dębski** – `michal.debski@pw.edu.pl
+  * **Dr inż. Michał Dębski** – `michal.debski@pw.edu.pl`
 
 **Główne repozytorium:** `https://github.com/kamil7430/cil-complexity-analyzer`
 
