@@ -7,6 +7,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <LangVersion>latest</LangVersion>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,20 +18,20 @@
 
     <ItemGroup>
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <PackageReference Include="CilComplexityAnalyzer.Facade" Version="0.1.0" />
+        <PackageReference Include="CilComplexityAnalyzer.TestExecutor" Version="0.1.0" />
+        <PackageReference Include="CilComplexityAnalyzer.Contract" Version="0.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="true"
-                          SetTargetFramework="TargetFramework=netstandard2.0" />
-        
-        <ProjectReference Include="..\..\src\CilComplexityAnalyzer.TestExecutor\CilComplexityAnalyzer.TestExecutor.csproj" />
-        <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
+        <Folder Include="Lab02\Submissions\" />
+        <Folder Include="Lab03\" />
     </ItemGroup>
-
+    
     <ItemGroup>
-      <Folder Include="Lab02\Submissions\" />
+      <Reference Include="Graphs">
+        <HintPath>..\..\data\libs\Graphs.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

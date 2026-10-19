@@ -2,8 +2,11 @@
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
-/*
+using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.Results;
+using TestResult = CilComplexityAnalyzer.Contract.TestResult;
 
+/*
 namespace ASD
 {
     public abstract class Lab02TestCase : TestCase
@@ -23,9 +26,9 @@ namespace ASD
             this.expectedCost = expectedCost;
         }
 
-        protected override (Result resultCode, string message) VerifyTestCase(object settings)
+        protected override (TestResult resultCode, string message) VerifyTestCase(object settings)
         {
-            var (code, msg) = CheckDeclaredCost();
+            var code = CheckDeclaredCost();
             return (code, $"{msg} [{this.Description}]");
         }
 
@@ -57,33 +60,33 @@ namespace ASD
         /// - czy kolejne kroki są poprawne (różnica wierszy = 1, różnica kolumn = -1, 0 lub 1),
         /// - porównanie sumy wartości pikseli (z macierzy S) oraz dodatkowej kary (ExtraPenalty) z deklarowanym kosztem.
         /// </summary>
-        protected (Result resultCode, string message) CheckDeclaredCost()
+        protected (TestResult resultCode) CheckDeclaredCost()
         {
             if (result.returnedCost != this.expectedCost)
-                return (Result.WrongResult, $"Zwrócono wartość kosztu {result.returnedCost}, a powinno być {this.expectedCost}");
+                return new Failure( $"Zwrócono wartość kosztu {result.returnedCost}, a powinno być {this.expectedCost}");
 
             if (result.seam == null)
-                return (Result.WrongResult, "Zwrócono null zamiast ścieżki");
+                return new Failure("Zwrócono null zamiast ścieżki");
 
             if (result.seam.Length != H)
-                return (Result.WrongResult, $"Zwrócona ścieżka ma długość {result.seam.Length}, powinna mieć {H}");
+                return new Failure( $"Zwrócona ścieżka ma długość {result.seam.Length}, powinna mieć {H}");
 
             if (result.seam[0].i != 0)
-                return (Result.WrongResult, "Ścieżka nie zaczyna się w wierszu 0");
+                return new Failure("Ścieżka nie zaczyna się w wierszu 0");
             if (result.seam[result.seam.Length - 1].i != H - 1)
-                return (Result.WrongResult, "Ścieżka nie kończy się w ostatnim wierszu");
+                return new Failure("Ścieżka nie kończy się w ostatnim wierszu");
 
             (int i, int j) pos = result.seam[0];
             for (int idx = 1; idx < result.seam.Length; idx++)
             {
                 var curr = result.seam[idx];
                 if (curr.i - pos.i != 1)
-                    return (Result.WrongResult, $"Różnica wierszy między krokami nie wynosi 1: {pos} -> {curr}");
+                    return new Failure($"Różnica wierszy między krokami nie wynosi 1: {pos} -> {curr}");
                 int dj = curr.j - pos.j;
                 if (dj < -1 || dj > 1)
-                    return (Result.WrongResult, $"Różnica kolumn między krokami powinna wynosić -1, 0 lub 1: {pos} -> {curr}");
+                    return new Failure($"Różnica kolumn między krokami powinna wynosić -1, 0 lub 1: {pos} -> {curr}");
                 if (curr.j < 0 || curr.j >= W)
-                    return (Result.WrongResult, $"Krok wychodzi poza planszę: {curr}");
+                    return new Failure($"Krok wychodzi poza planszę: {curr}");
                 pos = curr;
             }
 
@@ -91,12 +94,12 @@ namespace ASD
             int penalty = ExtraPenalty();
             int totalCost = basicCost + penalty;
             if (totalCost != result.returnedCost)
-                return (Result.WrongResult, $"Obliczony koszt (suma wartości pikseli + kara {penalty}) wynosi {totalCost}, a zwrócony koszt to {result.returnedCost}");
+                return new Failure($"Obliczony koszt (suma wartości pikseli + kara {penalty}) wynosi {totalCost}, a zwrócony koszt to {result.returnedCost}");
             return OkResult("OK");
         }
 
-        public (Result resultCode, string message) OkResult(string message) =>
-            (TimeLimit < PerformanceTime ? Result.LowEfficiency : Result.Success,
+        public (string) OkResult(string message) =>
+            (TimeLimit < PerformanceTime ? Result.LowEfficiency : Success,
             $"{message} {PerformanceTime.ToString("#0.00")}s");
     }
 
@@ -148,7 +151,7 @@ namespace ASD
         }
     }
 
-    public class Lab02Tests : TestModule
+    public partial class Lab02Tests : TestSuite
     {
         TestSet Stage1 = new TestSet(prototypeObject: new Lab02(), description: "Etap 1", settings: true);
         TestSet Stage2 = new TestSet(prototypeObject: new Lab02(), description: "Etap 2", settings: true);
@@ -391,4 +394,5 @@ namespace ASD
         }
     }
 }
+
 */

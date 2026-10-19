@@ -56,6 +56,23 @@ public partial class Lab01Evaluation : TestSuite
             base.Assert();
         }
     }
+    
+    public class Case3 : TestCase
+    {
+        public override int TestNumber() => 2;
+
+        public override TestCaseSettings Settings()  => new  TestCaseSettings();
+        public override void Arrange() { }
+        public override void Act() {  }
+
+        public override void Assert()
+        {
+            IsTrue(0 < 4);
+            IsTrue(1 < 2);
+            IsTrue(1 == 1);
+            base.Assert();
+        }
+    }
 }
 
 // generated tests
