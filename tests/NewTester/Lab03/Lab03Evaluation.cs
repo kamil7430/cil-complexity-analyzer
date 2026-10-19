@@ -14,7 +14,7 @@ public partial class Lab03Evaluation : TestSuite
         => new TestSuiteSettings
         {
             Containerized = false,
-            AdditionalReferences = ["Graphs.dll"],
+            //AdditionalReferences = ["Graphs.dll"],
         };
 
     public class Case0_Reverse_Gesty : TestCase
