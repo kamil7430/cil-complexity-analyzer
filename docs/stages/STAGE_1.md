@@ -168,15 +168,27 @@ Kryteria akceptacji:
 
 ### 8.3 US-03: Pomiar złożoności przez zliczanie instrukcji
 - **Jako**: Prowadzący
-- **chcę**: aby złożoność była mierzona liczbą wykonanych operacji i alokacji, 
+- **chcę**: aby system mierzył złożoność obliczeniową rozwiązania poprzez zliczanie wykonanych instrukcji CIL oraz alokacji i dopasowanie uzyskanych wyników do teoretycznej funkcji złożoności $O(f(n))$, gdzie $f(n)$ jest funkcją ustaloną przez prowadzącego,
 - **aby**: ocena nie zależała od sprzętu i obciążenia.
 
 Kryteria akceptacji:
+1. Zliczanie instrukcji CIL i alokacji:
+  - **Dane**: skompilowane rozwiązanie i dane wejściowe o rosnącym rozmiarze $n$ ($n_1$ < $n_2$ < $n_3$ < ... < $n_k$).
+  - **Gdy**: Moduł wykonawczy Executor wplata instrukcje liczników i uruchamia kod.
+  - **Wtedy**: Wynik zawiera liczbę operacji i alokacji dla każdego rozmiaru danych i werdykt zgodności z wymaganą złożonością.
+  - **Scenariusz** (powtarzalność): Dla każdego rozmiaru danych $n_i$ rejestrowana jest dokładna, całkowita liczba wykonanych instrukcji $C(n_i)$ oraz zrealizowanych alokacji.
+    
+2. Weryfikacja i dopasowanie do krzywej złożoności $f(n)$:
 
-- **Given**: skompilowane rozwiązanie i dane wejściowe o rosnącym rozmiarze,
-- **When**: Executor wplata instrukcje liczników i uruchamia kod,
-- **Then**: wynik zawiera liczbę operacji i alokacji dla każdego rozmiaru danych i werdykt zgodności z wymaganą złożonością. 
-- **Scenariusz** (powtarzalność): dwa uruchomienia tego samego kodu na tych samych danych dają identyczne liczniki.
+  - **Dane**: Zbiór zarejestrowanych par ($n_i$, $C(n_i)$) oraz oczekiwana klasa złożoności (np. $O(n\log n)$).
+  - **Gdy**: System analizuje wzrost liczby instrukcji w funkcji rozmiaru danych $n$ (poprzez dopasowanie punktów do podanej przez prowadzącego $f(n)$).
+  - **Wtedy**: System wyznacza werdykt zgodności złożoności (Zgodny/Przekroczony limit złożoności).
+
+3. Determinizm i powtarzalność:
+
+  - **Dane**: Ten sam kod źródłowy oraz identyczne dane wejściowe $n$.
+  - **Gdy**: Moduł Executor uruchamia weryfikację wielokrotnie w różnych odstępach czasu / na różnych maszynach (np. student wielokrotnie wysyła swoje rozwiązanie dla pewności bez zmieniania kodu).
+  - **Wtedy**: Każde uruchomienie zwraca identyczną liczbę zliczonych instrukcji CIL oraz alokacji.
 
 ### 8.4 US-04: Sprawdzenie poprawności wyniku
 - **Jako**: Student
