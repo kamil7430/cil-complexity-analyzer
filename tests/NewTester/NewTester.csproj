@@ -18,9 +18,9 @@
 
     <ItemGroup>
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-        <PackageReference Include="CilComplexityAnalyzer.Facade" Version="0.1.1" />
-        <PackageReference Include="CilComplexityAnalyzer.TestExecutor" Version="0.1.1" />
-        <PackageReference Include="CilComplexityAnalyzer.Contract" Version="0.1.1" />
+        <PackageReference Include="CilComplexityAnalyzer.Facade" Version="0.1.2" />
+        <PackageReference Include="CilComplexityAnalyzer.TestExecutor" Version="0.1.2" />
+        <PackageReference Include="CilComplexityAnalyzer.Contract" Version="0.1.2" />
     </ItemGroup>
 
     <ItemGroup>
