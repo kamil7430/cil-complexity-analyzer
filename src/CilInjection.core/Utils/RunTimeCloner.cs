@@ -33,6 +33,8 @@ internal static class RuntimeCloner
         var oldAssemblyName = assemblyDefinition.Name.Name;
         var newAssemblyName = renamer(oldAssemblyName, sessionId);
         assemblyDefinition.Name.Name = newAssemblyName;
+        
+        typeNameDictionary[oldAssemblyName] = newAssemblyName;
 
         foreach (var module in assemblyDefinition.Modules)
         {

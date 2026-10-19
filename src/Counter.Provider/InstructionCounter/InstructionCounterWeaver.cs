@@ -1,8 +1,8 @@
-﻿namespace CilInstructionCounter;
-
-using System.Reflection;
-using CilInjection.Core.Abstractions;
+﻿using CilInjection.Core.Abstractions;
+using Counter.Provider.Base;
 using Mono.Cecil.Cil;
+
+namespace Counter.Provider.InstructionCounter;
 
 public class InstructionCounterWeaver : BaseCounterWeaver
 {

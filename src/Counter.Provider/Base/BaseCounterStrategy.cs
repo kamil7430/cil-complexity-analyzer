@@ -1,12 +1,10 @@
 ﻿using CilInjection.Core.Abstractions;
 
-namespace CilInstructionCounter;
+namespace Counter.Provider.Base;
 
 public class BaseCounterStrategy : BaseInjectionStrategyWithRuntime<ICounterHandle>
 {
-    private static readonly string ResourceName = "Counter.RunTime.dll";
-    
-    public BaseCounterStrategy(ICounterWeaver weaver) : base(ResourceName, weaver)
+    public BaseCounterStrategy(ICounterWeaver weaver) : base(CounterMetadata.ResourceName, weaver)
     {
         var counterFieldRef = ResolveRuntimeField(CounterMetadata.TypeName, CounterMetadata.FieldName);
         weaver.Initialize(counterFieldRef);

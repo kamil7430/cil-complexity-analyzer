@@ -1,10 +1,7 @@
-﻿
-
+﻿using CilInjection.Core.Abstractions;
 using Mono.Cecil;
 
-namespace CilInstructionCounter;
-
-using CilInjection.Core.Abstractions;
+namespace Counter.Provider.Base;
 
 public interface ICounterWeaver : IWeaver
 {

@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>CilInstructionCounter</RootNamespace>
+        <RootNamespace>Counter.Provider</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,6 +21,10 @@
     <ItemGroup>
         <!-- Ścieżka do pliku RunTime DLL -->
         <ProjectReference Include="..\Counter.RunTime\Counter.RunTime.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="CilInjection.Tests" />
     </ItemGroup>
     
     <ItemGroup>

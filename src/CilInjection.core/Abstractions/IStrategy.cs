@@ -108,7 +108,7 @@ where THandleInterface : IHandle
         context.LoadFromStream(memoryStream);
     }
     
-    private string GetMappedFullName(string originalFullTypeName)
+    internal string GetMappedFullName(string originalFullTypeName)
     {
         if (TypeMapping.TryGetValue(originalFullTypeName, out var newFullName))
         {

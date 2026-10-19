@@ -28,7 +28,11 @@ internal static class RuntimeFileReader
     {
         ArgumentException.ThrowIfNullOrEmpty(dllFileName);
 
-        var fullPath = Path.Combine(AppContext.BaseDirectory, dllFileName);
+        var fileName = dllFileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
+            ? dllFileName 
+            : $"{dllFileName}.dll";
+
+        var fullPath = Path.Combine(AppContext.BaseDirectory, fileName);
         
         return ReadDllBytesFromPath(fullPath);
     }

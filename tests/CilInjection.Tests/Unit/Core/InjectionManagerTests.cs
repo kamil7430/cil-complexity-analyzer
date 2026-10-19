@@ -27,15 +27,14 @@ public class InjectionManagerTests
         // Arrange
         byte[] dllBytes = _env.CreateDefaultAssemblyBytes(assemblyName: "CustomRuntime");
         var strategy = _env.CreateStrategy(dllBytes);
-        var pipeline = _env.CreatePipeline(strategy);
+        var manager = _env.CreatePipeline(strategy);
 
         // Act
-        pipeline.LoadRuntimesInto(_env.Alc);
+        manager.LoadRuntimesInto(_env.Alc);
 
         // Assert
         _env.Alc.ShouldHaveLoadedAssembly("CustomRuntime");
-    }
-
+    } 
     [TestMethod]
     public void Should_NotLoadDuplicateAssemblies_WhenMultipleStrategiesShareRuntime()
     {
@@ -44,10 +43,10 @@ public class InjectionManagerTests
         var strategy1 = _env.CreateStrategy(dllBytes);
         var strategy2 = _env.CreateStrategy(dllBytes);
         
-        var pipeline = _env.CreatePipeline(strategy1, strategy2);
+        var manager = _env.CreatePipeline(strategy1, strategy2);
 
         // Act
-        pipeline.LoadRuntimesInto(_env.Alc);
+        manager.LoadRuntimesInto(_env.Alc);
 
         // Assert
         int loadedCount = _env.Alc.Assemblies.Count(a => a.GetName().Name == "CustomRuntime");
@@ -66,10 +65,10 @@ public class InjectionManagerTests
         var strategy1 = _env.CreateStrategy(dllBytes1);
         var strategy2 = _env.CreateStrategy(dllBytes2);
         
-        var pipeline = _env.CreatePipeline(strategy1, strategy2);
+        var manager = _env.CreatePipeline(strategy1, strategy2);
 
         // Act
-        pipeline.LoadRuntimesInto(_env.Alc);
+        manager.LoadRuntimesInto(_env.Alc);
 
         // Assert
         _env.Alc.ShouldHaveLoadedAssembly(assemblyName1);
@@ -80,11 +79,11 @@ public class InjectionManagerTests
     public void Transform_ShouldReturnOriginalBytes_WhenNoStrategiesRegistered()
     {
         // Arrange
-        var pipeline = _env.CreatePipeline(); 
+        var manager = _env.CreatePipeline(); 
         var assemblyBytes = _env.CreateDefaultAssemblyBytes();
 
         // Act
-        var resultBytes = pipeline.Transform(assemblyBytes);
+        var resultBytes = manager.Transform(assemblyBytes);
 
         // Assert
         CollectionAssert.AreEqual(assemblyBytes, resultBytes, "Gdy brak strategii, bajty nie powinny ulec zmianie.");

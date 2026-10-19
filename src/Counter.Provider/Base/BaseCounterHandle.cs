@@ -1,10 +1,6 @@
-﻿using System.Reflection;
-using System.Runtime.Loader;
-using CilInjection.Core.Abstractions;
-using CilInstructionCounter;
+﻿using CilInjection.Core.Abstractions;
 
-
-namespace CilInstructionCounter;
+namespace Counter.Provider.Base;
 
 public interface ICounterHandle : IHandle
 {

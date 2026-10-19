@@ -11,8 +11,8 @@
     <Project Path="src/CilInjection.Core/CilInjection.Core.csproj" />
   </Folder>
   <Folder Name="/src/CilInjection/Strategies/" />
-  <Folder Name="/src/CilInjection/Strategies/InstructionCounter/">
-    <Project Path="src/CilInstructionCounter.Provider/CilInstructionCounter.Provider.csproj" />
+  <Folder Name="/src/CilInjection/Strategies/Counter/">
+    <Project Path="src/Counter.Provider/Counter.Provider.csproj" />
     <Project Path="src/Counter.Runtime/Counter.Runtime.csproj" />
   </Folder>
   <Folder Name="/tests/">
