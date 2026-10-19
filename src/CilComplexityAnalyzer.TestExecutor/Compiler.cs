@@ -12,7 +12,7 @@ internal static class Compiler
         outputKind: OutputKind.DynamicallyLinkedLibrary,
         optimizationLevel: OptimizationLevel.Debug
     );
-    
+
     internal static TestSuite CompileStudentSolution(this TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning student solution compilation.");
@@ -22,9 +22,11 @@ internal static class Compiler
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: "StudentSolution", 
+            assemblyName: "StudentSolution",
             syntaxTrees: [testSuite.StudentSolutionSyntaxTree],
-            references: Basic.Reference.Assemblies.Net100.References.All,
+            references: //Basic.Reference.Assemblies.Net100.References.All,
+            [..Basic.Reference.Assemblies.Net100.References.All,
+                ..GetAdditionalReferences(testSuite)],
             options: CompilationOptions
         ).Emit(stream, cancellationToken: testSuite.CancellationToken());
 
@@ -35,9 +37,10 @@ internal static class Compiler
             {
                 errors.Append($"\n{diagnostic}");
             }
+
             throw new TestExecutionException(errors.ToString());
         }
-            
+
         stream.Seek(0, SeekOrigin.Begin);
         testSuite.StudentSolutionAssemblyBytes = stream.ToArray();
         return testSuite;
@@ -46,28 +49,31 @@ internal static class Compiler
     internal static TestSuite CompileTestSuite(this TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test suite compilation.");
-        
+
         if (testSuite.TestSuiteSyntaxTree is null)
             throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
-        
+
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: testSuite.Name, 
+            assemblyName: testSuite.Name,
             syntaxTrees: [testSuite.TestSuiteSyntaxTree],
             // TODO: do it more sophisticated way
-            references: [
-                ..Basic.Reference.Assemblies.Net100.References.All,
+            references:
+            [
+                .. Basic.Reference.Assemblies.Net100.References.All,
+                ..GetAdditionalReferences(testSuite),
                 MetadataReference.CreateFromImage(testSuite.StudentSolutionAssemblyBytes!),
                 MetadataReference.CreateFromFile(typeof(TestCase).Assembly.Location),
             ],
             options: CompilationOptions
         ).Emit(
-            stream, 
+            stream,
             // TODO: ok? Looks ok
-            manifestResources: [
+            manifestResources:
+            [
                 new ResourceDescription(
-                    "StudentSolution", 
-                    () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!), 
+                    "StudentSolution",
+                    () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!),
                     true
                 ),
             ],
@@ -81,11 +87,23 @@ internal static class Compiler
             {
                 errors.Append($"\n{diagnostic}");
             }
+
             throw new TestExecutionException(errors.ToString());
         }
-        
+
         stream.Seek(0, SeekOrigin.Begin);
         testSuite.TestSuiteAssemblyBytes = stream.ToArray();
         return testSuite;
+    }
+
+    private static IEnumerable<MetadataReference> GetAdditionalReferences(TestSuite testSuite)
+    {
+        foreach (var path in testSuite.Settings()?.AdditionalReferences ?? [])
+        {
+            var fullPath = Path.IsPathRooted(path)
+                ? path
+                : Path.Combine(AppContext.BaseDirectory, path);
+            yield return MetadataReference.CreateFromFile(fullPath);
+        }
     }
 }
