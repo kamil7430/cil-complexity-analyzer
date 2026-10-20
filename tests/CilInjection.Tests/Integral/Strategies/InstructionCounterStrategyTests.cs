@@ -60,36 +60,42 @@ public class InstructionCounterStrategyTests
     }
     
     [DataTestMethod]
-    // Format: [DataRow(Ścieżka, PełnaNazwaKlasy, NazwaMetody, WArgumenty_Do_Metody)]
-    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Add", 2, 3)]
-    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Subtract", 10, 5)]
-    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Multiply", 2, 3)]
-    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "ComputeExpression", 2, 3, 4)]
-    public void InstructionCounter_ShouldCountInstructions_ForVariousMethods(
-        string relativeFilePath, 
-        string fullTypeName, 
-        string methodName, 
-        params object[] methodArguments) 
-    {
-        // Arrange
-        using var module = TestTargetLoader.CompileSourceToModule(relativeFilePath);
+// Format: [DataRow(Ścieżka, PełnaNazwaKlasy, NazwaMetody, OczekiwanyWynik, OczekiwanaLiczbaInstrukcji, Argumenty_Do_Metody...)]
+[DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Add", 5, 12, 2, 3)]   
+[DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Subtract", 5, 12, 10, 5)] 
+[DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Multiply", 6, 12, 2, 3)]  
+[DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "ComputeExpression", 20, 14, 2, 3, 4)]
+public void InstructionCounter_ShouldCountInstructions_ForVariousMethods(
+    string relativeFilePath, 
+    string fullTypeName, 
+    string methodName, 
+    object expectedResult,
+    int expectedInstructionCount,
+    params object[] methodArguments) 
+{
+    // Arrange
+    using var module = TestTargetLoader.CompileSourceToModule(relativeFilePath);
 
-        var instructionCounterStrategy = new InstructionCounterStrategy();
-        var manager = new CilInjectionManager(instructionCounterStrategy);
+    var instructionCounterStrategy = new InstructionCounterStrategy();
+    var manager = new CilInjectionManager(instructionCounterStrategy);
 
-        // Act - Transformacja i wczytanie
-        manager.Transform(module);
-        manager.LoadRuntimesInto(_env.Alc);
-        
-        var handle = instructionCounterStrategy.CreateHandle(_env.Alc);
-        handle.ResetCounter();
+    // Act - Transformacja i wczytanie
+    manager.Transform(module);
+    manager.LoadRuntimesInto(_env.Alc);
+    
+    var handle = instructionCounterStrategy.CreateHandle(_env.Alc);
+    handle.ResetCounter();
 
-        // Act - Wywołanie metody docelowej
-        module.ExecuteMethod(_env.Alc, fullTypeName, methodName, methodArguments);
+    // Act - Wywołanie metody docelowej i pobranie jej wyniku
+    var actualResult = module.ExecuteMethod(_env.Alc, fullTypeName, methodName, methodArguments);
 
-        // Assert
+    // Assert - Weryfikacja wyniku metody
+    Assert.AreEqual(expectedResult, actualResult, 
+        $"Nieprawidłowy wynik dla {fullTypeName}.{methodName}. Oczekiwano: {expectedResult}, Otrzymano: {actualResult}");
+
+        // Assert - Weryfikacja liczby wstrzykniętych instrukcji
         var instructionCount = handle.GetCounter();
-        Assert.IsTrue(instructionCount > 0, 
-            $"Licznik instrukcji dla {fullTypeName}.{methodName} powinien być > 0, a wynosił: {instructionCount}");
+        Assert.AreEqual(expectedInstructionCount, instructionCount, 
+            $"Licznik instrukcji dla {fullTypeName}.{methodName} jest nieprawidłowy. Oczekiwano: {expectedInstructionCount}, Otrzymano: {instructionCount}");
     }
 }
