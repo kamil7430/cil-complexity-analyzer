@@ -20,7 +20,7 @@
 
     <ItemGroup>
         <!-- Ścieżka do pliku RunTime DLL -->
-        <ProjectReference Include="..\Counter.RunTime\Counter.RunTime.csproj" />
+        <ProjectReference Include="..\Counter.Runtime\Counter.Runtime.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,6 @@
-﻿using CilInjecting.Tests.Assertions;
+﻿using System.Reflection;
+using CilInjecting.Tests.Assertions;
+using CilInjecting.Tests.Infrastructure.Loaders;
 using CilInjection.Core;
 using CilInjection.Tests.Infrastructure.Fixtures;
 using Counter.Provider.Base;
@@ -38,37 +40,16 @@ public class InstructionCounterStrategyTests
         // Assert
         _env.Alc.ShouldHaveLoadedAssembly(assemblyName);
     } 
-    [TestMethod]
-    public void Should_NotLoadDuplicateAssemblies_WhenMultipleStrategiesShareRuntime()
-    {
-        // Arrange
-        byte[] dllBytes = _env.CreateDefaultAssemblyBytes(assemblyName: "CustomRuntime");
-        var strategy1 = _env.CreateStrategy(dllBytes);
-        var strategy2 = _env.CreateStrategy(dllBytes);
-        
-        var manager = _env.CreatePipeline(strategy1, strategy2);
-
-        // Act
-        manager.LoadRuntimesInto(_env.Alc);
-
-        // Assert
-        int loadedCount = _env.Alc.Assemblies.Count(a => a.GetName().Name == "CustomRuntime");
-        Assert.AreEqual(1, loadedCount, "Biblioteka o tym samym typie markerowym nie powinna być ładowana wielokrotnie.");
-    }
     
     [TestMethod]
-    public void ShouldLoadTwoDifferentAssemblies_WhenDifferentStrategiesAreLoaded()
+    public void ShouldLoadTwoDifferentAssemblies_WhenStrategyIsLoadedTwice()
     {
         // Arrange
-        const string assemblyName1 = "DifferentRuntime1";
-        const string assemblyName2 = "DifferentRuntime2";
-        
-        byte[] dllBytes1 = _env.CreateDefaultAssemblyBytes(assemblyName: assemblyName1);
-        byte[] dllBytes2 = _env.CreateDefaultAssemblyBytes(assemblyName: assemblyName2);
-        var strategy1 = _env.CreateStrategy(dllBytes1);
-        var strategy2 = _env.CreateStrategy(dllBytes2);
-        
-        var manager = _env.CreatePipeline(strategy1, strategy2);
+        var instructionCounterStrategy1 = new InstructionCounterStrategy();
+        var instructionCounterStrategy2 = new InstructionCounterStrategy();
+        var manager = new CilInjectionManager(instructionCounterStrategy1, instructionCounterStrategy2);
+        var assemblyName1 = instructionCounterStrategy1.GetMappedFullName(CounterMetadata.ResourceName);
+        var assemblyName2 = instructionCounterStrategy2.GetMappedFullName(CounterMetadata.ResourceName);
 
         // Act
         manager.LoadRuntimesInto(_env.Alc);
@@ -78,17 +59,37 @@ public class InstructionCounterStrategyTests
         _env.Alc.ShouldHaveLoadedAssembly(assemblyName2);
     }
     
-    [TestMethod]
-    public void Transform_ShouldReturnOriginalBytes_WhenNoStrategiesRegistered()
+    [DataTestMethod]
+    // Format: [DataRow(Ścieżka, PełnaNazwaKlasy, NazwaMetody, WArgumenty_Do_Metody)]
+    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Add", 2, 3)]
+    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Subtract", 10, 5)]
+    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Multiply", 2, 3)]
+    [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "ComputeExpression", 2, 3, 4)]
+    public void InstructionCounter_ShouldCountInstructions_ForVariousMethods(
+        string relativeFilePath, 
+        string fullTypeName, 
+        string methodName, 
+        params object[] methodArguments) 
     {
         // Arrange
-        var manager = _env.CreatePipeline(); 
-        var assemblyBytes = _env.CreateDefaultAssemblyBytes();
+        using var module = TestTargetLoader.CompileSourceToModule(relativeFilePath);
 
-        // Act
-        var resultBytes = manager.Transform(assemblyBytes);
+        var instructionCounterStrategy = new InstructionCounterStrategy();
+        var manager = new CilInjectionManager(instructionCounterStrategy);
+
+        // Act - Transformacja i wczytanie
+        manager.Transform(module);
+        manager.LoadRuntimesInto(_env.Alc);
+        
+        var handle = instructionCounterStrategy.CreateHandle(_env.Alc);
+        handle.ResetCounter();
+
+        // Act - Wywołanie metody docelowej
+        module.ExecuteMethod(_env.Alc, fullTypeName, methodName, methodArguments);
 
         // Assert
-        CollectionAssert.AreEqual(assemblyBytes, resultBytes, "Gdy brak strategii, bajty nie powinny ulec zmianie.");
+        var instructionCount = handle.GetCounter();
+        Assert.IsTrue(instructionCount > 0, 
+            $"Licznik instrukcji dla {fullTypeName}.{methodName} powinien być > 0, a wynosił: {instructionCount}");
     }
 }

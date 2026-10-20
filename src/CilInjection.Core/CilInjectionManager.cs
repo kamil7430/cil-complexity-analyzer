@@ -43,6 +43,15 @@ public class CilInjectionManager
         using var inputStream = new MemoryStream(assemblyBytes);
         using var module = ModuleDefinition.ReadModule(inputStream);
 
+        Transform(module);
+
+        using var outputStream = new MemoryStream();
+        module.Write(outputStream);
+        return outputStream.ToArray();
+    }
+    
+    public ModuleDefinition Transform(ModuleDefinition module)
+    {
         var methods = module.GetTypes()
             .SelectMany(t => t.Methods)
             .Where(m => m.HasBody && m.Body.Instructions.Count > 0)
@@ -53,9 +62,7 @@ public class CilInjectionManager
             _methodProcessor.ProcessMethod(method, _strategies);
         }
 
-        using var outputStream = new MemoryStream();
-        module.Write(outputStream);
-        return outputStream.ToArray();
+        return module;
     }
 
     /// <summary>
