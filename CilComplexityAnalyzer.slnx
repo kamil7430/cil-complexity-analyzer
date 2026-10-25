@@ -11,15 +11,16 @@
     <Project Path="src/CilInjection.Core/CilInjection.Core.csproj" />
   </Folder>
   <Folder Name="/src/CilInjection/Strategies/" />
-  <Folder Name="/src/CilInjection/Strategies/InstructionCounter/">
-    <Project Path="src/CilInstructionCounter.Provider/CilInstructionCounter.Provider.csproj" />
-    <Project Path="src/CilInstructionCounter.RunTime/CilInstructionCounter.RunTime.csproj" />
+  <Folder Name="/src/CilInjection/Strategies/Counter/">
+    <Project Path="src/Counter.Provider/Counter.Provider.csproj" />
+    <Project Path="src/Counter.Runtime/Counter.Runtime.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.LibCilInjection.Tests/CilComplexityAnalyzer.LibCilInjection.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
     <Project Path="tests/CilInjection.Tests/CilInjection.Tests.csproj" />
+    <Project Path="tests/CilInjection.TestTargets/CilInjection.TestTargets.csproj" />
     <Project Path="tests/NewTester/NewTester.csproj" />
   </Folder>
 </Solution>

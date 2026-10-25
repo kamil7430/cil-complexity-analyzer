@@ -1,8 +1,8 @@
-﻿namespace CilInjection.Core;
+﻿using Mono.Cecil;
+using CilInjection.Core.Abstractions;
 
-using Mono.Cecil;
+namespace CilInjection.Tests.Infrastructure.Fakes;
 
-public class FakeWeaver : IWeaver
+public class FakeWeaver : BaseWeaver
 {
-    public void Inject(ModuleDefinition module) {}
 }
