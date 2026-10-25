@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
+    <ProjectReference Include="..\Counter.Provider\Counter.Provider.csproj" />
   </ItemGroup>
 
   <ItemGroup>

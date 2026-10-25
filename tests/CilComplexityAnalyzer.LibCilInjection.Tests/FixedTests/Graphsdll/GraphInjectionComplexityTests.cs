@@ -5,6 +5,7 @@ using System.Reflection;
 using ASD.Graphs;
 using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
 using CilComplexityAnalyzer.LibCilInjection.Tests.GraphFunctions;
+using Counter.Provider.InstructionCounter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
@@ -18,12 +19,19 @@ public class GraphInjectionComplexityTests
         Assembly originalAssembly = typeof(GraphSearcher).Assembly;
         byte[] originalBytes = File.ReadAllBytes(originalAssembly.Location);
 
+        var stratedy = new InstructionCounterStrategy();
+
         using var sandbox = InstrumentedSandbox.Create(
-            originalBytes, nameof(Injector_ShouldAccuratelyTrackCilInstructionsForGraphSearcher));
+            originalBytes, 
+            nameof(Injector_ShouldAccuratelyTrackCilInstructionsForGraphSearcher),
+            stratedy);
 
         var searcherType = sandbox.Assembly.GetType(typeof(GraphSearcher).FullName!)!;
         var searcherInstance = Activator.CreateInstance(searcherType)!;
         var bfsMethod = searcherType.GetMethod("BreadthFirstSearch")!;
+        
+        var graphType = sandbox.Assembly.GetType(typeof(Graph).FullName!)!;
+        var addEdgeMethod = graphType.GetMethod("AddEdge")!;
 
         var graph = new Graph(4);
         graph.AddEdge(0, 1);
@@ -51,9 +59,10 @@ public class GraphInjectionComplexityTests
     {
         Assembly originalAssembly = typeof(GraphSearcher).Assembly;
         byte[] originalBytes = File.ReadAllBytes(originalAssembly.Location);
+        var strategy = new InstructionCounterStrategy();
 
         using var sandbox = InstrumentedSandbox.Create(
-            originalBytes, nameof(Injector_ShouldTrackInstructions_ForGenericClassesAndMethods));
+            originalBytes, nameof(Injector_ShouldTrackInstructions_ForGenericClassesAndMethods), strategy);
 
         var openSearcherType = sandbox.Assembly.GetType(typeof(GenericSearcher<>).FullName!)!;
         var closedSearcherType = openSearcherType.MakeGenericType(typeof(string));

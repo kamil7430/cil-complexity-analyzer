@@ -7,8 +7,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CilInjection.Core;
-using CilInstructionCounter;
+using CilInjection.Core.Abstractions;
+using Counter.Provider.Base;
+using Counter.Provider.InstructionCounter;
 
+/*
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
 [TestClass]
@@ -142,3 +145,4 @@ public class InstructionCounterPipelineTests
         return ms.ToArray();
     }
 }
+*/

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
+using Counter.Provider.InstructionCounter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
@@ -31,8 +32,6 @@ public class CollectionsAndLinqBoundaryTests
                 _array = list.ToArray();
             }
 
-            // Cała praca widoczna w instrumentowanym kodzie — brak wywołań do BCL wewnątrz pętli,
-            // tylko indeksowanie tablicy. To jest nasz punkt odniesienia ("w pełni widoczne").
             public static long RunManualArrayLoop()
             {
                 long sum = 0;
@@ -44,9 +43,6 @@ public class CollectionsAndLinqBoundaryTests
                 return sum;
             }
 
-            // foreach po List<int> — pętla jest w naszym kodzie, ale MoveNext()/get_Current()
-            // enumeratora-structa to wywołania do System.Private.CoreLib (nieinstrumentowane wewnątrz).
-            // Liczba wywołań powinna mimo to rosnąć liniowo z n.
             public static long RunForeachOverList()
             {
                 long sum = 0;
@@ -58,19 +54,10 @@ public class CollectionsAndLinqBoundaryTests
                 return sum;
             }
 
-            // Łańcuch LINQ z lambdami studenta. Where/Select nie wykonują nic przy wywołaniu
-            // (budują tylko iteratory), a mechanika pętli (MoveNext) siedzi w System.Linq.dll.
-            // ALE: kompilator kompiluje ciała lambd (x => x % 2 == 0, x => x * 2) jako metody
-            // W TYM SAMYM assembly co BoundaryDriver, więc każdy callback z iteratora do lambdy
-            // WCHODZI do instrumentowanego kodu. Oczekiwanie: mimo ukrytej pętli, koszt i tak
-            // rośnie liniowo, bo callback dzieje się raz na element.
             public static long RunLinqChain()
                 => _list.Where(x => x % 2 == 0).Select(x => (long)x * 2).Sum();
 
-            // Operacja terminalna BEZ ŻADNEGO delegatu studenta — Sum() na wprost liście int.
-            // Tu nie ma żadnego callbacku do instrumentowanego kodu: cała suma liczy się
-            // wewnątrz System.Linq.dll, iterując po List<int>.Enumerator z System.Private.CoreLib.
-            // To jest prawdziwy test na "całkowicie znikającą pętlę".
+
             public static long RunLinqSumWithoutDelegate() => _list.Sum();
         }
         """;
@@ -85,7 +72,17 @@ public class CollectionsAndLinqBoundaryTests
 
     private static Costs Measure(int n)
     {
-        using var sandbox = InstrumentedSandbox.Create(DriverBytes.Value, $"bcl_boundary_{n}_{Guid.NewGuid():N}");
+        var strategy = new InstructionCounterStrategy();
+
+        string linqAssemblyLocation = typeof(System.Linq.Enumerable).Assembly.Location;
+        byte[] linqBytes = File.ReadAllBytes(linqAssemblyLocation);
+
+        using var sandbox = InstrumentedSandbox.Create(
+            DriverBytes.Value,
+            $"bcl_boundary_{n}_{Guid.NewGuid():N}", 
+            strategy,
+            linqBytes
+            ); 
 
         var driver = sandbox.Assembly.GetType("Drivers.BoundaryDriver")!;
         driver.GetMethod("Prepare")!.Invoke(null, new object[] { n });
@@ -165,7 +162,7 @@ public class CollectionsAndLinqBoundaryTests
     }
 
     [TestMethod]
-    public void LinqTerminalOperationWithoutDelegate_ShouldExposeFlatCost()
+    public void LinqTerminalOperationWithoutDelegate_ShouldScaleLinearlyWhenLinqIsInstrumented()
     {
         var small = Measure(SmallN);
         var large = Measure(LargeN);
@@ -173,11 +170,11 @@ public class CollectionsAndLinqBoundaryTests
         double kManual = Exponent(small.Manual, large.Manual, SmallN, LargeN);
         double kLinqNoDelegate = Exponent(small.LinqNoDelegate, large.LinqNoDelegate, SmallN, LargeN);
 
-        Console.WriteLine($"linq bez delegatu: small={small.LinqNoDelegate}, large={large.LinqNoDelegate}, " +
-            $"k={kLinqNoDelegate:F2} (manual k={kManual:F2})");
+        Console.WriteLine($"linq bez delegatu (System.Linq WSTRZYKNIĘTY): small={small.LinqNoDelegate}, large={large.LinqNoDelegate}, " +
+                          $"k={kLinqNoDelegate:F2} (manual k={kManual:F2})");
 
-        Assert.IsTrue(kLinqNoDelegate < kManual - 0.3,
-            $"Sum() bez selektora ma wykładnik k={kLinqNoDelegate:F2}, ręczna pętla k={kManual:F2} — " +
-            "oczekiwano wyraźnie niższego wykładnika, bo cała iteracja dzieje się poza instrumentowanym kodem.");
+        Assert.IsTrue(Math.Abs(kLinqNoDelegate - kManual) < 0.4,
+            $"Ponieważ zainstrumentowaliśmy System.Linq, operacja Sum() ma teraz widoczną pętlę. " + 
+            $"Wykładnik k={kLinqNoDelegate:F2}, podczas gdy oczekiwano okolic k={kManual:F2}.");
     }
 }

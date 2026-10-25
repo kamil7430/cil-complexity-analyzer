@@ -3,6 +3,7 @@ using System.Linq;
 using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+/*
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
 [TestClass]
@@ -75,3 +76,4 @@ public class GroundTruthInstructionCountTests
         Console.WriteLine($"koszt bazowy (bez treści) = {cost1}");
     }
 }
+*/

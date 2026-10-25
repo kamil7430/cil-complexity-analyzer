@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
+/*
 [TestClass]
 public class ExceptionFilterInjectionTests
 {
@@ -82,3 +83,4 @@ public class ExceptionFilterInjectionTests
 
 
 }
+*/

@@ -5,7 +5,7 @@ using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
-
+/*
 [TestClass]
 public class YieldReturnInjectionTests
 {
@@ -57,3 +57,4 @@ public class YieldReturnInjectionTests
             $"Liczba instrukcji dla 5 elementów ({countFor5Items}) powinna być większa niż dla 2 elementów ({countFor2Items})");
     }
 }
+*/

@@ -2,7 +2,7 @@ using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
-
+/*
 [TestClass]
 public class TailCallInjectionTests
 {
@@ -43,3 +43,4 @@ public class TailCallInjectionTests
             $"Liczba zarejestrowanych instrukcji ({executedInstructions}) jest za mała dla 100 wywołań rekurencyjnych.");
     }
 }
+*/

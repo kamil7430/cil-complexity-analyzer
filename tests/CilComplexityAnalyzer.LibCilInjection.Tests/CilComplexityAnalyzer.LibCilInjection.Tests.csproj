@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CilComplexityAnalyzer.LibCilInjection\CilComplexityAnalyzer.LibCilInjection.csproj" />
     <ProjectReference Include="..\..\src\CilInjection.Core\CilInjection.Core.csproj" />
-    <ProjectReference Include="..\..\src\CilInstructionCounter.Provider\CilInstructionCounter.Provider.csproj" />
   </ItemGroup>
 
 

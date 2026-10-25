@@ -2,29 +2,19 @@ using System;
 using System.IO;
 using ASD.Graphs;
 using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
+using Counter.Provider.InstructionCounter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests;
 
-/// <summary>
-/// Porównuje koszt (liczbę wykonanych instrukcji CIL) własnej implementacji BFS
-/// z kosztem BFS-a z Graphs.dll (g.BFS().SearchFrom(...)).
-///
-/// Zasada: graf budowany jest WEWNĄTRZ sandboxa (typy ASD.* z sandboxa i z hosta to różne typy —
-/// nie da się ich podawać przez Invoke). Przez granicę refleksji przechodzą tylko int-y.
-/// Graphs.dll jest instrumentowany razem z kodem testowym — inaczej wywołanie biblioteki
-/// zliczyłoby się jako 0 instrukcji i porównanie byłoby bez sensu.
-/// </summary>
 [TestClass]
 public class GraphLibraryComparisonTests
 {
-    // Progi dobrane na podstawie zmierzonych wartości (licznik jest deterministyczny, więc nie ma szumu):
-    //   stosunek kosztu własny/lib  ~0.54-0.58  -> dopuszczamy [0.25, 1.25]
-    //   wykładnik skalowania k      lib = own = 1.00, slow ~1.96
-    private const double MinCostRatio = 0.25;        // poniżej: podejrzanie tanio (np. bug pomijający pracę)
-    private const double MaxCostRatio = 1.25;        // powyżej: własny BFS wyraźnie droższy od bibliotecznego
-    private const double ExponentTolerance = 0.1;    // własny może mieć wykładnik k co najwyżej o 0.1 większy niż lib
-    private const double MinExponentGap = 0.5;       // kontrola negatywna: kwadratowy musi mieć k większy o >= 0.5
+
+    private const double MinCostRatio = 0.25; 
+    private const double MaxCostRatio = 1.25;
+    private const double ExponentTolerance = 0.1; 
+    private const double MinExponentGap = 0.5;
 
     private const int SmallN = 500;
     private const int LargeN = 1000;
@@ -40,11 +30,10 @@ public class GraphLibraryComparisonTests
             private static Graph G;
             private static int _arcs;
 
-            // Liczba łuków (każda krawędź nieskierowana = 2 łuki). Tyle zdarzeń zwraca SearchFrom.
+
             public static int ExpectedLibraryEdges() => _arcs;
 
-            // Nie jest mierzone (licznik resetowany po Prepare).
-            // shape 0 = ścieżka 0-1-2-...; shape 1 = ścieżka + deterministyczne "skróty" (rzadki graf spójny)
+
             public static void Prepare(int n, int shape)
             {
                 var g = new Graph(n);
@@ -67,11 +56,7 @@ public class GraphLibraryComparisonTests
                     arcs += g.Degree(i);
                 _arcs = arcs;
             }
-
-            // RunOwn/RunSlow zwracają odwiedzone wierzchołki - 1.
-            // RunLibrary zwraca liczbę krawędzi wyemitowanych przez SearchFrom — biblioteka emituje
-            // KAŻDY łuk (w grafie nieskierowanym: 2 na krawędź), a nie tylko krawędzie drzewa BFS.
-
+            
             public static int RunLibrary()
             {
                 int edges = 0;
@@ -84,7 +69,7 @@ public class GraphLibraryComparisonTests
 
             public static int RunSlow() => SlowBfs(G, 0).Length - 1;
 
-            // "Rozwiązanie studenta" — poprawne, liniowe.
+
             public static int[] OwnBfs(Graph g, int start)
             {
                 bool[] visited = new bool[g.VertexCount];
@@ -110,9 +95,7 @@ public class GraphLibraryComparisonTests
                 return order.ToArray();
             }
 
-            // Kontrola negatywna: wynik poprawny, ale O(V^2) — "visited" jako ręcznie przeszukiwana lista.
-            // (Ręczna pętla, a nie List.Contains, bo Contains siedzi w BCL i przy braku instrumentacji BCL
-            //  liczyłby się jako jedna instrukcja call.)
+
             public static int[] SlowBfs(Graph g, int start)
             {
                 var order = new List<int>();
@@ -158,10 +141,13 @@ public class GraphLibraryComparisonTests
 
     private static Costs Measure(int n, int shape)
     {
+        var strategy = new InstructionCounterStrategy();
         using var sandbox = InstrumentedSandbox.Create(
             DriverBytes.Value,
             $"bfs_cmp_{n}_{shape}_{Guid.NewGuid():N}",
-            GraphsBytes.Value);
+            strategy,
+            GraphsBytes.Value
+            );
 
         var driver = sandbox.Assembly.GetType("Drivers.BfsDriver")!;
         var prepare = driver.GetMethod("Prepare")!;
