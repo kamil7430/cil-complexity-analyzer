@@ -20,7 +20,7 @@ public static class ModuleTestExtensions
     /// <summary>
     /// Ładuje zmodyfikowany ModuleDefinition bezpośrednio do domyślnego AssemblyLoadContext.
     /// </summary>
-    public static Assembly ToAssembly(this ModuleDefinition module)
+    public static Assembly ToDefaultAssemblyLoadContext(this ModuleDefinition module)
     {
         return Assembly.Load(module.ToBytes());
     }
@@ -28,7 +28,7 @@ public static class ModuleTestExtensions
     /// <summary>
     /// Ładuje zmodyfikowany ModuleDefinition do wskazanego AssemblyLoadContext.
     /// </summary>
-    public static Assembly ToAssembly(this ModuleDefinition module, AssemblyLoadContext context)
+    public static Assembly ToAssemblyLoadContext(this ModuleDefinition module, AssemblyLoadContext context)
     {
         using var stream = new MemoryStream(module.ToBytes());
         return context.LoadFromStream(stream);

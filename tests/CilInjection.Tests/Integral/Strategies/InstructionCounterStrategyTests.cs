@@ -60,7 +60,7 @@ public class InstructionCounterStrategyTests
     }
 
     [DataTestMethod]
-    // Format: [DataRow(Ścieżka, PełnaNazwaKlasy, NazwaMetody, OczekiwanyWynik, OczekiwanaLiczbaInstrukcji, Argumenty_Do_Metody...)]
+    // Format: [DataRow(Ścieżka, PełnaNazwaKlasy, NazwaMetody, OczekiwanyWynik, OczekiwanaLiczbaInstrukcji, ArgumentyDoMetody...)]
     [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Add", 5, 12, 2, 3)]
     [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Subtract", 5, 12, 10, 5)]
     [DataRow("Basic/SimpleCalculator.cs", "TestTargets.Basic.SimpleCalculator", "Multiply", 6, 12, 2, 3)]
@@ -79,21 +79,19 @@ public class InstructionCounterStrategyTests
         var instructionCounterStrategy = new InstructionCounterStrategy();
         var manager = new CilInjectionManager(instructionCounterStrategy);
 
-        // Act - Transformacja i wczytanie
+        // Act 
         manager.Transform(module);
         manager.LoadRuntimesInto(_env.Alc);
 
         var handle = instructionCounterStrategy.CreateHandle(_env.Alc);
         handle.ResetCounter();
-
-        // Act - Wywołanie metody docelowej i pobranie jej wyniku
+        
         var actualResult = module.ExecuteMethod(_env.Alc, fullTypeName, methodName, methodArguments);
 
-        // Assert - Weryfikacja wyniku metody
+        // Assert
         Assert.AreEqual(expectedResult, actualResult,
             $"Nieprawidłowy wynik dla {fullTypeName}.{methodName}. Oczekiwano: {expectedResult}, Otrzymano: {actualResult}");
 
-        // Assert - Weryfikacja liczby wstrzykniętych instrukcji
         var instructionCount = handle.GetCounter();
         Assert.AreEqual(expectedInstructionCount, instructionCount,
             $"Licznik instrukcji dla {fullTypeName}.{methodName} jest nieprawidłowy. Oczekiwano: {expectedInstructionCount}, Otrzymano: {instructionCount}");
