@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using CilInjecting.Tests.Infrastructure.Fixtures;
+using CilInjection.Tests.Infrastructure.Fixtures;
 using CilInjection.Core.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
@@ -10,12 +10,12 @@ namespace CilInjecting.Tests.Unit.Core.Extensions;
 [TestClass]
 public class ModuleFieldImportTests
 {
-    private PipelineTestEnvironment _env = null!;
+    private ManagerTestEnvironment _env = null!;
 
     [TestInitialize]
     public void TestInitialize()
     {
-        _env = new PipelineTestEnvironment();
+        _env = new ManagerTestEnvironment();
     }
 
     [TestCleanup]
