@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Loader;
 using CilInjection.Core.Abstractions;
+using CilInjection.Tests.Infrastructure.Fakes;
 using Mono.Cecil;
 
 namespace CilInjection.Tests
@@ -13,17 +14,15 @@ namespace CilInjection.Tests
     public class FakeStrategyWithRuntime : IInjectionStrategy, IEngineStrategy
     {
         private readonly byte[] _staticRuntimeBytes;
-        private readonly IWeaver _weaver;
-        private readonly IEngineWeaver _engineWeaver;
+        private readonly IEngineWeaver? _engineWeaver;
 
         // Konstruktor przyjmujący gotowe bajty oraz weavera
-        public FakeStrategyWithRuntime(byte[] staticRuntimeBytes, IWeaver weaver)
+        public FakeStrategyWithRuntime(byte[] staticRuntimeBytes, IWeaver weaver = null)
         {
             _staticRuntimeBytes = staticRuntimeBytes;
-            _weaver = weaver ?? throw new ArgumentNullException(nameof(weaver));
             
             // Zapisujemy referencję do wewnętrznego silnika weavera do późniejszego użycia
-            _engineWeaver = _weaver.Engine; 
+            _engineWeaver = weaver?.Engine;
         }
 
         // Zwracamy samą siebie, ponieważ klasa implementuje IEngineStrategy bezpośrednio
@@ -35,7 +34,7 @@ namespace CilInjection.Tests
             ArgumentNullException.ThrowIfNull(metadataContext);
 
             // Delegujemy transformację do przekazanego weavera
-            _engineWeaver.Transform(methodTransformationContext, metadataContext);
+            _engineWeaver?.Transform(methodTransformationContext, metadataContext);
         }
 
         void IEngineStrategy.Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext)
@@ -44,7 +43,7 @@ namespace CilInjection.Tests
             ArgumentNullException.ThrowIfNull(metadataContext);
 
             // Delegujemy iniekcję do przekazanego weavera
-            _engineWeaver.Inject(methodInjectionContext, metadataContext);
+            _engineWeaver?.Inject(methodInjectionContext, metadataContext);
         }
 
         void IEngineStrategy.LoadRuntime(AssemblyLoadContext context)

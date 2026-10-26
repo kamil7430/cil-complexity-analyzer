@@ -6,7 +6,7 @@ public static class TestTargetExtensions
 {
     public static object ExecuteMethod(this ModuleDefinition module, AssemblyLoadContext alc, string typeName, string methodName, params object[] args)
     {
-        var assembly = module.ToAssembly(alc);
+        var assembly = module.ToAssemblyLoadContext(alc);
         var type = assembly.GetType(typeName) ?? throw new Exception($"Typ {typeName} nie istnieje");
         var method = type.GetMethod(methodName) ?? throw new Exception($"Metoda {methodName} nie istnieje");
         

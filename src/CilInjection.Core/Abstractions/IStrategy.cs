@@ -59,10 +59,11 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
 public abstract class BaseInjectionStrategyWithRuntime<THandleInterface> : BaseInjectionStrategy
 where THandleInterface : IHandle
 {
-    private static readonly string SessionId = Guid.NewGuid().ToString("N")[..8];
+    private readonly string _sessionId = Guid.NewGuid().ToString("N")[..8];
     private static readonly Func<string, string, string> Renamer = (name, sessionId) => $"{name}_{sessionId}";
     
     private readonly byte[] _dynamicDllBytes;
+    private readonly string _dynamicAssemblyName;
     private Dictionary<string, string> TypeMapping { get; } = new(StringComparer.Ordinal);
     
     protected BaseInjectionStrategyWithRuntime(byte[] baseDllBytes, IWeaver weaver) : base(weaver)
@@ -71,13 +72,16 @@ where THandleInterface : IHandle
         
         _dynamicDllBytes = RuntimeCloner.CreateDynamicRuntimeBytes(
             baseDllBytes: baseDllBytes,
-            sessionId: SessionId,
+            sessionId: _sessionId,
             renamer: Renamer,
             typeNameDictionary: TypeMapping
         );
+        
+        using var ms = new MemoryStream(_dynamicDllBytes);
+        using var asmDef = AssemblyDefinition.ReadAssembly(ms);
+        _dynamicAssemblyName = asmDef.Name.Name;
     }
     
-    // Alternatywny konstruktor pomocniczy delegujący do głównego przez util wczytujący z dysku
     protected BaseInjectionStrategyWithRuntime(string resourceName, IWeaver weaver) 
         : this(RuntimeFileReader.ReadDllBytesFromBasePath(resourceName), weaver)
     {
@@ -85,11 +89,17 @@ where THandleInterface : IHandle
     
     public THandleInterface CreateHandle(AssemblyLoadContext context) 
     {
-        var handleFactory = CreateHandleInstance();
-            
-        ((IHandle)handleFactory).BindContext(context, GetMappedFullName);
+        ArgumentNullException.ThrowIfNull(context);
 
-        return handleFactory;
+        bool isLoaded = context.Assemblies.Any(a => 
+            string.Equals(a.GetName().Name, _dynamicAssemblyName, StringComparison.Ordinal));
+
+        if (!isLoaded)
+            OnLoadRuntime(context);
+        
+        var handle = CreateHandleInstance();
+        handle.BindContext(context, GetMappedFullName);
+        return handle;
     }
     
     protected abstract THandleInterface CreateHandleInstance();
