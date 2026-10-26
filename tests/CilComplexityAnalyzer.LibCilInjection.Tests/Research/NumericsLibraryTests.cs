@@ -6,6 +6,9 @@ using Counter.Provider.InstructionCounter;
 
 namespace CilComplexityAnalyzer.LibCilInjection.Tests.Research;
 
+// Test udowadniający, że nie da się skompilować na własnym urządzeniu biblioteki w taki sposób jakbyśmy chcieli ponieważ 
+// jest problem z zabezpieczeniem modyfikowalności bibliotek nawet jak weźmiemy ściągnięte biblioteki które mamy w .nuget
+
 [TestClass]
 public class NumericsLibraryTests
 {
