@@ -8,7 +8,7 @@ public interface ICounterWeaver : IWeaver
     ICounterWeaver Initialize(FieldReference counterFieldInfo);
 }
 
-public class BaseCounterWeaver : BaseWeaver, ICounterWeaver
+public abstract class BaseCounterWeaver : BaseWeaver, ICounterWeaver
 {
     private FieldReference? _counterFieldReference;
 
