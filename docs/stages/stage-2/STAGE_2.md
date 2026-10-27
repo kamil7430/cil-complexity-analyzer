@@ -2,14 +2,27 @@
 
 **Projekt inżynierski — Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
 
-## 1. Spis treści
-TODO
+**Tytuł projektu**: *Projekt i implementacja platformy testowej weryfikującej i profilującej rozwiązania programistyczne.*
 
-## 2. Historia zmian i metadane dokumentu
+**Autorzy:**
+
+* **Kacper Grobel** – `kacper.grobel.stud@pw.edu.pl`
+* **Kamil Błażejczyk** – `kamil.blazejczyk.stud@pw.edu.pl`
+* **Kornel Dzieża** – `kornel.dzieza.stud@pw.edu.pl`
+
+**Promotorzy:**
+
+* **Mgr inż. Tomasz Herman** – `tomasz.herman@pw.edu.pl`
+* **Dr inż. Michał Dębski** – `michal.debski@pw.edu.pl`
+
+**Historia zmian:**
 
 | Wersja  | Data       | Autorzy                                          | Opis zmian              |
 |---------|------------|--------------------------------------------------|-------------------------|
 | **1.0** | 29.10.2026 | Kamil Błażejczyk / Kornel Dzieża / Kacper Grobel | Wersja bazowa dokumentu |
+
+## 1. Spis treści
+TODO
 
 ## 3. System Architecture and Design
 
