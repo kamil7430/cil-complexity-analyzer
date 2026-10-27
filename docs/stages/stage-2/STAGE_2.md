@@ -1,26 +1,33 @@
-# Dokument etapu 2: System Architecture and Technical Design (Architecture & Technical Design)
+# Dokument etapu 2: Architektura systemu i projekt techniczny
 
-**Engineering / Master's Project – Faculty of MIS PW**
+**Projekt inżynierski — Wydział Matematyki i Nauk Informacyjnych, Politechnika Warszawska**
+
+## 1. Spis treści
+TODO
+
+## 2. Historia zmian i metadane dokumentu
+
+| Wersja  | Data       | Autorzy                                          | Opis zmian              |
+|---------|------------|--------------------------------------------------|-------------------------|
+| **1.0** | 29.10.2026 | Kamil Błażejczyk / Kornel Dzieża / Kacper Grobel | Wersja bazowa dokumentu |
+
+## 3. System Architecture and Design
+
+### 3.1 System architecture: modules and their responsibilities
+
+### 3.2 Modules design: interfaces dependencies, layers
+
+### 3.3 Communication Layer Design: protocols, libraries, network
+
+### 3.4 Main components description: classes, states, activity, events diagrams
+
+### 3.5 User interface vision: schemes, plotes, drawings
+
+### 3.6 External interfaces: standards, file formats, norms
 
 ---
 
-## 1. System Architecture and Design
-
-1.1 System architecture: modules and their responsibilities
-
-1.2 Modules design: interfaces dependencies, layers
-
-1.3 Communication Layer Design: protocols, libraries, network
-
-1.4 Main components description: classes, states, activity, events diagrams
-
-1.5 User interface vision: schemes, plotes, drawings
-
-1.6 External interfaces: standards, file formats, norms
-
----
-
-## 2. Justification of Technology Stack Choice
+## 4. Justification of Technology Stack Choice
 
 | Module / Component    | Selected Technology                      | Considered Alternatives   | Justification and Trade-offs                                                                                                                            |
 | :-------------------- | :--------------------------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -32,7 +39,7 @@
 
 ---
 
-## 3. API Contracts (OpenAPI / Swagger Specification)
+## 5. API Contracts (OpenAPI / Swagger Specification)
 
 ### Measurement Ingestion Endpoint: `POST /api/v1/metrics`
 
@@ -70,7 +77,7 @@
 
 ---
 
-## 4. Planned Database Schema (Relational ERD)
+## 6. Planned Database Schema (Relational ERD)
 
 ```sql
 -- Sensors and metadata table
@@ -93,7 +100,3 @@ CREATE TABLE sensor_metrics (
 
 SELECT create_hypertable('sensor_metrics', 'time');
 ```
-
----
-
-**Supervisor Signature (Architecture Acceptance):** ............................................ **Date:** 05.11.2026
