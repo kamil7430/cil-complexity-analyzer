@@ -6,12 +6,24 @@ namespace StudentWasmApp;
 
 public class Program
 {
-    public static void Main()
+    public static void Main(string[] args)
     {
-       RunTest("Test 1 (Range + ToList)", () => ExecuteTest1_RangeToList(10000)); 
-       RunTest("Test 2 (Where + Select)", () => ExecuteTest2_WhereSelect(10000)); 
-       RunTest("Test 3 (Take 50)", () => ExecuteTest3_Take(10000, 50));
-       RunTest("Test D (OrderByDescending)", () => ExecuteTest4_OrderBy(10000));
+        
+        string mode = args.Length > 0 ? args[0].ToLower() : "Linq";
+        if ( mode == "collections")
+        {
+            Console.WriteLine("[STUDENT WASM] Uruchamianie testow Collections");
+            RunTest("Test Collections 1 (List.Contains - O(N))", () =>CollectionsTestRunner.ExecuteListTest(10000));
+            RunTest("Test Collections 2 (Hash.Contains - O(1))", () =>CollectionsTestRunner.ExecuteHashSetTest(10000));
+        }
+        else
+        {
+            Console.WriteLine("[STUDENT WASM] Uruchamianie testow Linq");
+            RunTest("Test 1 (Range + ToList)", () => ExecuteTest1_RangeToList(10000));
+            RunTest("Test 2 (Where + Select)", () => ExecuteTest2_WhereSelect(10000)); 
+            RunTest("Test 3 (Take 50)", () => ExecuteTest3_Take(10000, 50)); 
+            RunTest("Test D (OrderByDescending)", () => ExecuteTest4_OrderBy(10000));
+        }
     }
 
     private static void TryResetCounter()
@@ -42,7 +54,6 @@ public class Program
             Console.WriteLine($"[TryResetCounter] nie udalo sie zresetowac licznika: {ex.Message}");
         }
     }
-
     private static void TryPrintCounterResult()
     {
         try
@@ -72,24 +83,6 @@ public class Program
         }
     }
 
-    public static void ExecuteLinqLogic() // daje 697
-    {
-        var numbers = Enumerable.Range(1, 100);
-        var evenNumbers = numbers.Where(n => n % 2 == 0).ToList();
-        int sum = evenNumbers.Sum();
-
-        Console.WriteLine($"[LINQ EXEC] Znaleziono {evenNumbers.Count} liczb parzystych. Suma: {sum}");
-    }
-    
-    public static void ExecuteLinqLogic2() // daje 60097 
-    {
-        var numbers = Enumerable.Range(1, 10000);
-        var evenNumbers = numbers.Where(n => n % 2 == 0).ToList();
-        int sum = evenNumbers.Sum();
-
-        Console.WriteLine($"[LINQ EXEC] Znaleziono {evenNumbers.Count} liczb parzystych. Suma: {sum}");
-    }
-
     private static void RunTest(string testName, Action testAction)
     {
         Console.WriteLine($"=== {testName} ===");
@@ -98,13 +91,12 @@ public class Program
         TryPrintCounterResult();
     }
     
-    public static void ExecuteTest1_RangeToList(int n)
+    public static void ExecuteTest1_RangeToList(int n) // 72 
     {
         var list = Enumerable.Range(1, n).ToList();
         Console.WriteLine($"[TEST 1] Zrobiono liste o rozmiarze {list.Count}");
     }
-
-    public static void ExecuteTest2_WhereSelect(int n)
+    public static void ExecuteTest2_WhereSelect(int n) // 80092
     {
         var result = Enumerable.Range(1, n)
             .Where(x => x % 2 == 0)
@@ -112,8 +104,7 @@ public class Program
             .ToList();
         Console.WriteLine($"[TEST 2] Zrobiono liste o rozmiarze {result.Count}");
     }
-
-    public static void ExecuteTest3_Take(int n, int k)
+    public static void ExecuteTest3_Take(int n, int k) // 693
     {
         var result = Enumerable.Range(1, n)
             .Where(x => x % 2 == 0)
@@ -121,8 +112,7 @@ public class Program
             .ToList();
         Console.WriteLine($"[TEST 3] Pobrano {result.Count} elementow z {n}");
     }
-
-    public static void ExecuteTest4_OrderBy(int n)
+    public static void ExecuteTest4_OrderBy(int n) // 70100
     {
         var result = Enumerable.Range(1, n)
             .Select(x => n - x)
@@ -130,4 +120,7 @@ public class Program
             .ToList();
         Console.WriteLine($"[TEST 4] Posortowano {result.Count} elementow");
     }
+    
+    
+    
 }
