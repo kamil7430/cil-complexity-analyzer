@@ -8,13 +8,13 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        
         string mode = args.Length > 0 ? args[0].ToLower() : "Linq";
         if ( mode == "collections")
         {
             Console.WriteLine("[STUDENT WASM] Uruchamianie testow Collections");
-            RunTest("Test Collections 1 (List.Contains - O(N))", () =>CollectionsTestRunner.ExecuteListTest(10000));
-            RunTest("Test Collections 2 (Hash.Contains - O(1))", () =>CollectionsTestRunner.ExecuteHashSetTest(10000));
+            RunTest("Test Collections 1 (List.Contains - O(N))", () =>CollectionsTestRunner.ExecuteListTest(10000, () => TryResetCounter()));
+            RunTest("Test Collections 2 (List.Contains - O(N))", () =>CollectionsTestRunner.ExecuteListTest2(10000, () => TryResetCounter()));
+            RunTest("Test Collections 3 (Hash.Contains - O(1))", () =>CollectionsTestRunner.ExecuteHashSetTest(10000, () => TryResetCounter()));
         }
         else
         {
@@ -22,7 +22,7 @@ public class Program
             RunTest("Test 1 (Range + ToList)", () => ExecuteTest1_RangeToList(10000));
             RunTest("Test 2 (Where + Select)", () => ExecuteTest2_WhereSelect(10000)); 
             RunTest("Test 3 (Take 50)", () => ExecuteTest3_Take(10000, 50)); 
-            RunTest("Test D (OrderByDescending)", () => ExecuteTest4_OrderBy(10000));
+            RunTest("Test 4 (OrderByDescending)", () => ExecuteTest4_OrderBy(10000));
         }
     }
 

@@ -5,15 +5,6 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
 namespace CilComplexityAnalyzer.TestExecutor;
-
-// TODO: inject CIL in student code
-// Done, hehe :)
-        
-// TODO: In ContainerWorker set __InstructionCounter to 0 at test beginning and extract it after 
-// DONE, we have methods
-        
-// TODO: Write UnitTests
-//DONE
         
 // TODO: inject abort mechanism
 // Not Done, not hehe :(
@@ -32,7 +23,7 @@ internal static class CilInstructionInjector
             throw new InvalidOperationException("StudentSolutionAssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
         }
 
-        testSuite.StudentSolutionAssemblyBytes = InjectCilToAssemblyBytes(testSuite.StudentSolutionAssemblyBytes);
+        testSuite.StudentSolutionAssemblyBytes = InjectCilToAssemblyBytes(testSuite.StudentSolutionAssemblyBytes, true);
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
 
@@ -40,23 +31,40 @@ internal static class CilInstructionInjector
     }
 
 
-    internal static byte[] InjectCilToAssemblyBytes(byte[] assemblyBytes)
+    internal static byte[] InjectCilToAssemblyBytes(byte[] assemblyBytes, bool isMainAssembly)
     {
         using var inputStream = new MemoryStream(assemblyBytes);
         using var outputStream = new MemoryStream();
         var assemblyDef = AssemblyDefinition.ReadAssembly(inputStream);
         var mainModule = assemblyDef.MainModule;
 
-        var globalCounterField = CreateGlobalCounterField(mainModule);
+        var assemblyName = assemblyDef.Name.Name;
+        FieldReference globalCounterField;
+
+        if (isMainAssembly)
+        { 
+            globalCounterField = CreateGlobalCounterField(mainModule);
+        }
+        else
+        {
+            globalCounterField = ImportGlobalCounterField(mainModule, "StudentWasmApp");
+        }
+        //var globalCounterField = CreateGlobalCounterField(mainModule);
         
         foreach (var type in GetAllTypesRecursively(mainModule))
         {
             if (type.Name == "<GlobalCounterContainer>" || type.IsInterface) 
                 continue;
 
+            if (!InjectionFilter.ShouldInstrumentType(type, assemblyName))
+                continue;
+
             foreach (var method in type.Methods)
             {
                 if (!method.HasBody)
+                    continue;
+                
+                if (!InjectionFilter.ShouldInstrumentMethod(method))
                     continue;
                 
                 InjectCounter(method, globalCounterField);
@@ -65,6 +73,32 @@ internal static class CilInstructionInjector
 
         assemblyDef.Write(outputStream);
         return outputStream.ToArray();
+    }
+    
+    /// <summary>
+    /// Zamiast tworzyć nową klasę, tworzy referencję do <GlobalCounterContainer> w głównej bibliotece (StudentWasmApp)
+    /// </summary>
+    private static FieldReference ImportGlobalCounterField(ModuleDefinition module, string mainAssemblyName)
+    {
+        var assemblyRef = module.AssemblyReferences.FirstOrDefault(a => a.Name == mainAssemblyName);
+        if (assemblyRef == null)
+        {
+            assemblyRef = new AssemblyNameReference(mainAssemblyName, new Version(1, 0, 0, 0));
+            module.AssemblyReferences.Add(assemblyRef);
+        }
+
+        var containerTypeRef = new TypeReference(
+            "", 
+            "<GlobalCounterContainer>", 
+            module, 
+            assemblyRef);
+
+        var counterFieldRef = new FieldReference(
+            "__InstructionCounter",
+            module.TypeSystem.Int64,
+            containerTypeRef);
+
+        return counterFieldRef;
     }
     
     /// <summary>
@@ -97,7 +131,7 @@ internal static class CilInstructionInjector
 
     private static void InjectCounter(
         MethodDefinition method, 
-        FieldDefinition counterField)
+        FieldReference counterField)
     {
         // Pobranie obiektu, który udostępnia metody do wstawiania, usuwania i podmieniania instrukcji CIL w ciele danej metody 
         var body = method.Body;
@@ -137,7 +171,7 @@ internal static class CilInstructionInjector
     }
 
     private static Instruction InsertCounterBump(
-        ILProcessor il, FieldDefinition counterField, Instruction before)
+        ILProcessor il, FieldReference counterField, Instruction before)
     {
         var loadCounter = il.Create(OpCodes.Ldsfld, counterField);
         var loadOne = il.Create(OpCodes.Ldc_I8, 1L);

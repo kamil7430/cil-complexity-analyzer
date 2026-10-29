@@ -36,8 +36,8 @@ public class WasmPipelineE2ETests
         try
         {
             //TODO zaminiec na faktyczny kod nowego CilInjectora
-            studentInstrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(studentOriginalBytes);
-            linqInstrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(linqOriginalBytes);
+            studentInstrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(studentOriginalBytes, true);
+            linqInstrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(linqOriginalBytes, false);
         }
         catch (Exception ex)
         {
