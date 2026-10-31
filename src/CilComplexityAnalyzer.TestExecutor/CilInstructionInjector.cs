@@ -49,7 +49,30 @@ internal static class CilInstructionInjector
         {
             globalCounterField = ImportGlobalCounterField(mainModule, "StudentWasmApp");
         }
-        //var globalCounterField = CreateGlobalCounterField(mainModule);
+
+        if (assemblyName.Contains("System.Private.CoreLib") || assemblyName.Contains("System.Collections"))
+        {
+            var allowedTypes = new HashSet<string>();
+            
+            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "List", maxDepth: 3));
+            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "HashSet", maxDepth: 3));
+            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "Dictionary", maxDepth: 3));
+
+            InjectionFilter.AllowedTypeFullNames = allowedTypes;
+            Console.WriteLine($"\n==================================================");
+            Console.WriteLine($"[DISCOVERY] Odkryte zależności dla {assemblyName} ({allowedTypes.Count} typów):");
+            foreach (var t in allowedTypes.OrderBy(x => x))
+            {
+                Console.WriteLine($"  -> {t}");
+            }
+            Console.WriteLine($"==================================================\n");
+        }
+        else
+        {
+            InjectionFilter.AllowedTypeFullNames.Clear();
+        }
+
+        int instrumentedTypesCount = 0;
         
         foreach (var type in GetAllTypesRecursively(mainModule))
         {
@@ -58,6 +81,9 @@ internal static class CilInstructionInjector
 
             if (!InjectionFilter.ShouldInstrumentType(type, assemblyName))
                 continue;
+
+            Console.WriteLine($"[INSTUMENTED TYPE] {assemblyName} -> {type.FullName}");
+            instrumentedTypesCount++;
 
             foreach (var method in type.Methods)
             {
@@ -70,6 +96,8 @@ internal static class CilInstructionInjector
                 InjectCounter(method, globalCounterField);
             }
         }
+
+        Console.WriteLine($"[SUMMARY] Pomyslnie zainstrumentowano {instrumentedTypesCount} typow w zestawie '{assemblyName}'\n");
 
         assemblyDef.Write(outputStream);
         return outputStream.ToArray();

@@ -16,8 +16,8 @@ public class WasmPipelineTest
     [TestMethod]
     public void InstrumentAndRunWasmApp_Collections()
     {
-        RunWasmTest("collections", "System.Collections.dll");
-    }   
+        RunWasmTest("collections","System.Private.CoreLib.dll", "System.Collections.dll");
+    }  
     
     private void RunWasmTest(string? cliArgument, params string[] additionalAssembliesToInstrument)
     {
