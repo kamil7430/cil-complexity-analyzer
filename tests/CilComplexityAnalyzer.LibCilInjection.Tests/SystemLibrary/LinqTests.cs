@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using CilComplexityAnalyzer.LibCilInjection.Tests.Common;
 using Counter.Provider.InstructionCounter;
 
@@ -11,13 +12,18 @@ public class LinqTests
     [TestMethod]
     public void Linq_Count_ShouldProduceMeasurableCilCount()
     {
-        // byte[] assemblyBytes = DynamicSourceCompiler.CompileSource(System.Linq, optimize: true);
-        var originalAssemblyBytes = File.ReadAllBytes(typeof(Enumerable).Assembly.Location);
-        var processInfo = new ProcessStartInfo
-        {
-            FileName = "C:\\Users\\kamil\\.nuget\\packages\\ilasm\\9.4.0\\bin\\Win.x64\\ildasm.exe"
-        }
+        // var a = (RuntimeInformation.FrameworkDescription);
+        // Console.WriteLine(a);
+        // Console.WriteLine(a);
         
+        // byte[] assemblyBytes = DynamicSourceCompiler.CompileSource(System.Linq, optimize: true);
+        // var assemblyBytes = File.ReadAllBytes(typeof(Enumerable).Assembly.Location);
+        var assemblyBytes = File.ReadAllBytes("/home/kamil/Dokumenty/Studia/Inżynierka/runtime/artifacts/bin/coreclr/linux.x64.Release/IL/System.Private.CoreLib.dll");
+        // var processInfo = new ProcessStartInfo
+        // {
+        //     FileName = "C:\\Users\\kamil\\.nuget\\packages\\ilasm\\9.4.0\\bin\\Win.x64\\ildasm.exe"
+        // }
+        //
         var strategy = new InstructionCounterStrategy();
 
         using var sandbox = InstrumentedSandbox.Create(
