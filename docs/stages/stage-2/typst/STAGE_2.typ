@@ -35,6 +35,10 @@
 #counter(page).update(1)
 #set page(numbering: "1")
 #set ref(supplement: none)
+// #show figure: it => {
+//   set block(sticky: true)
+//   it
+// }
 
 //#heading(outlined: false, numbering: none)[Dokument etapu 2: Architektura systemu i projekt techniczny]
 
@@ -61,13 +65,13 @@ Niniejszy dokument przedstawia architekturę platformy testowej przeznaczonej do
 
 #table(
   columns: (10%, 12.5%, 17.5%, 60%),
-  align: center,
+  align: horizon + center,
   stroke: black + 0.5pt,
     
   table.header([*Wersja*], [*Data*], [*Autorzy*], [*Opis zmian*]),
   
-  [1.0], [04.11.2026], [KG / KB / KD], [Wersja bazowa dokumentu],
-  [1.1], [04.11.2026], [KG], [Zmiana opisu mechanizmu komunikacji i przepływu danych pomiędzy modułem CIL Injection a Test Executorem],
+  [1.0], [03.11.2026], [KG / KB / KD], [Wersja bazowa dokumentu],
+  [1.1], [04.11.2026], [KG], [Zmiana opisu mechanizmu komunikacji i przepływu danych pomiędzy modułami CIL Injection i Test Executor],
 )
 
 #heading(depth: 2, numbering: none, outlined: false)[Spis treści]
@@ -115,9 +119,10 @@ Niniejszy dokument przedstawia architekturę platformy testowej przeznaczonej do
     [Refleksja (_Reflection_)], [Mechanizm języka C\# pozwalający programowi na dynamiczne skanowanie swoich struktur (np. wyszukiwanie klas testowych lub metod) w trakcie działania aplikacji.],
     [Roslyn], [Platforma kompilatora .NET używana w systemie do analizy statycznej, dynamicznej kompilacji w pamięci oraz przyrostowego generowania kodu w locie.],
     [Sprawdzarka], [Potoczne określenie zautomatyzowanego systemu oceniającego rozwiązania studentów.],
-    [stdout (_Standard Output_)], [Standardowy strumień wyjścia procesu, na który system wypisuje rezultaty testów w potoku automatyzacji procesów (CI/CD).],
+    [`stdout` (_Standard Output_)], [Standardowy strumień wyjścia procesu, na który system wypisuje rezultaty testów w potoku automatyzacji procesów (CI/CD).],
     [Test Executor], [Komponent orkiestrujący: analizuje kod, deleguje wplatanie instrukcji CIL, osadza pliki w kontenerze, uruchamia proces i zwraca wyniki.],
-    [Wstrzykiwanie / Instrumentacja CIL], [Modyfikacja skompilowanego zestawu przez dodanie instrukcji języka pośredniego (np. liczników operacji) bez konieczności jakiejkolwiek ingerencji w kod źródłowy.]
+    [Wstrzykiwanie / Instrumentacja CIL], [Modyfikacja skompilowanego zestawu przez dodanie instrukcji języka pośredniego (np. liczników operacji) bez konieczności jakiejkolwiek ingerencji w kod źródłowy.],
+    [Mono.Cecil], [Biblioteka do odczytu i modyfikacji kodu CIL, używana do wplatania instrukcji.]
   ),
 )
 
@@ -125,33 +130,36 @@ Niniejszy dokument przedstawia architekturę platformy testowej przeznaczonej do
 
 = Projekt i architektura systemu
 
-Niniejszy rozdział szczegółowo przedstawia architekturę oraz projekt techniczny zautomatyzowanej platformy testowej. Prezentuje on ogólny podział systemu na niezależne, lecz współpracujące ze sobą moduły, jednocześnie określając ich granice i obowiązki podczas weryfikacji oraz profilowania kodu. W kolejnych podrozdziałach omówiono projekt interfejsów, warstwę spajającą poszczególne komponenty, a także  diagramy modelujące przepływ sterowania i cykle życia kluczowych obiektów. Dopełnieniem opisu architektonicznego jest wizja punktów styku użytkownika z platformą (zarówno w środowiskach IDE, jak i potokach CI/CD). 
+// DONE: skrócić lanie wody do 2 zdań tak żeby wprowadzić do rysunku 
+Niniejszy rozdział szczegółowo przedstawia architekturę oraz projekt techniczny zautomatyzowanej platformy testowej. Prezentuje on ogólny podział systemu na niezależne, lecz współpracujące ze sobą moduły, jednocześnie określając ich granice i obowiązki podczas weryfikacji oraz profilowania kodu. 
+//W kolejnych podrozdziałach omówiono projekt interfejsów, warstwę spajającą poszczególne komponenty, a także  diagramy modelujące przepływ sterowania i cykle życia kluczowych obiektów. Dopełnieniem opisu architektonicznego jest wizja punktów styku użytkownika z platformą (zarówno w środowiskach IDE, jak i potokach CI/CD). 
 
-Ogólny zarys zaprojektowanej architektury, obrazujący hierarchię oraz relacje pomiędzy najważniejszymi elementami rozwiązania, został zilustrowany na rysunku @moduly-schemat.
+Ogólny zarys zaprojektowanej architektury, obrazujący hierarchię oraz relacje pomiędzy najważniejszymi modułami rozwiązania, został zilustrowany na rysunku @moduly-schemat.
 
 #figure(
-image("obraz (4).png"),
+  image("Diagram modułów architektury systemu.png"),
   supplement: "Rysunek",
-  caption: [Diagram modułów architektury systemu.]
+  caption: [Diagram modułów systemu.]
 ) <moduly-schemat>
-
-
+// DONE: Podpis obrazka przeskoczył na następną stronę
 
 == Architektura systemu -- moduły i ich odpowiedzialności
 
-Architektura platformy została zaprojektowana w oparciu o podział na wyspecjalizowane, słabo powiązane moduły. Każdy z nich realizuje ściśle określony zakres odpowiedzialności.
-Taki podział gwarantuje wysoką modularność, ułatwia utrzymanie i rozbudowę systemu oraz zapewnia bezpieczne środowisko do weryfikacji rozwiązań programistycznych dostarczanych przez studentów. 
+Architektura platformy została zaprojektowana na podstawie wyspecjalizowanych, słabo powiązanych modułów. Każdy z nich realizuje ściśle określony zakres odpowiedzialności.
+//Taki podział gwarantuje wysoką modularność, ułatwia utrzymanie i rozbudowę systemu oraz zapewnia bezpieczne środowisko do weryfikacji rozwiązań programistycznych dostarczanych przez studentów. // DONE: fluff, usunąć
 Główny przepływ sterowania oraz obieg danych w systemie opiera się na współpracy trzech kluczowych komponentów:
-1. Moduł koordynacji testów (Test Executor) -- stanowiącego centralny punkt orkiestracji procesu testowego.
-2. Moduł modyfikacji kodu pośredniego (CilInjection) -- odpowiedzialnego za niskopoziomową instrumentację kodu CIL i zliczanie instrukcji.
-3. Izolowanego środowiska uruchomieniowego -- zapewniającego bezpieczną i odseparowaną egzekucję testów wewnątrz kontenerów. 
+1. Moduł koordynacji testów (Test Executor) -- stanowiące centralny punkt orkiestracji procesu testowego.
+2. Moduł modyfikacji kodu pośredniego (CilInjection) -- odpowiedzialne za niskopoziomową instrumentację kodu CIL i zliczanie instrukcji.
+3. Izolowane środowisko uruchomieniowe -- zapewniające bezpieczne i odseparowane wykonanie testów wewnątrz kontenerów. 
 // (w jednym słowie: jest spełniona zasada Single responsibility)
 
 === Izolowane środowisko uruchomieniowe <container-worker-module>
 
 Jednym z podstawowych wymagań biznesowych dla nowego systemu jest izolacja rozwiązań studentów. Ma ona na celu zarówno wykluczenie możliwości wyrządzenia szkód przez złośliwy kod, który może być wysłany do systemu, jak i zapewnienie czystego środowiska dla każdej kolejnej instancji testującej kody studentów.
 
-Komponentem realizującym to wymaganie jest izolowane środowisko uruchomieniowe, czyli konteneryzowany program uruchamiający przygotowany wcześniej zestaw testów. Rozwiązanie to ogranicza możliwość oddziaływania wykonywanemu kodowi z systemem, który je uruchamia, a ponadto daje pełną kontrolę nad działającym środowiskiem. W przypadku, gdy program testujący zawiesi się albo wpadnie w nieskończoną pętlę (np. z powodu błędu logicznego w kodzie studenta), cały kontener można wyłączyć ("zabić"), po prostu wykonując komendę `docker kill`. Co więcej, takie wyłączanie można powiązać z czasomierzem i ustalić czas, w jakim wykonanie powinno się zakończyć, a gdy tak się nie stanie, natychmiast wyłączyć kontener.
+Komponentem realizującym to wymaganie jest izolowane środowisko uruchomieniowe, czyli konteneryzowany program uruchamiający przygotowany wcześniej zestaw testów. Rozwiązanie to ogranicza możliwość oddziaływania wykonywanego kodu na systemem gospodarza, a ponadto daje pełną kontrolę nad działającym środowiskiem. W przypadku, gdy program testujący przestanie odpowiadać albo ulegnie zapętleniu (np. z powodu błędu logicznego w kodzie studenta), możliwe jest wymuszone zatrzymanie kontenera za pomocą polecenia `docker kill`. Dodatkowo, proces ten można zintegrować z mechanizmem limitu czasu, definiując maksymalny czas wykonania, po przekroczeniu którego środowisko zostanie automatycznie zamknięte. // DONE: od "W przypadku..." jest zbyt potocznie. Przepisać. 
+
+// DONE: Wyspecyfikować jak TestExecutor komunikuje się z dockerem (Docker.DotNet, cli, czy coś?) i jak jest uruchamiany kontener.
 
 Zakres odpowiedzialności tego modułu jest następujący:
 - wczytanie otrzymanego zestawu testów,
@@ -160,7 +168,7 @@ Zakres odpowiedzialności tego modułu jest następujący:
 
 === Moduł modyfikacji kodu pośredniego CIL (biblioteka CilInjection) <libka-cil-injection>
 
-Całkowicie wewnętrzny komponent systemu, wydzielony w postaci niezależnej biblioteki, odpowiadający za niskopoziomową manipulację skompilowanym kodem CIL. Moduł ten jest całkowicie ukryty przed użytkownikami końcowymi (zarówno autorami testów, jak i studentami). Jego wyłącznym konsumentem jest wewnętrzny mechanizm frameworku. Został on wyizolowany w celu zapewnienia czystości architektury oraz ułatwienia utrzymania projektu.
+Całkowicie wewnętrzny komponent systemu, wydzielony w postaci niezależnej biblioteki, odpowiadający za niskopoziomową manipulację skompilowanym kodem CIL za pomocą bibioteki Mono.Cecil. // Done: to jest jakieś lanie wody.. Jedno zdanie wystarczy, wspomnijcie, że używacie Mono.Cecil do wstrzykiwania kodu.
 
 Zadania modułu podzielone są na dwa wewnętrzne obszary funkcjonalne:
 
@@ -172,15 +180,20 @@ Zadania modułu podzielone są na dwa wewnętrzne obszary funkcjonalne:
   - Zarządzanie potokiem modyfikacji -- przyjmowanie skompilowanych plików (_Assembly Bytes_) testowanego kodu, sekwencyjne aplikowanie wymaganych transformacji i generowanie zmodyfikowanych plików (_Assembly Bytes_).
   - Zapewnienie mechanizmów do bezpiecznego, dynamicznego ładowania zmodyfikowanego kodu w izolowanym kontekście pamięci (`AssemblyLoadContext`).
   - Zapewnienie mechanizmu do bezpiecznego, dynamicznego ładowania wymaganych przez wprowadzone modyfikacje wewnętrznych bibliotek do izolowanego kontekstu pamięci (`AssemblyLoadContext`).
-  - wygenerowanie wymaganych przez zmiany w kodzie studenta bibliotek pomocniczych (_Assembly Bytes_).
+  - Wygenerowanie wymaganych przez zmiany w kodzie studenta bibliotek pomocniczych (_Assembly Bytes_).
   - Zapewnienie pełnych ścieżek do metod do obsługi bibliotek pomocniczych, w celu umożliwienia późniejszego ich wywołania za pomocą refleksji.
   
 === Moduł koordynacji testów (Test Executor) <test-executor-module>
 
 Najważniejszym komponentem łączącym wszystkie pozostałe w całość jest moduł koordynatora. Odpowiada on za kompleksowe przeprowadzenie testów rozwiązania studenta. W trakcie swojej pracy korzysta on ze wszystkich wyżej opisanych komponentów, przygotowując im dane do przekazania, odbierając wyniki ich pracy i przekazując je dalej. Właśnie ten moduł definiuje kontrakt, za pomocą którego odbywa się komunikacja z użytkownikiem systemu. 
 
-Poza odgrywaniem funkcji delegującego zadania, moduł Test Executor odpowiada także za pomniejsze zadania, które nie są na tyle znaczące, żeby były wydzielone do osobnego modułu. Takimi zadaniami są:
-- analiza statyczna kodu (wstępny przegląd kodu, który np. może odrzucić rozwiązanie na podstawie użycia niedozwolonej przestrzeni nazw),
+Oprócz głównej funkcji delegowania zadań, moduł Test Executor realizuje również operacje pomocnicze, których złożoność nie uzasadnia wyodrębnienia ich do niezależnego komponentu. Należą do nich:
+//Poza odgrywaniem funkcji delegującego zadania moduł Test Executor odpowiada także za pomniejsze zadania, które nie są na tyle znaczące, żeby były wydzielone do osobnego modułu. Takimi zadaniami są: // DONE: zbyt potocznie, zastąpić technicznym opisem
+- analiza statyczna kodu -- wykonywana w celu wczesnego odrzucenia rozwiązań wykorzystujących niedozwolone przestrzenie nazw: // DONE: Wyspecyfikować jakie przestrzenie nazw będą blokowane
+  - `System.IO`,
+  - `System.Reflection`,
+  - `System.Diagnostics`,
+  - `System.Threading`.
 - kompilacja kodu.
 
 Dokładny zakres odpowiedzialności koordynatora wynika z kształtu procesu uruchamiania testów i zwracania wyników do użytkownika i wygląda następująco:
@@ -202,14 +215,14 @@ W tym rozdziale dokładniej opisane zostaną kontrakty i hierarchia zależności
 
 Jak wspomniano w rozdziale @test-executor-module, moduł koordynacji testów jest elementem, który łączy pozostałe komponenty w całość. 
 // Zbiera on szczegóły testów od ich twórcy (prowadzącego zajęcia) w jedną strukturę. Na etapie przygotowania do uruchomienia testów do struktury tej dopisywane są wyniki kolejnych wykonywanych operacji -- drzewo składniowe (wynik działania analizy statycznej) czy tablica bajtów (wynik kompilacji).
-Z tego powodu jako wejściową część jego kontraktu należy przyjąć strukturę otrzymywaną poprzez fasadę, która zostanie kompleksowo opisana w rozdziale @fasada. Jako wyjście, moduł ten zwraca wyniki testów, do których można się dostać poprzez współbieżnie bezpieczną funkcję (_getter_). Z punktu widzenia użytkownika końcowego, funkcja ta będzie wywoływana asynchronicznie przez kod automatycznie wygenerowany na podstawie zdefiniowanego wcześniej zestawu testów. W ten sposób, każda interakcja z systemem możliwa będzie za pośrednictwem narzędzia uruchamiania testów w ramach użytkowanego IDE.
+Z tego powodu jako wejściową część jego kontraktu należy przyjąć strukturę otrzymywaną poprzez fasadę, która zostanie kompleksowo opisana w rozdziale @fasada. Jako wyjście, moduł ten zwraca wyniki testów, do których można się dostać poprzez współbieżnie bezpieczną funkcję (_getter_). Z punktu widzenia użytkownika końcowego, funkcja ta będzie wywoływana asynchronicznie przez kod automatycznie wygenerowany na podstawie zdefiniowanego wcześniej zestawu testów. W ten sposób każda interakcja z systemem możliwa będzie za pośrednictwem narzędzia uruchamiania testów w ramach użytkowanego IDE.
 
 Podczas swojej pracy, moduł koordynujący będzie zależny zarówno od biblioteki wstrzykującej instrukcje CIL, jak i izolowanego środowiska uruchomieniowego, które są wyspecjalizowanymi komponentami realizującymi konkretne zadania. Z tego powodu w obu przypadkach kontrakt jest minimalny.
 
-Moduł wstrzykujący kod CIL jako wejście otrzymuje kod studenta jako skompilowany plik (_Assembly Bytes_). Skompilowany kod studenta jest zmieniany poprzez dodanie sekwencji instrukcji inkrementujących licznik. Sekwencja ta jest dodawana między każdą instrukcję CIL. Licznik znajduje się w osobnej bibliotece zawierającej pole Counter.
-Wyjściem tego modułu są nowy skompilowany plik kodu studenta (_Assembly Bytes_), skompilowany plik biblioteki z polem Counter (_Assembly Bytes_) oraz pełne ścieżki do metod z biblioteki z polem Counter. Moduł ten jest zawsze uruchamiany przez Test Executor.
+Moduł wstrzykujący kod CIL jako wejście otrzymuje kod studenta jako skompilowany plik (_Assembly Bytes_). Skompilowany kod studenta jest zmieniany poprzez dodanie sekwencji instrukcji zwiększających licznik. Sekwencja ta jest dodawana między każdą instrukcję CIL. Licznik znajduje się w osobnej bibliotece zawierającej pole _Counter_. // DONE: Counter owinąć w \texttt{} czy jego odpowiednik
+Wyjściem tego modułu są nowy skompilowany plik kodu studenta (_Assembly Bytes_), skompilowany plik biblioteki z polem _Counter_ (_Assembly Bytes_) oraz pełne ścieżki do metod z biblioteki z polem _Counter_. Moduł ten jest zawsze uruchamiany przez Test Executor.
 
-Izolowane środowisko uruchomieniowe jako wejście otrzymuje gotową do uruchomienia bibliotekę (`.dll`), zawierającą zestaw testów. Każdy z testów jest wykrywany za pomocą refleksji i uruchamiany sekwencyjnie. bibliotekę (`.dll`) zawierającą kod studenta, bibliotekę (`.dll`) z polem Counter oraz pełne ścieżki do metod z biblioteki z polem Counter. Metody do biblioteki z polem Counter są wykrywane poprzez refleksje i wywoływane w celu dostania lub zresetowania licznika. Wyjściem tego modułu jest zestaw wyników wszystkich testów, zapisywany do plików. W kontekście całego systemu, moduł ten zawsze jest uruchamiany przez Test Executor, który ma również możliwość przeglądania plików wewnątrz kontenera. Z tego powodu ma on dostęp do informacji o wynikach testów na bieżąco, gdyż sprawdzenie tego faktu to wyszukanie odpowiedniego pliku wewnątrz kontenera. Schemat komunikacji pomiędzy izolowanym środowiskiem uruchomieniowym a modułem koordynującym zostanie dokładniej opisany w rozdziale @communication-layer-design-protocols-libraries-network.
+Izolowane środowisko uruchomieniowe jako wejście otrzymuje gotową do uruchomienia bibliotekę (`.dll`), zawierającą zestaw testów. Każdy z testów jest wykrywany za pomocą refleksji i uruchamiany sekwencyjnie. bibliotekę (`.dll`) zawierającą kod studenta, bibliotekę (`.dll`) z polem _Counter_ oraz pełne ścieżki do metod z biblioteki z polem _Counter_. Metody do biblioteki z polem _Counter_ są wykrywane poprzez refleksje i wywoływane w celu dostania lub zresetowania licznika. Wyjściem tego modułu jest zestaw wyników wszystkich testów, zapisywany do plików. W kontekście całego systemu moduł ten zawsze jest uruchamiany przez Test Executor, który ma również możliwość przeglądania plików wewnątrz kontenera. Z tego powodu ma on dostęp do informacji o wynikach testów na bieżąco, gdyż sprawdzenie tego faktu to wyszukanie odpowiedniego pliku wewnątrz kontenera. Schemat komunikacji pomiędzy izolowanym środowiskiem uruchomieniowym a modułem koordynującym zostanie dokładniej opisany w rozdziale @communication-layer-design-protocols-libraries-network.
 
 == Projekt warstwy komunikacyjnej <communication-layer-design-protocols-libraries-network>
 
@@ -224,36 +237,47 @@ Izolowane środowisko uruchomieniowe jako wejście otrzymuje gotową do uruchomi
 // 3. Test executro odpytje IUŚ czekając na wynik testu z rozwiązania studenta
 // 7. Wyniki zostają zebrane przez Test Executora do plików .json i wykorzystane dalej do wyświetlenia wyniku studentowi 
 
-Z faktu, że system jest w znakomitej większości planowany jako jedna biblioteka, większość komunikacji odbywa się wewnątrzprocesowo, w ramach jednego środowiska uruchomieniowego .NET. Jednak w ramach systemu zdarzają się również inne sposoby komunikacji. Aby przybliżyć ich funkcję i sposób zaprojektowania, prześledźmy uproszczony cykl życia rozwiązania studenta.
+Z faktu, że system jest w znakomitej większości planowany jako jedna biblioteka, większość komunikacji odbywa się wewnątrzprocesowo, w ramach jednego środowiska uruchomieniowego .NET. Jednak w ramach systemu zdarzają się również inne sposoby komunikacji. //Aby przybliżyć ich funkcję i sposób zaprojektowania, prześledźmy uproszczony cykl życia rozwiązania studenta. // DONE: ostatnie zdanie zbyt nieformalnie, do przepisania.
+W celu zilustrowania ich roli i sposobu realizacji, poniżej przeanalizowano uproszczony cykl życia kodu nadesłanego przez studenta.
 
-Na początek student wypycha zmiany swojego kodu w dedykowanym repozytorium, bądź uruchamia system lokalnie. Kod źródłowy trafia wtedy bezpośrednio do modułu koordynacji testów, czyli Test Executor.
+Na początek student wypycha zmiany swojego kodu w dedykowanym repozytorium bądź uruchamia system lokalnie. Kod źródłowy trafia wtedy bezpośrednio do modułu koordynacji testów, czyli Test Executor.
 
-Następnym krokiem jest analiza i kompilacja rozwiązania, a następnie przekazanie skopilowanych bajtów do modułu modyfikacji kodu pośredniego. Zwróćmy uwagę, że odbywa się to wewnątrz tego procesu.
+Następnym krokiem jest analiza i kompilacja rozwiązania, a następnie przekazanie skompilowanych bajtów do modułu modyfikacji kodu pośredniego. Zwróćmy uwagę, że odbywa się to wewnątrz tego procesu.
 
-Po zakończeniu pracy przez bibliotekę wstrzykującą kod CIL, koordynator odbiera zaktualizowane bajty programu, a następnie przekazuje je wraz z regułami pomiarowymi do izolowanego środowiska uruchomieniowego. Ta operacja jest zaprojektowana jako osadzenie pliku `.dll` wewnątrz kontenera przez moduł koordynatora. Taki osadzony plik jest przez program uruchamiający widziany jak zwykły plik w systemie plików.
+Po zakończeniu pracy przez bibliotekę wstrzykującą kod CIL koordynator odbiera zaktualizowane bajty programu, a następnie przekazuje je wraz z regułami pomiarowymi do izolowanego środowiska uruchomieniowego. Ta operacja jest zaprojektowana jako osadzenie pliku `.dll` wewnątrz kontenera przez moduł koordynatora. Taki osadzony plik jest przez program uruchamiający widziany jak zwykły plik w systemie plików.
 
-Izolowane środowisko uruchomieniowe uruchamia otrzymane rozwiązanie studenta poprzez odczytanie osadzonego pliku i jego interpretację jako biblioteka. Dzięki temu system macierzysty pozostaje bezpieczny, a zasoby są limitowane. Każdy z testów jest sekwencyjnie wykonywany, a jego wynik zostaje natychmiast zapisywany do pliku w formacie JSON. Z punktu widzenia programu uruchamiającego jest to zapis na dysku, ale _de facto_ jest to zapis na wirtualnym dysku kontenera. Ta metoda komunikacji została wybrana przede wszystkim ze względu na jej prostotę oraz możliwość całkowitego odcięcia kontenera od jego zewnętrza. Sieć ani żaden inny zasób nie jest potrzebny w żadnym momencie wykonywania kodu -- można więc bezpiecznie pozbawić kontener dostępu do nich.
+Do uruchomienia izolowanego środowiska uruchomieniowego wykorzystywana jest biblioteka `TestContainers`. Pozwala ona pobranie kontenera z repozytorium (np. DockerHub), a następnie wysokopoziomowe uruchomienie za pomocą jednego wywołania. Dodatkową zaletą użycia tej biblioteki jest automatyczne wyłączenie kontenera i sprzątanie po nim po zakończeniu jego pracy.
 
-Test Executor, dzięki możliwości odczytywania zawartości kontenera, może sprawdzać obecność plików na jego wirtualnym dysku. Obecność pliku odpowiadającemu danemu testowi jest jednoznaczna z zakończeniem jego wykonywania. Warto tu zauważyć, że może to być zarówno test zakończony powodzeniem, jak i porażką. Sytuację zawieszenia się kontenera bądź przedwczesnego zakończenia jego pracy można wykryć poprzez ustalenie limitu czasu dla całego zestawu testów i jego kontrolę.
+Izolowane środowisko uruchomieniowe uruchamia otrzymane rozwiązanie studenta poprzez odczytanie osadzonego pliku i jego interpretację jako biblioteka. Dzięki temu system macierzysty pozostaje bezpieczny, a zasoby są limitowane. Każdy z testów jest sekwencyjnie wykonywany, a jego wynik zostaje natychmiast zapisywany do pliku w formacie JSON. Mimo że aplikacja docelowa traktuje to jako standardową operację wejścia-wyjścia na nośniku, faktyczny zapis odbywa się w izolowanym systemie plików kontenera. Ta metoda komunikacji została wybrana przede wszystkim ze względu na jej prostotę oraz możliwość całkowitej izolacji kontenera. Sieć ani żaden inny zasób zewnętrzny nie jest potrzebny w żadnym momencie wykonywania kodu -- można więc bezpiecznie pozbawić program uruchamiany wewnątrz kontenera dostępu do nich. // DONE: przepisać zdanie na bez de facto, prościej, najlepiej technicznie
 
-Agregacja i zwrot wyników testów planowany jest na dwa sposoby, w zależności od sposobu uruchomienia. W przypadku lokalnego uruchomienia z poziomu IDE, wyniki będą prezentowane jako stan końcowy testu w narzędziu do uruchamiania testów w IDE. Gdy test kończy się powodzeniem, to IDE zaznacza go na zielono, a w przeciwnym przypadku -- na czerwono -- z dodatkowymi informacjami, co poszło nie tak. Natomiast instancje uruchamiane w ramach CI/CD na repozytoriach (np. w serwisie GitHub) będą wyświetlały wyniki jako tekst w logu danej akcji, a ponadto będą wysyłały te wyniki do dedykowanego serwera bądź repozytorium -- katalogu wyników studentów -- w celu dalszego użytkowania tych danych przez prowadzącego i studentów.
+Test Executor, dzięki możliwości odczytywania zawartości kontenera, może sprawdzać obecność plików na jego wirtualnym dysku. Obecność pliku odpowiadającego danemu testowi jest jednoznaczna z zakończeniem jego wykonywania. Może to być zarówno test zakończony powodzeniem, jak i porażką. Sytuację zawieszenia się kontenera bądź przedwczesnego zakończenia jego pracy można wykryć poprzez ustalenie limitu czasu dla całego zestawu testów i jego kontrolę.
+
+Agregacja i zwrot wyników testów planowany jest na dwa sposoby, w zależności od sposobu uruchomienia. W przypadku lokalnego uruchomienia z poziomu narzędzia do uruchamiania testów w IDE, wyniki będą prezentowane jako stan końcowy testów we wspomnianym narzędziu. /*Gdy test kończy się powodzeniem, to IDE zaznacza go na zielono, a w przeciwnym przypadku -- na czerwono -- z dodatkowymi informacjami, co poszło nie tak.*/ Zakończenie testu z wynikiem pozytywnym jest wizualizowane w IDE kolorem zielonym. W przypadku negatywnej weryfikacji wynik oznaczany jest kolorem czerwonym, a system dostarcza dodatkowe dane o charakterze zaistniałego defektu. Natomiast instancje uruchamiane w ramach CI/CD na repozytoriach (np. w serwisie GitHub) będą wyświetlały wyniki jako tekst w logu danej akcji, a ponadto będą wysyłały te wyniki do dedykowanego serwera bądź repozytorium -- katalogu wyników studentów -- w celu dalszego użytkowania tych danych przez prowadzącego i studentów. // DONE: zaznaczać test na zielono/czerwono jest zbyt kolokwialne.
 
 == Schematy głównych komponentów  <main-components-description-classes-states-activity-events-diagrams>
+//DONE: Opisać co się dzieje na diagramie 
+Architektura modułu opiera się na jednej klasie koordynującej, `TestExecutor`, oraz wyspecjalizowanych komponentach realizujących kolejne etapy przetwarzania. `TestExecutor` sam nie wykonuje pracy merytorycznej, tylko sekwencjonuje etapy i zarządza ich wynikami.
 
-Diagram klas widoczny na rysunku @diagram-test-executor ilustruje architekturę modułu TestExecutor oraz jego powiązania z obiektem TestSuite, zawierającym wszystkie obiekty potrzebne do przeprowadzenia testów. Przedstawia kluczowe komponenty modułu, takie jak analizator statyczny, kompilator, narzędzie do wstrzykiwania instrukcji CIL oraz egzekutor, które wspólnie odpowiadają za przetwarzanie rozwiązania studenta i generowanie finalnych wyników.
+Etapy przygotowania kodu (`StaticAnalyzer`, `Compiler` oraz `CilInstructionInjector`) są bezstanowymi klasami statycznymi. Każda metoda przyjmuje `TestSuite` i zwraca go wzbogaconego o kolejne wyniki, więc przetwarzanie ma postać potoku, a etapy są niezależne i łatwe do testowania w izolacji.
+
+Wykonanie testów jest wydzielone do klasy `Executor`, która ukrywa za jednym kontraktem dwa tryby uruchomienia: lokalny i w kontenerze. Wyniki są zwracane jako `IEnumerable<TestResult>`, czyli strumieniowo, w miarę wykonywania testów.
+
+Tryb kontenerowy obsługuje osobny projekt `ContainerWorker` z własnym punktem wejścia. Izoluje on niezaufany kod studenta od procesu frameworka i ogranicza zależności do niezbędnego minimum. Komunikację między modułami zapewnia pakiet `Contract` z typami `TestSuite` i `TestResult`, dzięki czemu projekty nie referencjonują się nawzajem i nie powstają cykle zależności.
+
 
 #figure(
-  image("DiagramKlasModuluTestExecutor.png"),
+image("DiagramKlasModuluTestExecutor.drawio(5).png"),
   supplement: "Rysunek",
   caption: [Diagram klas modułu TestExecutor oraz powiązanych komponentów potoku.]
 ) <diagram-test-executor>
 
+
 Wykres aktywności widoczny na rysunku @aktywnosc-kompilacja prezentuje współbieżny proces przygotowania logiki testów oraz środowiska uruchomieniowego. Zobrazowany jest tutaj także mechanizm kontroli czasu wykonania. 
 
 #figure(
-  image("DiagramAktywnosciProcesuKopilacji.png"),
+  image("DiagramAktywnosciProcesuKopilacji (1).png"),
   supplement: "Rysunek",
-  caption: [Diagram aktywności przedstawiający proces kompilacji, wstrzykiwania kodu CIL oraz egzekucji testów.]
+  caption: [Diagram aktywności przedstawiający proces kompilacji, wstrzykiwania kodu CIL oraz wykonania testów.]
 ) <aktywnosc-kompilacja>
 
 Diagram widoczny na rysunku @stany-executor obrazuje cykl życia głównego obiektu sterującego od jego inicjalizacji do ostatecznego zakończenia sukcesem lub porażką. Szczegółowo rozpisuje na mniejsze podetapy kompilacji i iteracyjnego uruchamiania testów, uwzględniając obsługę wyjątków i przekroczeń limitu czasu.
@@ -261,40 +285,40 @@ Diagram widoczny na rysunku @stany-executor obrazuje cykl życia głównego obie
 #figure(
   image("diagram_stanów_testexecutor.drawio.png", height: 85%),
   supplement: "Rysunek",
-  caption: [Diagram stanów cyklu życia orkiestracji i egzekucji testów w module TestExecutor.]
+  caption: [Diagram stanów cyklu życia orkiestracji i wykonania testów w module TestExecutor.]
 ) <stany-executor>
 
 Wykres sekwencji widoczny na rysunku @sekwencja modeluje wymianę komunikatów w czasie między interfejsem użytkownika, koordynatorem testów, narzędziami modyfikującymi kod oraz izolowanym środowiskiem uruchomieniowym. Obrazuje sekwencyjne delegowanie zadań kompilacji, wstrzykiwania kodu CIL oraz pętlę odpytywania kontenera o rezultaty wykonania poszczególnych przypadków testowych.
 
+//DONE: usunać kolorki
 #figure(
-  image("DiagraSekwencji.png"),
+  image("DiagramSekwencji.png"),
   supplement: "Rysunek",
   caption: [Diagram sekwencji przedstawiający przepływ sterowania, kompilację, wstrzykiwanie kodu CIL oraz sekwencyjne uruchamianie testów w środowisku izolowanym.]
 ) <sekwencja>
 
 Diagram aktywności zaprezentowany na rysunku @aktywnosc-kontenera szczegółowo opisuje procesy zachodzące bezpośrednio wewnątrz uruchomionego kontenera testowego. Przedstawia krok po kroku wyszukiwanie klas testowych przez refleksję, izolację wyjścia konsoli oraz bezpieczne wywoływanie funkcji _Arrange_, _Act_ i _Assert_, zakończone serializacją obiektów TestResult do plików JSON.
 
+//DONE: usunąc kolorki 
 #figure(
-  image("DiagramAktywnosciKontenera.png", height: 90%),
+  image("DiagramAktywnosciKontenera (2).png", height: 98%),
   supplement: "Rysunek",
   caption: [Diagram aktywności dla kontenera testowego.],
 ) <aktywnosc-kontenera>
 
-//== User interface vision: schemes, plotes, drawings <user-interface-vision-schemes-plotes-drawings>
 == Wizja interfejsu użytkownika -- schematy i rysunki <user-interface-vision-schemes-plotes-drawings>
 
 Interfejs platformy został pomyślany tak, by łączyć dwa główne punkty styku z użytkownikiem. Z jednej strony jest to interfejs środowiska programistycznego (IDE), służący do pracy lokalnej, z drugiej zaś interfejs wiersza poleceń (CLI), a także raporty CI/CD, które uruchamiane są w środowisku automatycznej oceny.
 
-// === Interfejs w środowisku IDE (widok studenta i prowadzącego)
-
 W środowisku programistycznym, na przykład w JetBrains Rider czy Visual Studio, testy zdefiniowane w ramach platformy są wykrywane automatycznie. Pojawiają się one w natywnym oknie uruchamiania testów, takim jak Unit Tests Explorer. To możliwe dzięki mechanizmom opartym pod spodem na interfejsie MSTest.
 
-1. Widok eksploratora testów: Każdy przypadek testowy (TestCase) trafia do eksploratora jako osobny test jednostkowy, przypisany do konkretnej kategorii bądź zadania.
+1. Widok eksploratora testów: Każdy przypadek testowy (`TestCase`) trafia do eksploratora jako osobny test jednostkowy, przypisany do konkretnej kategorii bądź zadania.
 
-2. Prezentacja wyników i asercji: Jeśli test zakończy się niepowodzeniem, na przykład z powodu naruszenia niezmiennika grafu albo przekroczenia dopuszczalnej wartości skompilowanych instrukcji CIL, panel szczegółów pokazuje czytelny komunikat błędu. Opisuje on, czego oczekiwano, a co otrzymano. 
+2. Prezentacja wyników i asercji: Jeśli test zakończy się niepowodzeniem, na przykład z powodu naruszenia niezmiennika grafu albo przekroczenia dopuszczalnej wartości skompilowanych instrukcji CIL, panel szczegółów pokazuje czytelny komunikat o błędzie. Opisuje on, czego oczekiwano, a co otrzymano. 
 
 Interfejs użytkownika, jako że platforma jest narzędziem wspierającym proces wytwarzania oprogramowania, nie opiera się na klasycznym interfejsie graficznym (GUI). Punktem styku z użytkownikiem (studentem i prowadzącym) jest środowisko zintegrowane (IDE) za pośrednictwem eksploratora testów, a także konsola (CLI) w zautomatyzowanym środowisku CI/CD.
 
+#counter(figure.where(kind: raw)).update(6)
 #figure(
   rect(width: 100%, stroke: 0.5pt + luma(150), inset: 10pt, radius: 4pt)[
     #align(left)[
@@ -311,8 +335,8 @@ Interfejs użytkownika, jako że platforma jest narzędziem wspierającym proces
       )
     ]
   ],
-  supplement: "Wizualizacja",
-  caption: [Szkic wizualizacji wyników testu w oknie eksploratora testów w środowisku IDE],
+  supplement: "Rysunek",
+  caption: [Szkic wizualizacji wyników testu w oknie eksploratora testów w środowisku IDE.],
 ) <ui-ide-mockup>
 
 W oknie testów IDE prowadzący i student otrzymują natychmiastową informację zwrotną w postaci hierarchicznego drzewa testów. Statusy sukcesu lub błędu są powiązane bezpośrednio z wynikami wyliczonymi przez platformę testową (m.in. weryfikacją liczby wykonanych instrukcji CIL).
@@ -335,16 +359,18 @@ W oknie testów IDE prowadzący i student otrzymują natychmiastową informację
       )
     ]
   ],
-  supplement: "Wizualizacja",
-  caption: [Szkic raportu podsumowującego wyniki i wskaźniki złożoności w konsoli CI/CD],
+  supplement: "Rysunek",
+  caption: [Szkic raportu podsumowującego wyniki i wskaźniki złożoności w konsoli CI/CD.],
 ) <ui-cli-mockup>
 
-W potoku automatyzacji procesów (CI/CD) system wypisuje rezultaty w standardowym wyjściu procesu (stdout). Dane będą mogły być wyświetlone w postaci tabelarycznej, udostępniając agregację pomiarów wydajności i kosztów wyrażonych w instrukcjach języka pośredniego jak pokazuje przykład powyżej. 
+W potoku automatyzacji procesów (CI/CD) system wypisuje rezultaty w standardowym wyjściu procesu (stdout). Dane będą mogły być wyświetlone w postaci tabelarycznej, udostępniając agregację pomiarów wydajności i kosztów wyrażonych w instrukcjach języka pośredniego, jak pokazuje przykład powyżej. 
 
 = Uzasadnienie wyboru stosu technologicznego <justification-of-technology-stack-choice> 
 
-Poniższa tabelka przedstawia zestawienie kluczowych komponentów architektonicznych oraz narzędzi wybranych oraz ich implementacji. Każda decyzja technologiczna została podjęta na podstawie analizy wymagań stawianych przez klienta, preferencji dotyczących dalszego utrzymania systemu oraz doświadczeń zespołu. Uwzględniono w niej również bilans zysków i strat w stosunku do rozważanych alternatyw.
+// DONE: Tabela X przedstawia
+Tabela @tabela-uzasadnienie-wyboru-stosu-technologicznego przedstawia zestawienie kluczowych komponentów architektonicznych oraz narzędzi wybranych oraz ich implementacji. Każda decyzja technologiczna została podjęta na podstawie analizy wymagań stawianych przez klienta, preferencji dotyczących dalszego utrzymania systemu oraz doświadczeń zespołu. Uwzględniono w niej również bilans zysków i strat w stosunku do rozważanych alternatyw.
 
+// DONE: caption (nad tabelą)
 #figure(
   table(
     columns: (auto, auto, auto, 50%),
@@ -361,7 +387,7 @@ Poniższa tabelka przedstawia zestawienie kluczowych komponentów architektonicz
     [*Backend \ (moduł \ uruchamiający)*],
     [C\# .NET 10, \ Docker],
     [Rust, C++],
-    [Klient, który w przyszłości będzie rozwijać i utrzymywać projekt preferuje język C\#. Członkowie zespołu mają szeroką wiedzę i duże doświadczenie ze środowiskiem .NET. Użycie innego języka niż C\# nie przyniosło by wymiernych korzyści, a podstawowa potrzeba uruchomienia kodu studenta implikuje konieczność użycia środowiska .NET na pewnym etapie działania rozwiązania. Konteneryzacja pozwala w bezpieczny sposób uruchamiać obcy kod, znacząco redukując ryzyko związane z próbami wywołania kodu złośliwego.],
+    [Klient, który w przyszłości będzie rozwijać i utrzymywać projekt preferuje język C\#. Członkowie zespołu mają szeroką wiedzę i duże doświadczenie ze środowiskiem .NET. Użycie innego języka niż C\# nie przyniosłoby wymiernych korzyści, a podstawowa potrzeba uruchomienia kodu studenta implikuje konieczność użycia środowiska .NET na pewnym etapie działania rozwiązania. Konteneryzacja pozwala w bezpieczny sposób uruchamiać obcy kod, znacząco redukując ryzyko związane z próbami wywołania kodu złośliwego.],
     
     [*Dystrybucja*],
     [Paczka NuGet],
@@ -378,52 +404,108 @@ Poniższa tabelka przedstawia zestawienie kluczowych komponentów architektonicz
     [Ręczne \ uruchamianie \ przez \ prowadzącego],
     [Automatyczne uruchamianie systemu oceniającego przy każdym wypchnięciu kodu do repozytorium przez studenta. Wysyłanie raportów z wynikami bezpośrednio do dedykowanego repozytorium w celach archiwizacji, wystawiania ocen studentom i prezentacji tych danych na stronie internetowej przedmiotu ASD2. Alternatywą jest ręczne wprowadzanie tych danych do systemu przez prowadzącego, co nie przynosi żadnych korzyści, jest żmudne i może powodować błędy.],
   ),
-)
+  supplement: "Tabela",
+  caption: [Zestawienie wybranych technologii dla kluczowych modułów systemu wraz z uzasadnieniami i odrzuconymi alternatywami.],
+) <tabela-uzasadnienie-wyboru-stosu-technologicznego>
 
-= Wygląd fasady testowej dla prowadzącego <fasada> // TODO: nazwa 
-Fasada testowa opera się na wzorcu AAA (_Arrange-Act-Assert_) oraz deklaratywnym podejściu do definiowania zestawów testowych. Prowadzący tworzy zestawy testów  dla konkretnego zadania, pisząc jedną klasę dziedziczącą po klasie zestawu testowego i oznaczając ją odpowiednim atrybutem. Celem fasady jest zminimalizowanie niepotrzebnego, powtarzalnego kodu oraz zapewnienie pełnej automatyzacji weryfikacji rezultatów. Dzięki fasadzie prowadzący nie musi pisać powtarzalnego kodu wielokrotnie, lecz samo meritum testu. 
+= Specyfikacja interfejsu fasady testowej <fasada> // DONE: nazwa
+//DONE: dać listing kodu jak wygląda deklaracja zestawu i przypadku testowego. 
+Fasada testowa opiera się na wzorcu AAA (_Arrange-Act-Assert_) oraz deklaratywnym podejściu do definiowania zestawów testowych. Prowadzący tworzy zestawy testów dla konkretnego zadania, definiując jedną klasę dziedziczącą po klasie zestawu testowego i oznaczając ją odpowiednimi atrybutami. Celem fasady jest zminimalizowanie niepotrzebnego, powtarzalnego kodu oraz zapewnienie pełnej automatyzacji procesu weryfikacji i oceny kodu.
 
 == Kluczowe komponenty fasady 
-1. Prowadzący deklaruje klasę z rozwiązaniami studenta, która będzie tej samej nazwy dostarczona na początku zajęć bez zaimplementowanych funkcji. Dzięki deklaracji Test Executor wie, która klasa jest rozwiązaniem studenckim i gdzie znajdują się zaimplementowane przez studenta funkcje. 
 
-2. Prowadzący posiada możliwość zadeklarowania podstawowej konfiguracji testu. Możliwe będą takie parametry jak możliwość konteneryzacji testu lub maksymalna ilość obliczeń. 
+W celu zapewnienia jak najlepszej ergonomii pracy z systemem, kluczowym zadaniem jest zdefiniowanie fasady, która:
+- w maksymalnym stopniu ogranicza potrzebę pisania powtarzalnego kodu,
+- wykorzystuje mechanizmy wspierające tworzenie kodu w IDE, np. automatyczne tworzenie szkieletu klasy na podstawie definicji jej klasy bazowej,
+- wykazuje podobieństwo do fasady aktualnie używanego systemu.
 
+Zaproponowano fasadę, której przykładowe użycie zaprezentowano jako kod źródłowy @fasada-source-code.
+
+#counter(figure.where(kind: raw)).update(0)
+#figure(
+  supplement: "Kod źródłowy",
+  caption: [Przykładowe użycie fasady do definicji zestawu testowego.],
+)[
+```cs
+[TestSuite]
+[Containerized] // (2)
+[StudentSolution(typeof(Student1Solution))] // (1)
+public partial class Lab01Evaluation : TestSuite
+{
+    [TestCase]
+    [InstructionLimit(5_000_000)] // (2)
+    [TimeLimitMs(30_000)] // (2)
+    [MemoryLimitMb(256)] // (2)
+    public class Case1 : TestCase // (3)
+    {
+        private int _liczba = 3;
+
+        public override void Arrange()
+        {
+            _liczba = 5;
+        }
+
+        public override void Act()
+        {
+            _liczba *= _liczba;
+        }
+
+        public override void Assert()
+        {
+            IsTrue(_liczba > 0);
+            IsTrue(_liczba == 25);
+        }
+    }
+
+    // kolejne przypadki testowe...
+}
+```
+] <fasada-source-code>
+
+W treści kodu źródłowego @fasada-source-code znajdują się fragmenty oznaczone numerami. Poniżej opisano je dokładniej.
+//1. Prowadzący deklaruje klasę z rozwiązaniami studenta, która będzie tej samej nazwy dostarczona na początku zajęć bez zaimplementowanych funkcji. Dzięki deklaracji Test Executor wie, która klasa jest rozwiązaniem studenckim i gdzie znajdują się zaimplementowane przez studenta funkcje. // DONE: o co chodzi w pierwszym zdaniu?
+1. Atrybut wiążący zestaw testów z konkretnym rozwiązaniem studenta. Jest ono pewną klasą zawierającą implementacje funkcji, które są testowane. Z założenia, pusta wersja takiej klasy jest dostarczana studentowi na początku zajęć. Zadaniem studenta jest jej uzupełnienie.
+2. Atrybuty umożliwiające podstawową konfigurację testu. Możliwe będą takie parametry jak możliwość konteneryzacji testu lub maksymalna ilość instrukcji CIL lub limit czasu wykonania. 
 3. Każdy przypadek testowy stanowi osobną, zagnieżdżoną klasę dziedziczącą po klasie przypadku testowego. Wymusza ona podział logiki na trzy czytelne fazy:
-  - Przygotowanie (_Arrange_): Przygotowanie testu poprzez stworzenie wymaganych struktur, klas, obiektów potrzebnych do przeprowadzenia testu 
-  - Wykonanie akcji (_Act_): Wywołanie właściwej metody z kodu studenta
-  - Weryfikacja (_Assert_): Weryfikacja za pomocą dedykowanych metod asercji, sprawdzających nie tylko poprawność wyniku końcowego, ale również efekty uboczne (np. brak spójności grafu itp.). Dzięki modyfikowalnej funkcji Assert() prowadzący nie będzie ograniczony do sprawdzenia jedynie wyniku, lecz także będzie w stanie przetestować implementowalny dowolny warunek. 
+  - Przygotowanie (_Arrange_): Przygotowanie testu poprzez stworzenie wymaganych struktur, klas, obiektów potrzebnych do przeprowadzenia testu.
+  - Wykonanie akcji (_Act_): Wywołanie właściwej metody z kodu studenta.
+  - Weryfikacja (_Assert_): Weryfikacja za pomocą dedykowanych metod asercji, sprawdzających nie tylko poprawność wyniku, ale również efekty uboczne (np. brak spójności grafu itp.). Dzięki modyfikowalnej funkcji `Assert()` prowadzący nie będzie ograniczony do sprawdzenia jedynie wyniku, lecz będzie w stanie przetestować dowolny warunek.
 
 == Automatyzacja i generowanie kodu zestawów testowych 
 Aby prowadzący nie musiał ręcznie pisać kodu integrującego klasę testową z silnikiem wykonawczym TestExecutor ani tworzyć powtarzalnych metod uruchamiających w środowisku MSTest, platforma wykorzystuje przyrostowy generator kodu kompilatora Roslyn. 
 Generator działa całkowicie statycznie w trakcie kompilacji projektu testowego i wykonuje następujące zadania:
 
-=== Filtrowanie i analiza składniowa (Faza Inkrementalna)
-W etapie inicjalizacji generator skanuje drzewo składniowe C\# i wyszukuje deklaracje klas (ClassDeclarationSyntax), które spełniają rygorystyczne kryteria architektoniczne:
+=== Filtrowanie i analiza składniowa
+W etapie inicjalizacji generator skanuje drzewo składniowe C\# i wyszukuje deklaracje klas (`ClassDeclarationSyntax`), które spełniają następujące kryteria architektoniczne:
 - Klasa musi być publiczna, nieabstrakcyjna i zadeklarowana na poziomie przestrzeni nazw.
 - Klasa musi bezpośrednio lub pośrednio dziedziczyć po typie bazowym TestSuite.
 
-Dla każdej prawidłowej klasy generator odczytuje atrybut [StudentSolution], używając modelu semantycznego Roslyn do pobrania symbolu typu rozwiązania studenta. Następnie wyciąga surowy kod źródłowy drzewa składniowego zadania studenta oraz kod samej klasy testowej. Dodatkowo przeszukuje zagnieżdżone typy w celu zidentyfikowania wszystkich klas przypadków testowych dziedziczących po TestCase.
+Dla każdej prawidłowej klasy generator odczytuje atrybut `[StudentSolution]`, używając modelu semantycznego Roslyn do pobrania symbolu typu rozwiązania studenta. Następnie wyciąga surowy kod źródłowy drzewa składniowego zadania studenta oraz kod samej klasy testowej. Dodatkowo przeszukuje zagnieżdżone typy w celu zidentyfikowania wszystkich klas przypadków testowych dziedziczących po TestCase.
 
 === Generowanie kodu wyjściowego
 Dla każdego odnalezionego zestawu testowego generator automatycznie tworzy w pamięci kompilatora plik kodowy (`.g.cs`), zawierający dwie kluczowe struktury:
 
 1. Rozszerzenie klasy zestawu testowego, które uzupełnia zadeklarowaną przez prowadzącego klasę o przesłonięte metody dostępowe zwracające surowy kod źródłowy w postaci surowych literałów ciągów znaków 
    #vspace
-   ```
+   #figure(
+   ```cs
    public partial class Lab03Evaluation
    {
        public override string StudentSolutionSourceCode() => """...""";
        public override string TestSuiteSourceCode() => """...""";
    }
-   ```
-   #vspace
+   ```,
+   supplement: "Kod źródłowy",
+   caption: [Wygenerowane rozszerzenie klasy zestawu testowego o metody zwracające kod źródłowy rozwiązania studenta i zestawu testów.],
+  )
+ #vspace
    Pozwala to orkiestratorowi TestExecutor na bezpośredni dostęp do czystych tekstów źródłowych w celu ich późniejszej analizy statycznej i dynamicznej kompilacji Roslyn bez konieczności odczytywania plików z dysku w trakcie wykonywania
 #vspace
 2. Wydzielona klasa uruchomieniowa MSTest:
-  Dla zestawu testowego generowana jest towarzysząca klasa z przyrostkiem \_Tests oznaczona atrybutem [TestClass]. Dla każdego zidentyfikowanego przypadku testowego (TestCase) generator generuje osobną asynchroniczną metodę testową [TestMethod]:
+  Dla zestawu testowego generowana jest towarzysząca klasa z przyrostkiem \_Tests oznaczona atrybutem `[TestClass]`. Dla każdego zidentyfikowanego przypadku testowego (`TestCase`) generator generuje osobną asynchroniczną metodę testową `[TestMethod]`:
   #vspace
-
-  ```
+  #figure(
+  ```cs
   [TestClass]
   public partial class Lab03Evaluation_Tests
   {
@@ -441,17 +523,19 @@ Dla każdego odnalezionego zestawu testowego generator automatycznie tworzy w pa
               Assert.Fail(failure.Message ?? "Test failed");
           }
       }
-      // ... kolejne metody dla każdego przypadku testowego
+      // kolejne metody dla każdego przypadku testowego
   }
-  ```
+  ```,
+  caption: [Wygenerowana klasa uruchomieniowa MSTest z metodą testową dla pierwszego przypadku testowego.],
+  supplement: "Kod źródłowy"
+  )
+  // DONE: podpisać listingi (caption) Listing X: co tutaj się dzieje/co jest pokazywane
   #vspace
-  Dzięki tak zaprojektowanemu generatorowi prowadzący pisze wyłącznie zwięzłą klasę deklaratywną AAA, a cały mechanizm orkiestracji, integracji z narzędziami uruchamiania testów w IDE (Visual Studio / JetBrains Rider) oraz asynchronicznego oczekiwania na wyniki z TestExecutor generowany jest automatycznie.
+  Dzięki tak zaprojektowanemu generatorowi prowadzący definiuje wyłącznie zwięzłą klasę deklaratywną AAA, a cały mechanizm orkiestracji, integracji z narzędziami uruchamiania testów w IDE (Visual Studio / JetBrains Rider) oraz asynchronicznego oczekiwania na wyniki z TestExecutor generowany jest automatycznie.
 
 == Przepływ tworzenia zadań przez prowadzącego
 Proces weryfikacji i przygotowania zadań przebiega według następujących kroków:
 1. Prowadzący definiuje interfejs dla studenta. Student dostaje wyłącznie czyste nagłówki metod i klasę z wymaganą sygnaturą.
 2. Prowadzący tworzy zróżnicowane przypadki testowe, które mają na celu weryfikację poprawności kodu studenta. Dla każdego testu definiowana jest klasa przypadku testowego zawierająca dedykowaną logikę sprawdzającą.
-3. Studenci implementują rozwiązania zadania. Dzięki testom zdefiniowanym przez prowadzącego mogą w szybki sposób zweryfikować poprawność swojego rozwiązania i testują. 
-4. Na koniec studenci dostają raport błędów zwróconych przez sprawdzarkę. W przypadku niepowodzenia fasada zwraca studentowi czytelny komunikat zwrotny o niepowodzeniu kompilacji, przekroczonej ilości operacji lub źle rozwiązanym przypadku. 
-
-
+3. Studenci implementują rozwiązania zadania. Dzięki testom zdefiniowanym przez prowadzącego mogą samodzielnie i na bieżąco weryfikować poprawność swojego kodu w trakcie pracy.// DONE: dokończyć zdanie
+4. Na koniec studenci dostają raport błędów zwróconych przez sprawdzarkę. W przypadku niepowodzenia fasada zwraca studentowi czytelny komunikat diagnostyczny informujący o niepowodzeniu kompilacji, przekroczonej dopuszczalnej ilości operacji lub niespełnieniu asercji testowej. 
