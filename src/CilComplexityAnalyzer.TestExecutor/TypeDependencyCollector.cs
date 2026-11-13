@@ -1,81 +1,86 @@
-using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
+/// <summary>
+/// Odkrywa, jakich jeszcze typów (w TYM SAMYM module) używają typy startowe.
+/// Zwraca wyłącznie nazwy typów NAJWYŻSZEGO poziomu (typy zagnieżdżone są analizowane
+/// razem ze swoim typem głównym, np. List`1/Enumerator).
+/// </summary>
 public static class TypeDependencyCollector
 {
-    public static HashSet<string> DiscoverDependentTypes(ModuleDefinition module, string rootTypeName, int maxDepth = 3)
+    public static HashSet<string> DiscoverDependentTypes(
+        ModuleDefinition module,
+        IEnumerable<string> rootFullNames,
+        int maxDepth,
+        Func<TypeDefinition, bool> isAllowed)
     {
-        var discoveredTypes = new HashSet<string>();
-        var rootType = module.Types.FirstOrDefault(t => 
-            t.Name == rootTypeName || 
-            t.FullName == rootTypeName ||
-            t.Name.StartsWith(rootTypeName)
-            );
-        if (rootType == null)
+        var result = new HashSet<string>();
+        var queue = new Queue<(TypeDefinition Type, int Depth)>();
+
+        foreach (var name in rootFullNames)
         {
-            return discoveredTypes;
+            var root = module.GetType(name);
+            if (root != null && result.Add(root.FullName))
+                queue.Enqueue((root, 0));
         }
 
-        TraverseTypeDependencies(rootType, discoveredTypes, maxDepth, 0);
-        return discoveredTypes;
+        while (queue.Count > 0)
+        {
+            var (type, depth) = queue.Dequeue();
+            if (depth >= maxDepth) continue;
+
+            foreach (var dependency in EnumerateDependencies(type))
+            {
+                var top = GetTopLevelType(dependency);
+                if (!isAllowed(top)) continue;
+
+                if (result.Add(top.FullName))
+                    queue.Enqueue((top, depth + 1));
+            }
+        }
+
+        return result;
     }
 
-    private static void TraverseTypeDependencies(TypeDefinition type, HashSet<string> visitedTypes, int maxDepth, int currentDepth)
+    private static IEnumerable<TypeDefinition> EnumerateDependencies(TypeDefinition topLevel)
     {
-        if (currentDepth > maxDepth || type == null || !visitedTypes.Add(type.FullName))
-            return;
-        
-        string effectiveNs = GetEffectiveNamespace(type);
-        if (type.Module.Name.Contains("System.Private.CoreLib"))
+        foreach (var t in SelfAndNested(topLevel))
         {
-            if (effectiveNs != "System.Collections.Generic" && effectiveNs != "System.Collections.ObjectModel")
+            foreach (var method in t.Methods)
             {
-                return;
-            }
-        }
+                if (!method.HasBody) continue;
 
-        if (type.Module.Name.Contains("System.Private.CoreLib"))
-        {
-            if (type.Namespace != "System.Collections.Generic" && type.Namespace != "System.Collections.ObjectModel")
-            {
-                return;
-            }
-        }
-
-        visitedTypes.Add(type.Name);
-
-        foreach (var method in type.Methods)
-        {
-            if (!method.HasBody) continue;
-            foreach (var instruction in method.Body.Instructions)
-            {
-                if (instruction.Operand is MethodReference methodRef)
+                foreach (var instruction in method.Body.Instructions)
                 {
-                    var declaringTypeRef = methodRef.DeclaringType;
-                    if (declaringTypeRef == null) continue;
-
-                    TypeDefinition resolvedType = declaringTypeRef.Resolve();
-
-                    if (resolvedType != null && resolvedType.Module == type.Module)
+                    TypeReference? typeRef = instruction.Operand switch
                     {
-                        TraverseTypeDependencies(resolvedType, visitedTypes, maxDepth, currentDepth + 1);
-                    }
+                        MethodReference m => m.DeclaringType,
+                        FieldReference f  => f.DeclaringType,
+                        TypeReference tr  => tr,
+                        _ => null
+                    };
+
+                    if (typeRef?.GetElementType() is TypeDefinition def)
+                        yield return def;
                 }
             }
         }
     }
-    
-    public static string GetEffectiveNamespace(TypeDefinition type)
+
+    private static IEnumerable<TypeDefinition> SelfAndNested(TypeDefinition type)
+    {
+        yield return type;
+        foreach (var nested in type.NestedTypes)
+            foreach (var inner in SelfAndNested(nested))
+                yield return inner;
+    }
+
+    public static TypeDefinition GetTopLevelType(TypeDefinition type)
     {
         var current = type;
-        while (current.IsNested && current.DeclaringType != null)
-        {
+        while (current.DeclaringType != null)
             current = current.DeclaringType;
-        }
-        return current.Namespace ?? "";
+        return current;
     }
 }

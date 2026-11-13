@@ -65,4 +65,31 @@ public static class CollectionsTestRunner
         bool found = hashSet.Contains(n - 1);
         Console.WriteLine($"[TEST HASHSET] Znaleziono element: {found}");
     }
+    public static void ExecuteDictionaryLookupTest(int n, Action resetCounter)
+    {
+        var dict = new Dictionary<int, int>();
+        for (int i = 0; i < n; i++)
+        {
+            dict[i] = i;
+        }
+
+        resetCounter();
+
+        bool found = dict.TryGetValue(n - 1, out var value);
+        Console.WriteLine($"[TEST DICTIONARY LOOKUP] Znaleziono element: {found}");
+    }
+
+    public static void ExecuteDictionaryFillTest(int n, Action resetCounter)
+    {
+        var dict = new Dictionary<int, int>();
+
+        resetCounter();
+
+        for (int i = 0; i < n; i++)
+        {
+            dict[i] = i;
+        }
+
+        Console.WriteLine($"[TEST DICTIONARY FILL] Wypelniono slownik: {dict.Count}");
+    }
 }

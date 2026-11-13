@@ -2,81 +2,84 @@ using Mono.Cecil;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
-public static class InjectionFilter
+/// <summary>
+/// Decyduje, które typy/metody dostają licznik. Tworzony osobno dla każdego assembly
+/// (stara wersja trzymała wyniki w statycznym AllowedTypeFullNames, który był
+/// nadpisywany przy każdym assembly).
+/// </summary>
+public sealed class InjectionFilter
 {
-    public static HashSet<string> AllowedTypeFullNames { get; set; } = new();
-    public static bool ShouldInstrumentTypeByHand(TypeDefinition type, string assemblyName)
+    private enum Mode { CoreLib, Collections, Linq, Deny, Allow }
+
+    private static readonly string[] DefaultCoreLibRoots =
     {
-        if (type.Name.StartsWith("<"))
-        {
-            return false;
-        }
-        
+        "System.Collections.Generic.List`1",
+        "System.Collections.Generic.Dictionary`2",
+        "System.Collections.Generic.HashSet`1",
+        "System.Collections.Generic.Queue`1",
+        "System.Collections.Generic.LinkedList`1",
+    };
 
-        if (assemblyName.Contains("System.Private.CoreLib") || assemblyName.Contains("System.Collections"))
-        {
-            if (type.Namespace == "System.Collections.Generic")
-            {
-                return type.Name.StartsWith("List") ||
-                       type.Name.StartsWith("Dictionary") ||
-                       type.Name.StartsWith("HashSet") ||
-                       type.Name.StartsWith("LinkedList") ||
-                       type.Name.StartsWith("EqualityComparer");
-            }
-            return false;
-        }
+    private readonly Mode _mode;
+    private readonly HashSet<string> _allowedRoots;
 
-        if (assemblyName.Contains("System.Linq"))
-        {
-            return type.Name == "Enumerable" || type.Name.Contains("Enumerable");
-        }
-
-        return true;
+    private InjectionFilter(Mode mode, HashSet<string>? allowedRoots = null)
+    {
+        _mode = mode;
+        _allowedRoots = allowedRoots ?? new HashSet<string>();
     }
 
-    public static bool ShouldInstrumentType(TypeDefinition type, string assemblyName)
+    public static bool IsCollectionsNamespace(TypeDefinition topLevel) =>
+        topLevel.Namespace == "System.Collections.Generic" ||
+        topLevel.Namespace == "System.Collections.ObjectModel";
+
+    public static InjectionFilter Create(
+        string assemblyName,
+        ModuleDefinition module,
+        IEnumerable<string>? extraRoots = null,
+        int maxDepth = 2)
     {
-        if (type.Name.StartsWith("<") || type.IsInterface)
+        if (assemblyName == "System.Private.CoreLib")
+        {
+            var roots = DefaultCoreLibRoots.Concat(extraRoots ?? Array.Empty<string>()).ToList();
+            var allowed = TypeDependencyCollector.DiscoverDependentTypes(module, roots, maxDepth, IsCollectionsNamespace);
+            Console.WriteLine($"[DISCOVERY] CoreLib: {allowed.Count} typow najwyzszego poziomu do instrumentacji");
+            return new InjectionFilter(Mode.CoreLib, allowed);
+        }
+
+        if (assemblyName == "System.Collections") return new InjectionFilter(Mode.Collections);
+        if (assemblyName == "System.Linq")        return new InjectionFilter(Mode.Linq);
+
+        if (assemblyName.StartsWith("System.") || assemblyName.StartsWith("Microsoft.") ||
+            assemblyName is "mscorlib" or "netstandard" or "WindowsBase")
+            return new InjectionFilter(Mode.Deny);
+
+        return new InjectionFilter(Mode.Allow);
+    }
+
+    public bool ShouldInstrumentType(TypeDefinition type)
+    {
+        // Pomijamy tylko <Module> i sam licznik.
+        if (type.Name == "<Module>" || type.FullName == CounterNames.FullName || type.IsInterface)
             return false;
 
-        string effectiveNs = TypeDependencyCollector.GetEffectiveNamespace(type);
+        var top = TypeDependencyCollector.GetTopLevelType(type);
+        var ns = top.Namespace ?? "";
 
-        if (assemblyName.Contains("System.Private.CoreLib"))
+        return _mode switch
         {
-            if (effectiveNs != "System.Collections.Generic" && effectiveNs != "System.Collections.ObjectModel")
-            {
-                return false;
-            }
-
-            if (AllowedTypeFullNames.Count > 0)
-            {
-                return AllowedTypeFullNames.Contains(type.FullName);
-            }
-
-            return true;
-        }
-
-        if (assemblyName.Contains("System.Collections"))
-        {
-            if (AllowedTypeFullNames.Count > 0)
-            {
-                return AllowedTypeFullNames.Contains(type.FullName) || effectiveNs == "System.Collections.Generic";
-            }
-            return effectiveNs == "System.Collections.Generic";
-        }
-
-        if (assemblyName.Contains("System.Linq"))
-        {
-            return type.Name == "Enumerable" || type.Name.Contains("Enumerable");
-        }
-
-        return true;
+            Mode.CoreLib     => _allowedRoots.Contains(top.FullName),
+            Mode.Collections => ns.StartsWith("System.Collections"),
+            Mode.Linq        => ns.StartsWith("System.Linq"),
+            Mode.Allow       => true,
+            _                => false,
+        };
     }
-    
-    public static bool ShouldInstrumentMethod(MethodDefinition method)
+
+    public bool ShouldInstrumentMethod(MethodDefinition method)
     {
         if (!method.HasBody) return false;
-        if (method.IsConstructor && method.IsStatic) return false;
+        if (method.IsConstructor && method.IsStatic) return false;   // .cctor - zostawiamy w spokoju
         return true;
     }
 }

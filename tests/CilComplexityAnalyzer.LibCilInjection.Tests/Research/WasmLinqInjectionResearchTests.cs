@@ -69,7 +69,7 @@ public class WasmAndLinqInjectionResearchTests
         byte[] instrumentedBytes;
         try
         {
-            instrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(originalBytes, true);
+            instrumentedBytes = CilInstructionInjector.InjectCilToAssemblyBytes(originalBytes);
             Console.WriteLine($"[SUCCESS] Twój wstrzykiwacz pomyślnie przetworzył System.Linq na macOS! Rozmiar po transformacji: {instrumentedBytes.Length} B");
         }
         catch (Exception ex)

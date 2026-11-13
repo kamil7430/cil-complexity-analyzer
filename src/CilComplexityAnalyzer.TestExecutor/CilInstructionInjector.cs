@@ -5,189 +5,186 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
 namespace CilComplexityAnalyzer.TestExecutor;
-        
-// TODO: inject abort mechanism
-// Not Done, not hehe :(
-        
-// TODO: Counting code in external libraries
-// Seams to be working
+
+/// <summary>
+/// Nazwy licznika. Licznik NIE ma nazwy zaczynającej się od '<', żeby filtry nie
+/// myliły go z typami generowanymi przez kompilator (które MUSIMY liczyć: lambdy, iteratory).
+/// </summary>
+internal static class CounterNames
+{
+    public const string Namespace = "CilCounter";
+    public const string Type = "GlobalCounter";
+    public const string FullName = Namespace + "." + Type;
+    public const string Field = "Count";
+    public const string Get = "GetInstructionCount";
+    public const string Reset = "ResetInstructionCount";
+}
 
 internal static class CilInstructionInjector
 {
+    internal const string CoreLibName = "System.Private.CoreLib";
+
     internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
     {
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
 
         if (testSuite.StudentSolutionAssemblyBytes is null)
-        {
             throw new InvalidOperationException("StudentSolutionAssemblyBytes is null! Ensure Compilation succeeded before injecting CIL.");
-        }
 
-        testSuite.StudentSolutionAssemblyBytes = InjectCilToAssemblyBytes(testSuite.StudentSolutionAssemblyBytes, true);
+        testSuite.StudentSolutionAssemblyBytes = InjectCilToAssemblyBytes(testSuite.StudentSolutionAssemblyBytes);
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
-
         return testSuite;
     }
 
-
-    internal static byte[] InjectCilToAssemblyBytes(byte[] assemblyBytes, bool isMainAssembly)
+    /// <param name="assemblyBytes">Surowe bajty DLL (musi być IL-only, nie R2R).</param>
+    /// <param name="counterHostAssembly">
+    /// Prosta nazwa assembly, które FIZYCZNIE zawiera licznik.
+    /// Domyślnie System.Private.CoreLib - wtedy każdy inny assembly tylko się do niego odwołuje,
+    /// a CoreLib nigdy nie musi "wołać w górę" do assembly studenta (to właśnie powodowało cykl).
+    /// Wartość "StudentWasmApp" przywraca stare zachowanie (licznik w assembly studenta) -
+    /// wtedy NIE wolno instrumentować CoreLib.
+    /// </param>
+    /// <param name="extraRoots">Dodatkowe typy CoreLib do instrumentacji (np. "System.Array") - opcjonalne, ostrożnie.</param>
+    internal static byte[] InjectCilToAssemblyBytes(
+        byte[] assemblyBytes,
+        string counterHostAssembly = CoreLibName,
+        IEnumerable<string>? extraRoots = null,
+        bool verbose = false)
     {
         using var inputStream = new MemoryStream(assemblyBytes);
-        using var outputStream = new MemoryStream();
         var assemblyDef = AssemblyDefinition.ReadAssembly(inputStream);
-        var mainModule = assemblyDef.MainModule;
-
+        var module = assemblyDef.MainModule;
         var assemblyName = assemblyDef.Name.Name;
-        FieldReference globalCounterField;
-
-        if (isMainAssembly)
-        { 
-            globalCounterField = CreateGlobalCounterField(mainModule);
-        }
-        else
-        {
-            globalCounterField = ImportGlobalCounterField(mainModule, "StudentWasmApp");
-        }
-
-        if (assemblyName.Contains("System.Private.CoreLib") || assemblyName.Contains("System.Collections"))
-        {
-            var allowedTypes = new HashSet<string>();
-            
-            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "List", maxDepth: 3));
-            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "HashSet", maxDepth: 3));
-            allowedTypes.UnionWith(TypeDependencyCollector.DiscoverDependentTypes(mainModule, "Dictionary", maxDepth: 3));
-
-            InjectionFilter.AllowedTypeFullNames = allowedTypes;
-            Console.WriteLine($"\n==================================================");
-            Console.WriteLine($"[DISCOVERY] Odkryte zależności dla {assemblyName} ({allowedTypes.Count} typów):");
-            foreach (var t in allowedTypes.OrderBy(x => x))
-            {
-                Console.WriteLine($"  -> {t}");
-            }
-            Console.WriteLine($"==================================================\n");
-        }
-        else
-        {
-            InjectionFilter.AllowedTypeFullNames.Clear();
-        }
-
-        int instrumentedTypesCount = 0;
         
-        foreach (var type in GetAllTypesRecursively(mainModule))
+        if (assemblyName == counterHostAssembly && module.GetType(CounterNames.FullName) != null)
+            throw new InvalidOperationException(
+                $"'{assemblyName}' jest już zinstrumentowany (istnieje {CounterNames.FullName}). " +
+                "Instrumentuj zawsze ORYGINALNE pliki, nie nadpisane.");
+
+        FieldReference counterField = assemblyName == counterHostAssembly
+            ? DefineCounter(module)
+            : ImportCounter(module, counterHostAssembly);
+
+        var filter = InjectionFilter.Create(assemblyName, module, extraRoots);
+
+        int typeCount = 0, methodCount = 0;
+
+        foreach (var type in GetAllTypesRecursively(module).ToList())
         {
-            if (type.Name == "<GlobalCounterContainer>" || type.IsInterface) 
+            if (!filter.ShouldInstrumentType(type))
                 continue;
 
-            if (!InjectionFilter.ShouldInstrumentType(type, assemblyName))
-                continue;
+            typeCount++;
+            if (verbose) Console.WriteLine($"[INSTRUMENTED TYPE] {assemblyName} -> {type.FullName}");
 
-            Console.WriteLine($"[INSTUMENTED TYPE] {assemblyName} -> {type.FullName}");
-            instrumentedTypesCount++;
-
-            foreach (var method in type.Methods)
+            foreach (var method in type.Methods.ToList())
             {
-                if (!method.HasBody)
+                if (!filter.ShouldInstrumentMethod(method))
                     continue;
-                
-                if (!InjectionFilter.ShouldInstrumentMethod(method))
-                    continue;
-                
-                InjectCounter(method, globalCounterField);
+
+                InjectCounter(method, counterField);
+                methodCount++;
             }
         }
 
-        Console.WriteLine($"[SUMMARY] Pomyslnie zainstrumentowano {instrumentedTypesCount} typow w zestawie '{assemblyName}'\n");
+        Console.WriteLine($"[SUMMARY] '{assemblyName}': {typeCount} typow, {methodCount} metod zinstrumentowanych");
 
+        using var outputStream = new MemoryStream();
         assemblyDef.Write(outputStream);
         return outputStream.ToArray();
     }
-    
-    /// <summary>
-    /// Zamiast tworzyć nową klasę, tworzy referencję do <GlobalCounterContainer> w głównej bibliotece (StudentWasmApp)
-    /// </summary>
-    private static FieldReference ImportGlobalCounterField(ModuleDefinition module, string mainAssemblyName)
+
+    /// <summary>Referencja do licznika zdefiniowanego w innym assembly (hoście).</summary>
+    private static FieldReference ImportCounter(ModuleDefinition module, string hostAssembly)
     {
-        var assemblyRef = module.AssemblyReferences.FirstOrDefault(a => a.Name == mainAssemblyName);
-        if (assemblyRef == null)
+        var asmRef = module.AssemblyReferences.FirstOrDefault(a => a.Name == hostAssembly);
+        if (asmRef == null)
         {
-            assemblyRef = new AssemblyNameReference(mainAssemblyName, new Version(1, 0, 0, 0));
-            module.AssemblyReferences.Add(assemblyRef);
+            asmRef = CreateAssemblyRef(hostAssembly);
+            module.AssemblyReferences.Add(asmRef);
         }
 
-        var containerTypeRef = new TypeReference(
-            "", 
-            "<GlobalCounterContainer>", 
-            module, 
-            assemblyRef);
-
-        var counterFieldRef = new FieldReference(
-            "__InstructionCounter",
-            module.TypeSystem.Int64,
-            containerTypeRef);
-
-        return counterFieldRef;
+        var containerRef = new TypeReference(CounterNames.Namespace, CounterNames.Type, module, asmRef);
+        return new FieldReference(CounterNames.Field, module.TypeSystem.Int64, containerRef);
     }
-    
+
+    private static AssemblyNameReference CreateAssemblyRef(string host)
+    {
+        if (host == CoreLibName)
+        {
+            var n = typeof(object).Assembly.GetName();
+            return new AssemblyNameReference(CoreLibName, n.Version) { PublicKeyToken = n.GetPublicKeyToken() };
+        }
+
+        return new AssemblyNameReference(host, new Version(1, 0, 0, 0));
+    }
+
     /// <summary>
-    /// Tworzy dedykowaną publiczną klasę statyczną `<GlobalCounterContainer>` zawierającą jedyne pole `__InstructionCounter`.
-    /// Użycie `Public` umożliwia swobodne zerowanie i odczyt z poziomu ContainerWorker przez refleksję.
+    /// Definiuje statyczną klasę CilCounter.GlobalCounter z polem Count (long) oraz
+    /// metodami Get/Reset. Klasa NIE ma konstruktora statycznego -> ldsfld/stsfld nigdy
+    /// nie wywołuje żadnego kodu inicjalizującego (ważne w CoreLib!).
     /// </summary>
-    private static FieldDefinition CreateGlobalCounterField(ModuleDefinition module)
+    private static FieldDefinition DefineCounter(ModuleDefinition module)
     {
-        // Stworzenie nowej klasy
-        var containerType = new TypeDefinition(
-            "",
-            "<GlobalCounterContainer>",
+        var objectType = (TypeReference?)module.GetType("System.Object") ?? module.TypeSystem.Object;
+        var int64Type  = (TypeReference?)module.GetType("System.Int64")  ?? module.TypeSystem.Int64;
+        var voidType   = (TypeReference?)module.GetType("System.Void")   ?? module.TypeSystem.Void;
+
+        var container = new TypeDefinition(
+            CounterNames.Namespace,
+            CounterNames.Type,
             TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.BeforeFieldInit,
-            module.TypeSystem.Object);
+            objectType);
 
-        // Stworzenie statycznego pola
-        var counterField = new FieldDefinition(
-            "__InstructionCounter",
-            FieldAttributes.Public | FieldAttributes.Static,
-            module.TypeSystem.Int64);
+        var field = new FieldDefinition(CounterNames.Field, FieldAttributes.Public | FieldAttributes.Static, int64Type);
+        container.Fields.Add(field);
 
-        // Rejestracja w strukturze modułu
-        containerType.Fields.Add(counterField);
-        module.Types.Add(containerType);
-        
-        CreateCounterAccessors(module, containerType, counterField);
+        var get = new MethodDefinition(CounterNames.Get,
+            MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.HideBySig, int64Type);
+        var gIl = get.Body.GetILProcessor();
+        gIl.Append(gIl.Create(OpCodes.Ldsfld, field));
+        gIl.Append(gIl.Create(OpCodes.Ret));
 
-        return counterField;
+        var reset = new MethodDefinition(CounterNames.Reset,
+            MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.HideBySig, voidType);
+        var rIl = reset.Body.GetILProcessor();
+        rIl.Append(rIl.Create(OpCodes.Ldc_I8, 0L));
+        rIl.Append(rIl.Create(OpCodes.Stsfld, field));
+        rIl.Append(rIl.Create(OpCodes.Ret));
+
+        container.Methods.Add(get);
+        container.Methods.Add(reset);
+        module.Types.Add(container);
+
+        return field;
     }
 
-    private static void InjectCounter(
-        MethodDefinition method, 
-        FieldReference counterField)
+    private static void InjectCounter(MethodDefinition method, FieldReference counterField)
     {
-        // Pobranie obiektu, który udostępnia metody do wstawiania, usuwania i podmieniania instrukcji CIL w ciele danej metody 
         var body = method.Body;
-        body.SimplifyMacros(); // zmiana krótkich skosów na pełne 32-bitowe skoki czyli br.s, brtrue.s leave.s będą miały odpowiednie skoki 
-        var il = body.GetILProcessor();
-        var instructions = method.Body.Instructions.ToList();
+        if (body.Instructions.Count == 0) return;
 
-        if (instructions.Count == 0) return;
+        body.SimplifyMacros();
+        var il = body.GetILProcessor();
+        var original = body.Instructions.ToList();
 
         var entryMap = new Dictionary<Instruction, Instruction>();
-        Instruction? pendingEntryPoint = null;
+        Instruction? pendingPrefixBump = null;
 
-        foreach (var instr in instructions)
+        foreach (var instr in original)
         {
             if (IsPrefixInstruction(instr))
             {
-                if (pendingEntryPoint == null)
-                {
-                    pendingEntryPoint = InsertCounterBump(il, counterField, instr);
-                }
-                entryMap[instr] = instr;
+                pendingPrefixBump ??= InsertCounterBump(il, counterField, instr);
+                entryMap[instr] = pendingPrefixBump;
                 continue;
             }
 
-            if (pendingEntryPoint != null)
+            if (pendingPrefixBump != null)
             {
-                entryMap[instr] = pendingEntryPoint;
-                pendingEntryPoint = null;
+                entryMap[instr] = pendingPrefixBump;
+                pendingPrefixBump = null;
                 continue;
             }
 
@@ -195,22 +192,17 @@ internal static class CilInstructionInjector
         }
 
         RedirectAllBranches(body, entryMap);
+        body.MaxStackSize += 2;
         body.OptimizeMacros();
     }
 
-    private static Instruction InsertCounterBump(
-        ILProcessor il, FieldReference counterField, Instruction before)
+    private static Instruction InsertCounterBump(ILProcessor il, FieldReference counterField, Instruction before)
     {
         var loadCounter = il.Create(OpCodes.Ldsfld, counterField);
-        var loadOne = il.Create(OpCodes.Ldc_I8, 1L);
-        var add = il.Create(OpCodes.Add);
-        var storeCounter = il.Create(OpCodes.Stsfld, counterField);
-
         il.InsertBefore(before, loadCounter);
-        il.InsertBefore(before, loadOne);
-        il.InsertBefore(before, add);
-        il.InsertBefore(before, storeCounter);
-
+        il.InsertBefore(before, il.Create(OpCodes.Ldc_I8, 1L));
+        il.InsertBefore(before, il.Create(OpCodes.Add));
+        il.InsertBefore(before, il.Create(OpCodes.Stsfld, counterField));
         return loadCounter;
     }
 
@@ -218,143 +210,42 @@ internal static class CilInstructionInjector
     {
         foreach (var i in body.Instructions)
         {
-            // Pojedyncze skoki
             if (i.Operand is Instruction target && entryMap.TryGetValue(target, out var newTarget))
             {
                 i.Operand = newTarget;
             }
-            // Skoki wielodrożne (switch)
             else if (i.Operand is Instruction[] targets)
             {
                 for (int j = 0; j < targets.Length; j++)
-                {
-                    if (entryMap.TryGetValue(targets[j], out var newMultiTarget))
-                    {
-                        targets[j] = newMultiTarget;
-                    }
-                }
+                    if (entryMap.TryGetValue(targets[j], out var t))
+                        targets[j] = t;
             }
         }
 
-        // Aktualizacja bloków try/catch/finally
-        if (body.HasExceptionHandlers)
+        if (!body.HasExceptionHandlers) return;
+
+        foreach (var h in body.ExceptionHandlers)
         {
-            foreach (var handler in body.ExceptionHandlers)
-            {
-                if (handler.TryStart != null && entryMap.TryGetValue(handler.TryStart, out var newTryStart)) 
-                    handler.TryStart = newTryStart;
-                
-                if (handler.TryEnd != null && entryMap.TryGetValue(handler.TryEnd, out var newTryEnd)) 
-                    handler.TryEnd = newTryEnd;
-                
-                if (handler.HandlerStart != null && entryMap.TryGetValue(handler.HandlerStart, out var newHandlerStart)) 
-                    handler.HandlerStart = newHandlerStart;
-                
-                if (handler.HandlerEnd != null && entryMap.TryGetValue(handler.HandlerEnd, out var newHandlerEnd)) 
-                    handler.HandlerEnd = newHandlerEnd;
-                
-                if (handler.FilterStart != null && entryMap.TryGetValue(handler.FilterStart, out var newFilterStart)) 
-                    handler.FilterStart = newFilterStart;
-            }
+            if (h.TryStart     != null && entryMap.TryGetValue(h.TryStart,     out var a)) h.TryStart     = a;
+            if (h.TryEnd       != null && entryMap.TryGetValue(h.TryEnd,       out var b)) h.TryEnd       = b;
+            if (h.HandlerStart != null && entryMap.TryGetValue(h.HandlerStart, out var c)) h.HandlerStart = c;
+            if (h.HandlerEnd   != null && entryMap.TryGetValue(h.HandlerEnd,   out var d)) h.HandlerEnd   = d;
+            if (h.FilterStart  != null && entryMap.TryGetValue(h.FilterStart,  out var e)) h.FilterStart  = e;
         }
     }
 
-    /// <summary>
-    /// Przekierowuje wszystkie instrukcje skoków oraz bloki obsługi błędów ze starej instrukcji na nową.
-    /// </summary>
-    private static void RedirectBranches(MethodDefinition method, Instruction oldTarget, Instruction newTarget)
-    {
-        foreach (var i in method.Body.Instructions)
-        {
-            // Sprawdzenie czy instrukcja jest pojedynczym skokiem warunkowym lub bezwarunkowym do oldTargeta
-            if (i.Operand is Instruction target && target == oldTarget)
-            {
-                // Podmiana destynacji skoku
-                i.Operand = newTarget;
-            }
-            // Sprawdzenie czy intrukcja jest Skokiem wielodrożnym
-            else if (i.Operand is Instruction[] targets)
-            {
-                // Iteracja po wszystkich instrukcjach docelowych
-                for (int j = 0; j < targets.Length; j++)
-                {
-                    // Sprawdzenie czy któryś z targetów nie jest naszym szukanym i ewentualna jego zmiana
-                    if (targets[j] == oldTarget)
-                        targets[j] = newTarget;
-                }
-            }
-        }
-
-        // Aktualizacja granic bloków obsługi wyjątków (Exception Handlers)
-        if (method.Body.HasExceptionHandlers)
-        {
-            foreach (var handler in method.Body.ExceptionHandlers)
-            {
-                if (handler.TryStart == oldTarget) handler.TryStart = newTarget;
-                if (handler.TryEnd == oldTarget) handler.TryEnd = newTarget;
-                if (handler.HandlerStart == oldTarget) handler.HandlerStart = newTarget;
-                if (handler.HandlerEnd == oldTarget) handler.HandlerEnd = newTarget;
-                if (handler.FilterStart == oldTarget) handler.FilterStart = newTarget;
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Sprawdza, czy instrukcja jest prefiksem CIL modyfikującym zachowanie następnej instrukcji.
-    /// </summary>
     private static bool IsPrefixInstruction(Instruction instruction)
     {
         var code = instruction.OpCode.Code;
-        return code == Code.Constrained
-               || code == Code.Readonly
-               || code == Code.Unaligned
-               || code == Code.Volatile
-               || code == Code.Tail;
+        return code == Code.Constrained || code == Code.Readonly || code == Code.Unaligned
+            || code == Code.Volatile || code == Code.Tail;
     }
 
-    /// <summary>
-    ///  Dodaje do kontenera metody statyczne umożliwiające odczyt i zerowanie licznika
-    /// </summary>
-    private static void CreateCounterAccessors(
-        ModuleDefinition module,
-        TypeDefinition containerType,
-        FieldDefinition counterField)
-    {
-        var getMethod = new MethodDefinition(
-            "GetInstructionCount",
-            MethodAttributes.Public | MethodAttributes.Static,
-            module.TypeSystem.Int64);
-
-        var getIl = getMethod.Body.GetILProcessor();
-        getIl.Append(getIl.Create(OpCodes.Ldsfld, counterField));
-        getIl.Append(getIl.Create(OpCodes.Ret));
-        
-    var resetMethod = new MethodDefinition(
-        "ResetInstructionCount",
-        MethodAttributes.Public | MethodAttributes.Static,
-        module.TypeSystem.Void);
-
-        var resetIl = resetMethod.Body.GetILProcessor();
-        resetIl.Append(resetIl.Create(OpCodes.Ldc_I8, 0L));
-        resetIl.Append(resetIl.Create(OpCodes.Stsfld, counterField));
-        resetIl.Append(resetIl.Create(OpCodes.Ret));
-
-        containerType.Methods.Add(getMethod);
-        containerType.Methods.Add(resetMethod);
-
-    }
-    
-    /// <summary>
-    /// Zwraca wszystkie typy w module, włącznie z dowolnie zagnieżdżonymi typami
-    /// (maszyny stanów dla yield/async, domknięcia lambd, klasy anonimowe LINQ),
-    /// bo ModuleDefinition.Types zwraca tylko typy najwyższego poziomu.
-    /// </summary>
     private static IEnumerable<TypeDefinition> GetAllTypesRecursively(ModuleDefinition module)
     {
         foreach (var type in module.Types)
         {
             yield return type;
-
             foreach (var nested in GetNestedTypesRecursively(type))
                 yield return nested;
         }
@@ -365,9 +256,8 @@ internal static class CilInstructionInjector
         foreach (var nested in type.NestedTypes)
         {
             yield return nested;
-
-            foreach (var deeperNested in GetNestedTypesRecursively(nested))
-                yield return deeperNested;
+            foreach (var deeper in GetNestedTypesRecursively(nested))
+                yield return deeper;
         }
     }
 }
