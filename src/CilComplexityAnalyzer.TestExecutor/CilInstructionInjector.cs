@@ -50,7 +50,8 @@ internal static class CilInstructionInjector
         byte[] assemblyBytes,
         string counterHostAssembly = CoreLibName,
         IEnumerable<string>? extraRoots = null,
-        bool verbose = false)
+        bool verbose = false,
+        bool wholeAssembly = false)
     {
         using var inputStream = new MemoryStream(assemblyBytes);
         var assemblyDef = AssemblyDefinition.ReadAssembly(inputStream);
@@ -66,7 +67,7 @@ internal static class CilInstructionInjector
             ? DefineCounter(module)
             : ImportCounter(module, counterHostAssembly);
 
-        var filter = InjectionFilter.Create(assemblyName, module, extraRoots);
+        var filter = InjectionFilter.Create(assemblyName, module, extraRoots, wholeAssembly: wholeAssembly);
 
         int typeCount = 0, methodCount = 0;
 

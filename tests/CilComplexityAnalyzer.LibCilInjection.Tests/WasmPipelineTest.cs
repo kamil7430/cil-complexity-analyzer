@@ -15,13 +15,15 @@ public class WasmPipelineTest
 
     private static readonly string[] ExtraRoots = { "System.Array", "System.SpanHelpers" };
 
+    private static readonly HashSet<string> WholeAssemblyLibs = new() { "System.Collections.dll", "System.Private.CoreLib.dll" };
+
     [TestMethod]
     public void InstrumentAndRunWasmApp()
         => RunWasmTest(null, expectedResults: 4, CoreLib, "System.Linq.dll");
 
     [TestMethod]
     public void InstrumentAndRunWasmApp_Collections()
-        => RunWasmTest("collections", expectedResults: 3, CoreLib, "System.Collections.dll");
+        => RunWasmTest("collections", expectedResults: 4, CoreLib, "System.Collections.dll");
 
     [TestMethod]
     public void ComplexityScaling_Collections()
@@ -86,7 +88,8 @@ public class WasmPipelineTest
             {
                 string path = Path.Combine(managedDir, lib);
                 Assert.IsTrue(File.Exists(path), $"Brak {lib} w {managedDir}");
-                File.WriteAllBytes(path, InstrumentCached(File.ReadAllBytes(path)));
+                //File.WriteAllBytes(path, InstrumentCached(File.ReadAllBytes(path)), WholeAssemblyLibs.Contains(lib));
+                File.WriteAllBytes(path, InstrumentCached(File.ReadAllBytes(path), WholeAssemblyLibs.Contains(lib)));
             }
 
             Console.WriteLine($"[SUCCESS] Zinstrumentowana kopia bundla: {workDir}");
@@ -148,13 +151,13 @@ public class WasmPipelineTest
         }
     }
 
-    private static byte[] InstrumentCached(byte[] originalBytes)
+    private static byte[] InstrumentCached(byte[] originalBytes, bool wholeAssembly)
     {
         string cacheDir = Path.Combine(Path.GetTempPath(), "cil-instrumented-cache");
         Directory.CreateDirectory(cacheDir);
 
         string injectorId = typeof(CilInstructionInjector).Assembly.ManifestModule.ModuleVersionId.ToString("N");
-        string parameters = string.Join(",", ExtraRoots);
+        string parameters = string.Join(",", ExtraRoots) + "|whole=" + wholeAssembly;
 
         var hash = SHA256.HashData(
             originalBytes
@@ -169,7 +172,8 @@ public class WasmPipelineTest
             return File.ReadAllBytes(cached);
         }
 
-        var instrumented = CilInstructionInjector.InjectCilToAssemblyBytes(originalBytes, extraRoots: ExtraRoots);
+        var instrumented = CilInstructionInjector.InjectCilToAssemblyBytes(
+            originalBytes, extraRoots: ExtraRoots, wholeAssembly: wholeAssembly);
         File.WriteAllBytes(cached, instrumented);
         return instrumented;
     }
@@ -185,6 +189,6 @@ public class WasmPipelineTest
 
     private static void TryDelete(string dir)
     {
-        try { Directory.Delete(dir, recursive: true); } catch { /* nieistotne */ }
+        try { Directory.Delete(dir, recursive: true); } catch {}
     }
 }

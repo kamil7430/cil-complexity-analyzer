@@ -37,8 +37,12 @@ public sealed class InjectionFilter
         string assemblyName,
         ModuleDefinition module,
         IEnumerable<string>? extraRoots = null,
-        int maxDepth = 2)
+        int maxDepth = 2,
+        bool wholeAssembly = false
+        )
     {
+        if (wholeAssembly)
+            return new InjectionFilter(Mode.Allow);
         if (assemblyName == "System.Private.CoreLib")
         {
             var roots = DefaultCoreLibRoots.Concat(extraRoots ?? Array.Empty<string>()).ToList();
