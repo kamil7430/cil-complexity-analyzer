@@ -1,6 +1,6 @@
 using System;
 using CilComplexityAnalyzer.Contract;
-using CilComplexityAnalyzer.Contract.Attributes;
+using CilComplexityAnalyzer.Contract.SuiteAttributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
 namespace CilComplexityAnalyzer.Facade.Tests;
