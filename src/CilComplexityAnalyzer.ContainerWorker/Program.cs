@@ -101,7 +101,9 @@ public class Program
         arrangeMethod!.Invoke(testCase, null);
         Debug("Invoked Arrange");
         
+        // zresetuj licznik
         actMethod!.Invoke(testCase, null);
+        // zapisz licznik do zmiennej
         Debug("Invoked Act");
         
         var complexity = -1L;
