@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.Contract;
@@ -18,7 +17,7 @@ internal static class Executor
     private static readonly Lazy<IImage> DockerImage = new(() => new DockerImage(DockerImageTag));
 
     internal static IEnumerable<Contract.TestResult> Execute(this TestSuite testSuite)
-        => testSuite.Settings()?.Containerized switch
+        => testSuite.Settings().Containerized switch
         {
             false => ExecuteLocally(testSuite),
             _ => ExecuteInContainer(testSuite),

@@ -1,3 +1,4 @@
+/*
 using System;
 using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.SuiteAttributes;
@@ -375,3 +376,4 @@ public static class MatrixHelper
         return matrix;
     }
 }
+*/

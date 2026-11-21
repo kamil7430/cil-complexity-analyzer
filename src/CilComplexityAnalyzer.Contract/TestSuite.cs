@@ -10,7 +10,7 @@ public abstract class TestSuite
         => "";
     public virtual string TestSuiteSourceCode()
         => "";
-    public virtual TestSuiteSettings? Settings() 
+    public virtual TestSuiteSettings Settings() 
         => null;
     public virtual ILogger? Logger() 
         => null;

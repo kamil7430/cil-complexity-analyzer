@@ -1,26 +1,22 @@
 using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.CaseAttributes;
 using CilComplexityAnalyzer.Contract.SuiteAttributes;
 using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
 namespace CilComplexityAnalyzer.Facade.Tests;
 
 [TestSuite]
+[Containerized(true)]
 [StudentSolution(typeof(Student1Solution))]
 public partial class Lab01Evaluation : TestSuite
 {
-    public override TestSuiteSettings? Settings()
-        => new TestSuiteSettings
-        {
-            Containerized = true,
-        };
-    
+    [TestCase]
+    [InstructionCap(1_000_000)]
+    [TimeoutMs(30_000)]
+    [MemoryMb(512)]
     public class Case1 : TestCase
     {
         private int _liczba = 3;
-        
-        public override int TestNumber() => 0;
-
-        public override TestCaseSettings Settings() => new  TestCaseSettings();
 
         public override void Arrange()
         {
@@ -34,26 +30,28 @@ public partial class Lab01Evaluation : TestSuite
 
         public override void Assert()
         {
-            IsTrue(_liczba > 0);
-            IsTrue(_liczba == 25);
-            base.Assert();
+            IsTrue(_liczba > 0, "liczba większa od zera");
+            IsTrue(_liczba == 25, "liczba równa 25");
         }
     }
     
+    [TestCase]
+    [InstructionCap(1_000_000)]
+    [TimeoutMs(30_000)]
+    [MemoryMb(512)]
     public class Case2 : TestCase
     {
         public override int TestNumber() => 1;
 
-        public override TestCaseSettings Settings()  => new  TestCaseSettings();
         public override void Arrange() { }
-        public override void Act() {  }
+        
+        public override void Act() { }
 
         public override void Assert()
         {
-            IsTrue(0 < 1);
-            IsTrue(1 < 1);
-            IsTrue(2 < 1);
-            base.Assert();
+            IsTrue(0 < 1, "0 < 1");
+            IsTrue(1 < 1, "1 < 1");
+            IsTrue(2 < 1, "2 < 1");
         }
     }
 }
