@@ -4,7 +4,7 @@ using CilComplexityAnalyzer.Facade.Tests.Submissions;
 
 namespace CilComplexityAnalyzer.Facade.Tests;
 
-//[TestSuite]
+[TestSuite]
 [StudentSolution(typeof(Student1Solution))]
 public partial class Lab01Evaluation : TestSuite
 {

@@ -1,4 +1,4 @@
-namespace CilComplexityAnalyzer.Facade.Attributes;
+namespace CilComplexityAnalyzer.Contract.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class NameAttribute(string value = "") : Attribute
