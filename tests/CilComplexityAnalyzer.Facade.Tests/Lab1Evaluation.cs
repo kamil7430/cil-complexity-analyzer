@@ -14,7 +14,7 @@ public partial class Lab01Evaluation : TestSuite
     [InstructionCap(1_000_000)]
     [TimeoutMs(30_000)]
     [MemoryMb(512)]
-    public class Case1 : TestCase
+    public partial class Case1 : TestCase
     {
         private int _liczba = 3;
 
@@ -39,10 +39,8 @@ public partial class Lab01Evaluation : TestSuite
     [InstructionCap(1_000_000)]
     [TimeoutMs(30_000)]
     [MemoryMb(512)]
-    public class Case2 : TestCase
+    public partial class Case2 : TestCase
     {
-        public override int TestNumber() => 1;
-
         public override void Arrange() { }
         
         public override void Act() { }

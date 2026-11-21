@@ -4,11 +4,9 @@ namespace CilComplexityAnalyzer.Contract;
 
 public abstract class TestCase
 {
-    public virtual int TestNumber()
-        => throw new NotImplementedException();
+    public abstract int TestNumber();
 
-    public virtual TestCaseSettings Settings()
-        => throw new NotImplementedException();
+    public abstract TestCaseSettings Settings();
     
     public abstract void Arrange();
     
