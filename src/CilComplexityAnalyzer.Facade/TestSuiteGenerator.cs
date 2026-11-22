@@ -188,10 +188,9 @@ public class TestSuiteGenerator : IIncrementalGenerator
                 sb.AppendLine("    {");
                 sb.AppendLine("          _executor.BeginExecution();");
                 sb.AppendLine($"         var result = await _executor.GetResult({i});");
-                sb.AppendLine($"         if (result.IsT1)");
+                sb.AppendLine($"         if (!result.Success)");
                 sb.AppendLine("         {");
-                sb.AppendLine("             var failure = result.AsT1;");
-                sb.AppendLine("             Assert.Fail(failure.Message ?? \"Test failed\");");
+                sb.AppendLine("             Assert.Fail(result.Message ?? \"Test failed without message.\");");
                 sb.AppendLine("         }");
                 sb.AppendLine("    }");
 

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using CilComplexityAnalyzer.Contract;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
-using CilComplexityAnalyzer.TestExecutor;
+﻿using CilComplexityAnalyzer.TestExecutor;
+
 namespace CilComplexityAnalyzer.LibCilInjection;
 
 public class CilInjectorLibrary

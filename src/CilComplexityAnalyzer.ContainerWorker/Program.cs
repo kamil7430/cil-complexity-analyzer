@@ -2,7 +2,7 @@
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
-using CilComplexityAnalyzer.ContainerWorkerUtils;
+using CilComplexityAnalyzer.Contract;
 using CilComplexityAnalyzer.Contract.CaseAttributes;
 using CilComplexityAnalyzer.Contract.SuiteAttributes;
 

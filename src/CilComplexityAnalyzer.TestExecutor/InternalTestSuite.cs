@@ -1,0 +1,32 @@
+using System.Reflection;
+using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.CaseAttributes;
+using Microsoft.CodeAnalysis;
+
+namespace CilComplexityAnalyzer.TestExecutor;
+
+internal class InternalTestSuite(TestSuite testSuite)
+{
+    internal TestSuite TestSuite { get; } = testSuite;
+    
+    internal string Name 
+        => TestSuite.GetType().ToString();
+    
+    internal Lazy<Type[]> TestCaseTypes
+        => new(() => TestSuite.GetType()
+            .GetNestedTypes()
+            .Where(t => t.GetCustomAttribute<TestCaseAttribute>() is not null)
+            .ToArray()
+        );
+    
+    internal Lazy<TestCase[]> TestCases
+        => new(() => TestCaseTypes.Value.Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray());
+    
+    internal SyntaxTree? StudentSolutionSyntaxTree { get; set; }
+    
+    internal byte[]? StudentSolutionAssemblyBytes { get; set; }
+    
+    internal SyntaxTree? TestSuiteSyntaxTree { get; set; }
+    
+    internal byte[]? TestSuiteAssemblyBytes { get; set; }
+}

@@ -1,4 +1,4 @@
-namespace CilComplexityAnalyzer.ContainerWorkerUtils;
+namespace CilComplexityAnalyzer.Contract;
 
 public class AssertFailedException : Exception
 {

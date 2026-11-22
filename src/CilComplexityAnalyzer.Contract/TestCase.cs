@@ -1,5 +1,3 @@
-using CilComplexityAnalyzer.ContainerWorkerUtils;
-
 namespace CilComplexityAnalyzer.Contract;
 
 public abstract class TestCase
