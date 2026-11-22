@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace CilComplexityAnalyzer.Contract;
+﻿namespace CilComplexityAnalyzer.Contract;
 
 public abstract class TestSuite
 {
@@ -10,8 +8,6 @@ public abstract class TestSuite
     public virtual string TestSuiteSourceCode()
         => throw new NotImplementedException();
     public abstract TestSuiteSettings Settings();
-    public virtual ILogger? Logger() 
-        => null;
     public virtual CancellationToken CancellationToken() 
         => System.Threading.CancellationToken.None;
 }

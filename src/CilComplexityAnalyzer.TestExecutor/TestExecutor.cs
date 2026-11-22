@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using CilComplexityAnalyzer.Contract;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -40,8 +39,7 @@ public class TestExecutor
         // Skip our whole CIL-injecting-magic when the debugger is attached
         if (Debugger.IsAttached)
         {
-            _internalTestSuite.TestSuite.Logger()
-                ?.LogInformation($"[{_internalTestSuite.Name}] Debugger is attached. The tests will fail.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Debugger is attached. The tests will fail.");
             FillResultsWithFailures("Debugger is attached.");
 
             foreach (var testCase in _internalTestSuite.TestCases.Value)
@@ -54,8 +52,7 @@ public class TestExecutor
         
         Task.Run(() =>
         {
-            _internalTestSuite.TestSuite.Logger()
-                ?.LogInformation($"[{_internalTestSuite.Name}] Beginning test execution.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Beginning test execution.");
             try
             {
                 _internalTestSuite.AnalyzeStudentSolution()
@@ -70,20 +67,18 @@ public class TestExecutor
             }
             catch (TestExecutionException e)
             {
-                _internalTestSuite.TestSuite.Logger()
-                    ?.LogInformation($"[{_internalTestSuite.Name}] Test execution failed: {e.Message}");
+                Console.WriteLine($"[{_internalTestSuite.Name}] Test execution failed: {e.Message}");
                 FillResultsWithFailures($"Test execution failed: {e.Message}");
             }
             catch (Exception e)
             {
-                _internalTestSuite.TestSuite.Logger()?.LogInformation(
+                Console.WriteLine(
                     $"[{_internalTestSuite.Name}] TestExecutor internal error or uncaught exception: {e.Message}"
                 );
                 FillResultsWithFailures($"TestExecutor internal error or uncaught exception: {e.Message}");
             }
 
-            _internalTestSuite.TestSuite.Logger()
-                ?.LogInformation($"[{_internalTestSuite.Name}] Ending test execution.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Ending test execution.");
         });
     }
 

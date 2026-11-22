@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -7,8 +6,7 @@ internal static class StaticAnalyzer
 {
     internal static InternalTestSuite AnalyzeStudentSolution(this InternalTestSuite internalTestSuite)
     {
-        internalTestSuite.TestSuite.Logger()
-            ?.LogInformation($"[{internalTestSuite.Name}] Beginning student solution static analysis.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning student solution static analysis.");
 
         var studentSolutionSyntaxTree = CSharpSyntaxTree.ParseText(
             text: internalTestSuite.TestSuite.StudentSolutionSourceCode(),
@@ -23,8 +21,7 @@ internal static class StaticAnalyzer
     
     internal static InternalTestSuite AnalyzeTestSuite(this InternalTestSuite internalTestSuite)
     {
-        internalTestSuite.TestSuite.Logger()
-            ?.LogInformation($"[{internalTestSuite.Name}] Beginning test suite static analysis.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning test suite static analysis.");
 
         var testSuiteSyntaxTree = CSharpSyntaxTree.ParseText(
             text: internalTestSuite.TestSuite.TestSuiteSourceCode(),

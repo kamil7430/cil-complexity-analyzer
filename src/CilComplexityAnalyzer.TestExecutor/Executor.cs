@@ -5,7 +5,6 @@ using CilComplexityAnalyzer.ContainerWorker;
 using CilComplexityAnalyzer.Contract;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Images;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -15,7 +14,7 @@ internal static class Executor
     private const string DockerImageTag = "container-worker:latest";
     private static readonly Lazy<IImage> DockerImage = new(() => new DockerImage(DockerImageTag));
     
-    private static readonly TimeSpan AdditionalTimeout = TimeSpan.FromSeconds(20);
+    private const long AdditionalTimeoutMs = 20_000;
     private static readonly TimeSpan JsonFetchInterval = TimeSpan.FromSeconds(1);
 
     internal static IEnumerable<TestResult> Execute(this InternalTestSuite internalTestSuite)
@@ -27,9 +26,9 @@ internal static class Executor
 
     private static IEnumerable<TestResult> ExecuteInContainer(InternalTestSuite internalTestSuite)
     {
-        internalTestSuite.TestSuite.Logger()?.LogInformation($"[{internalTestSuite.Name}] Beginning code execution.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning code execution.");
 
-        internalTestSuite.TestSuite.Logger()?.LogInformation($"[{internalTestSuite.Name}] Building test container.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Building test container.");
         var container = new ContainerBuilder(DockerImage.Value)
             .WithCleanUp(true)
             .WithResourceMapping(
@@ -37,19 +36,19 @@ internal static class Executor
                 target: FilePath.Of(Paths.TestSuiteDllPath)
             ).Build();
 
-        internalTestSuite.TestSuite.Logger()?.LogInformation($"[{internalTestSuite.Name}] Starting test container.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Starting test container.");
         container.StartAsync(internalTestSuite.TestSuite.CancellationToken()).Wait();
 
-        var globalTimeoutMs = internalTestSuite.TestCases.Value.Sum(t => t.Settings().TimeoutMs);
-        var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs) + AdditionalTimeout;
-        internalTestSuite.TestSuite.Logger()?.LogInformation($"[{internalTestSuite.Name}] Global container timeout " +
+        var globalTimeoutMs = internalTestSuite.TestCases.Value.Sum(t => t.Settings().TimeoutMs) + AdditionalTimeoutMs;
+        var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs);
+        Console.WriteLine($"[{internalTestSuite.Name}] Global container timeout " +
             $"set to {globalTimeoutMs} ms ({globalTimeout.ToLongTimeString()}).");
 
         for (int i = 0; i < internalTestSuite.TestCases.Value.Length; i++)
         {
             var timeoutMs = internalTestSuite.TestCases.Value[i].Settings().TimeoutMs;
-            internalTestSuite.TestSuite.Logger()?.LogInformation(
-                $"[{internalTestSuite.Name}] Waiting for test {i + 1} to finish (timeout is {timeoutMs} ms)."
+            Console.WriteLine(
+                $"[{internalTestSuite.Name}] Waiting for test {i} to finish (timeout is {timeoutMs} ms)."
             );
 
             byte[]? resultBytes = null;
@@ -57,8 +56,7 @@ internal static class Executor
             {
                 if (globalTimeout <= DateTime.UtcNow)
                 {
-                    internalTestSuite.TestSuite.Logger()
-                        ?.LogInformation($"[{internalTestSuite.Name}] Test container timed out!");
+                    Console.WriteLine($"[{internalTestSuite.Name}] Test container timed out!");
                     for (int j = i; j < internalTestSuite.TestCases.Value.Length; j++)
                     {
                         yield return new TestResult(false, null, "Test container timed out!");
@@ -68,6 +66,7 @@ internal static class Executor
 
                 try
                 {
+                    Console.WriteLine($"[{internalTestSuite.Name}] Trying to fetch test {i} results.");
                     resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i),
                         internalTestSuite.TestSuite.CancellationToken()).Result;
 
@@ -82,6 +81,8 @@ internal static class Executor
                     {
                         throw e.InnerException ?? e;
                     }
+                        
+                    Thread.Sleep(JsonFetchInterval);
                 }
             }
 

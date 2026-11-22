@@ -2,7 +2,6 @@
 using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -15,8 +14,7 @@ internal static class Compiler
     
     internal static InternalTestSuite CompileStudentSolution(this InternalTestSuite internalTestSuite)
     {
-        internalTestSuite.TestSuite.Logger()
-            ?.LogInformation($"[{internalTestSuite.Name}] Beginning student solution compilation.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning student solution compilation.");
 
         if (internalTestSuite.StudentSolutionSyntaxTree is null)
             throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
@@ -46,8 +44,7 @@ internal static class Compiler
 
     internal static InternalTestSuite CompileTestSuite(this InternalTestSuite internalTestSuite)
     {
-        internalTestSuite.TestSuite.Logger()
-            ?.LogInformation($"[{internalTestSuite.Name}] Beginning test suite compilation.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning test suite compilation.");
         
         if (internalTestSuite.TestSuiteSyntaxTree is null)
             throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
