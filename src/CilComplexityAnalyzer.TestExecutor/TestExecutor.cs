@@ -103,18 +103,6 @@ public class TestExecutor
 
     public async Task<TestResult> GetResult(int i)
     {
-        if (_internalTestSuite.TestCases is null || _internalTestSuite.TestCases.Value.Length == 0)
-        {
-            throw new InvalidOperationException(
-                $"TestSuite '{_internalTestSuite.GetType().Name}' does not contain any TestCases. Ensure TestCases array is initialized.");
-        }
-
-        if (i < 0 || i >= _internalTestSuite.TestCases.Value.Length)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(i), 
-                $"Requested test index {i} is out of bounds. Suite only contains {_internalTestSuite.TestCases.Value.Length} test cases.");
-        }
         await _resultsTcs[i].Task;
         return _results[i]!;
     }
