@@ -156,6 +156,7 @@ public class Program
     private static void WriteFailureAndExit(string message)
     {
         WriteResult(new TestResult(false, null, message));
+        Debug($"Exiting due to failure: {message}");
         Environment.Exit(1);
     }
 
