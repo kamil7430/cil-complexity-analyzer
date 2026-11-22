@@ -1,9 +1,14 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class StaticAnalyzer
 {
+    private static readonly IReadOnlyList<string> NamespaceWhitelist = [
+        "System",
+    ];
+    
     internal static InternalTestSuite AnalyzeStudentSolution(this InternalTestSuite internalTestSuite)
     {
         Console.WriteLine($"[{internalTestSuite.Name}] Beginning student solution static analysis.");
@@ -14,7 +19,21 @@ internal static class StaticAnalyzer
         );
         internalTestSuite.StudentSolutionSyntaxTree = studentSolutionSyntaxTree;
 
-        // TODO: actual analysis ;>
+        Console.WriteLine($"[{internalTestSuite.Name}] Scanning used namespaces.");
+
+        var usings = studentSolutionSyntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<UsingDirectiveSyntax>();
+        
+        foreach (var @using in usings)
+        {
+            var @namespace = @using.NamespaceOrType.ToString();
+            
+            if (!NamespaceWhitelist.Contains(@namespace))
+            {
+                throw new TestExecutionException($"{@namespace} namespace is not whitelisted!");
+            }
+        }
         
         return internalTestSuite;
     }
