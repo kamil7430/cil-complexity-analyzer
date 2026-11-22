@@ -121,24 +121,24 @@ public class TestSuiteGenerator : IIncrementalGenerator
             var testNumber = 0;
             eb.AppendLine($"public partial class {suite.ClassName}");
             eb.AppendLine("{");
-            eb.AppendLine("   public override TestSuiteSettings Settings()");
-            eb.AppendLine("      => new TestSuiteSettings(");
-            eb.AppendLine($"         {suite.Containerized.ToString().ToLower()}");
-            eb.AppendLine("      );");
+            eb.AppendLine("    public override TestSuiteSettings Settings()");
+            eb.AppendLine("        => new TestSuiteSettings(");
+            eb.AppendLine($"            {suite.Containerized.ToString().ToLower()}");
+            eb.AppendLine("        );");
             foreach (var @case in suite.Cases)
             {
                 eb.AppendLine();
-                eb.AppendLine($"   public partial class {@case.Name}");
-                eb.AppendLine("   {");
-                eb.AppendLine($"      public override int TestNumber() => {testNumber++};");
+                eb.AppendLine($"    public partial class {@case.Name}");
+                eb.AppendLine("    {");
+                eb.AppendLine($"        public override int TestNumber() => {testNumber++};");
                 eb.AppendLine();
-                eb.AppendLine("      public override TestCaseSettings Settings()");
-                eb.AppendLine("         => new TestCaseSettings(");
-                eb.AppendLine($"            {@case.InstructionCap},");
-                eb.AppendLine($"            {@case.TimeoutMs},");
-                eb.AppendLine($"            {@case.MemoryMb}");
-                eb.AppendLine("         );");
-                eb.AppendLine("   }");
+                eb.AppendLine("        public override TestCaseSettings Settings()");
+                eb.AppendLine("            => new TestCaseSettings(");
+                eb.AppendLine($"                {@case.InstructionCap},");
+                eb.AppendLine($"                {@case.TimeoutMs},");
+                eb.AppendLine($"                {@case.MemoryMb}");
+                eb.AppendLine("            );");
+                eb.AppendLine("    }");
             }
             eb.Append("}");
             var extensions = eb.ToString();
