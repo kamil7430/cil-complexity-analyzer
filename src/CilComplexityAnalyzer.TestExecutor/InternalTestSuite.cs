@@ -14,15 +14,14 @@ internal class InternalTestSuite(TestSuite testSuite, CancellationToken cancella
     internal string Name 
         => TestSuite.GetType().ToString();
     
-    internal Lazy<Type[]> TestCaseTypes
+    internal Lazy<TestCase[]> TestCases
         => new(() => TestSuite.GetType()
             .GetNestedTypes()
             .Where(t => t.GetCustomAttribute<TestCaseAttribute>() is not null)
+            .Select(t => (TestCase)Activator.CreateInstance(t)!)
+            .OrderBy(o => o.TestNumber())
             .ToArray()
         );
-    
-    internal Lazy<TestCase[]> TestCases
-        => new(() => TestCaseTypes.Value.Select(t => (TestCase)Activator.CreateInstance(t)!).ToArray());
     
     internal SyntaxTree? StudentSolutionSyntaxTree { get; set; }
     
