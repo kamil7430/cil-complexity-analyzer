@@ -72,13 +72,14 @@ public class Program
     {
         var types = assembly.GetTypes();
 
-        var testSuite = types.FirstOrDefault(t => t.GetCustomAttribute<TestSuiteAttribute>() is not null);
-        if (testSuite == null)
+        var testSuiteCandidates = types.Where(t => t.GetCustomAttribute<TestSuiteAttribute>() is not null).ToArray();
+        if (testSuiteCandidates.Length != 1)
         {
-            WriteFailureAndExit("Concrete TestSuite not found.");
+            WriteFailureAndExit($"Expected one TestSuite to find. Found {testSuiteCandidates.Length} classes.");
         }
+        var testSuite = testSuiteCandidates[0];
 
-        var testCases = testSuite!.GetNestedTypes()
+        var testCases = testSuite.GetNestedTypes()
             .Where(t => t.GetCustomAttribute<TestCaseAttribute>() is not null)
             .ToArray();
         if (testCases.Length == 0)
