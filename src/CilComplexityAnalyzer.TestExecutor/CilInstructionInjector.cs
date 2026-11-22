@@ -1,5 +1,4 @@
 ﻿using CilComplexityAnalyzer.Contract;
-using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -23,7 +22,7 @@ namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class CilInstructionInjector
 {
-    internal static TestSuite InjectCilToStudentSolution(this TestSuite testSuite)
+    internal static InternalTestSuite InjectCilToStudentSolution(this InternalTestSuite internalTestSuite)
     {
         /*
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning CIL instruction injection in student solution.");
@@ -37,7 +36,7 @@ internal static class CilInstructionInjector
 
         testSuite.Logger()?.LogInformation($"[{testSuite.Name}] CIL instruction injection completed.");
 */
-        return testSuite;
+        return internalTestSuite;
     }
 
 

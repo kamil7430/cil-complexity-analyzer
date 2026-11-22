@@ -1,8 +1,7 @@
 namespace CilComplexityAnalyzer.Contract;
 
-public class TestCaseSettings
-{
-    public long InstructionCap { get; set; }
-    public long TimeoutMs { get; set; }
-    public int MemoryMb { get; set; }
-}
+public record TestCaseSettings(
+    long InstructionCap,
+    long TimeoutMs,
+    long MemoryMb
+);

@@ -2,7 +2,9 @@
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
-using CilComplexityAnalyzer.ContainerWorkerUtils;
+using CilComplexityAnalyzer.Contract;
+using CilComplexityAnalyzer.Contract.CaseAttributes;
+using CilComplexityAnalyzer.Contract.SuiteAttributes;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
@@ -68,29 +70,17 @@ public class Program
 
     private static Type[] FindAllTestCases(Assembly assembly)
     {
-        const string contract = "CilComplexityAnalyzer.Contract";
         var types = assembly.GetTypes();
-        
-        // var testSuiteBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestSuite");
-        // if (testSuiteBase == null)
-        // {
-        //     WriteFailureAndExit("TestSuite base not found.");
-        // }
-        //
-        // var testCaseBase = types.FirstOrDefault(t => t.FullName == $"{contract}.TestCase");
-        // if (testCaseBase == null)
-        // {
-        //     WriteFailureAndExit("TestCase base not found.");
-        // }
-        
-        var testSuite = types.FirstOrDefault(t => t.CustomAttributes.Any(a => a.AttributeType.FullName == $"{contract}.Attributes.StudentSolutionAttribute"));
-        if (testSuite == null)
-        {
-            WriteFailureAndExit("Concrete TestSuite not found.");
-        }
 
-        var testCases = testSuite!.GetNestedTypes()
-            // .Where(t => t.IsAssignableTo(testCaseBase))
+        var testSuiteCandidates = types.Where(t => t.GetCustomAttribute<TestSuiteAttribute>() is not null).ToArray();
+        if (testSuiteCandidates.Length != 1)
+        {
+            WriteFailureAndExit($"Expected one TestSuite to find. Found {testSuiteCandidates.Length} classes.");
+        }
+        var testSuite = testSuiteCandidates[0];
+
+        var testCases = testSuite.GetNestedTypes()
+            .Where(t => t.GetCustomAttribute<TestCaseAttribute>() is not null)
             .ToArray();
         if (testCases.Length == 0)
         {
@@ -166,6 +156,7 @@ public class Program
     private static void WriteFailureAndExit(string message)
     {
         WriteResult(new TestResult(false, null, message));
+        Debug($"Exiting due to failure: {message}");
         Environment.Exit(1);
     }
 

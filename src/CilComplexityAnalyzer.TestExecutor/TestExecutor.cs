@@ -1,23 +1,21 @@
 ﻿using System.Diagnostics;
 using CilComplexityAnalyzer.Contract;
-using CilComplexityAnalyzer.Contract.Results;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
 public class TestExecutor
 {
-    private TestSuite _testSuite;
+    private InternalTestSuite _internalTestSuite;
     private TestResult?[] _results;
     private TaskCompletionSource<bool>[] _resultsTcs;
     private int _i = 0;
     private bool _started = false;
     private Lock _startedLock = new();
 
-    public TestExecutor(TestSuite testSuite)
+    public TestExecutor(TestSuite testSuite, CancellationToken cancellationToken)
     {
-        _testSuite = testSuite;
-        var length = testSuite.TestCases.Value.Length;
+        _internalTestSuite = new InternalTestSuite(testSuite, cancellationToken);
+        var length = _internalTestSuite.TestCases.Value.Length;
         _results = new TestResult[length];
         _resultsTcs = new TaskCompletionSource<bool>[length];
         for (int i = 0; i < length; i++)
@@ -41,10 +39,10 @@ public class TestExecutor
         // Skip our whole CIL-injecting-magic when the debugger is attached
         if (Debugger.IsAttached)
         {
-            _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Debugger is attached. The tests will fail.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Debugger is attached. The tests will fail.");
             FillResultsWithFailures("Debugger is attached.");
 
-            foreach (var testCase in _testSuite.TestCases.Value)
+            foreach (var testCase in _internalTestSuite.TestCases.Value)
             {
                 testCase.Arrange();
                 testCase.Act();
@@ -54,34 +52,33 @@ public class TestExecutor
         
         Task.Run(() =>
         {
-            _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Beginning test execution.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Beginning test execution.");
             try
             {
-                _testSuite.AnalyzeStudentSolution()
+                _internalTestSuite.AnalyzeStudentSolution()
                     .CompileStudentSolution()
                     .InjectCilToStudentSolution();
 
-                _testSuite.AnalyzeTestSuite()
-                    .CompileTestSuite()
-                    .LinkTestSuite();
+                _internalTestSuite.AnalyzeTestSuite()
+                    .CompileTestSuite();
                     
-                foreach (var result in _testSuite.Execute())
+                foreach (var result in _internalTestSuite.Execute())
                     SetResult(_i++, result);
             }
             catch (TestExecutionException e)
             {
-                _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Test execution failed: {e.Message}");
+                Console.WriteLine($"[{_internalTestSuite.Name}] Test execution failed: {e.Message}");
                 FillResultsWithFailures($"Test execution failed: {e.Message}");
             }
             catch (Exception e)
             {
-                _testSuite.Logger()
-                    ?.LogInformation(
-                        $"[{_testSuite.Name}] TestExecutor internal error or uncaught exception: {e.Message}");
+                Console.WriteLine(
+                    $"[{_internalTestSuite.Name}] TestExecutor internal error or uncaught exception: {e.Message}"
+                );
                 FillResultsWithFailures($"TestExecutor internal error or uncaught exception: {e.Message}");
             }
 
-            _testSuite.Logger()?.LogInformation($"[{_testSuite.Name}] Ending test execution.");
+            Console.WriteLine($"[{_internalTestSuite.Name}] Ending test execution.");
         });
     }
 
@@ -94,23 +91,13 @@ public class TestExecutor
     private void FillResultsWithFailures(string message)
     {
         for (; _i < _results.Length; _i++)
-            SetResult(_i, new Failure(message));
+        {
+            SetResult(_i, new TestResult(false, null, message));
+        }
     }
 
     public async Task<TestResult> GetResult(int i)
     {
-        if (_testSuite.TestCases is null || _testSuite.TestCases.Value.Length == 0)
-        {
-            throw new InvalidOperationException(
-                $"TestSuite '{_testSuite.GetType().Name}' does not contain any TestCases. Ensure TestCases array is initialized.");
-        }
-
-        if (i < 0 || i >= _testSuite.TestCases.Value.Length)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(i), 
-                $"Requested test index {i} is out of bounds. Suite only contains {_testSuite.TestCases.Value.Length} test cases.");
-        }
         await _resultsTcs[i].Task;
         return _results[i]!;
     }

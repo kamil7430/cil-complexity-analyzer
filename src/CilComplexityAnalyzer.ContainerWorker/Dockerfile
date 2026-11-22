@@ -2,9 +2,6 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src/
 
-WORKDIR /src/CilComplexityAnalyzer.ContainerWorkerUtils/
-COPY ./CilComplexityAnalyzer.ContainerWorkerUtils/ ./
-
 WORKDIR /src/CilComplexityAnalyzer.Contract/
 COPY ./CilComplexityAnalyzer.Contract/ ./
 

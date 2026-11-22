@@ -1,38 +1,36 @@
-﻿using CilComplexityAnalyzer.Contract;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.CodeAnalysis.CSharp;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
 internal static class StaticAnalyzer
 {
-    internal static TestSuite AnalyzeStudentSolution(this TestSuite testSuite)
+    internal static InternalTestSuite AnalyzeStudentSolution(this InternalTestSuite internalTestSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning student solution static analysis.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning student solution static analysis.");
 
         var studentSolutionSyntaxTree = CSharpSyntaxTree.ParseText(
-            text: testSuite.StudentSolutionSourceCode(),
-            cancellationToken: testSuite.CancellationToken()
+            text: internalTestSuite.TestSuite.StudentSolutionSourceCode(),
+            cancellationToken: internalTestSuite.CancellationToken
         );
-        testSuite.StudentSolutionSyntaxTree = studentSolutionSyntaxTree;
+        internalTestSuite.StudentSolutionSyntaxTree = studentSolutionSyntaxTree;
 
         // TODO: actual analysis ;>
         
-        return testSuite;
+        return internalTestSuite;
     }
     
-    internal static TestSuite AnalyzeTestSuite(this TestSuite testSuite)
+    internal static InternalTestSuite AnalyzeTestSuite(this InternalTestSuite internalTestSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test suite static analysis.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning test suite static analysis.");
 
         var testSuiteSyntaxTree = CSharpSyntaxTree.ParseText(
-            text: testSuite.TestSuiteSourceCode(),
-            cancellationToken: testSuite.CancellationToken()
+            text: internalTestSuite.TestSuite.TestSuiteSourceCode(),
+            cancellationToken: internalTestSuite.CancellationToken
         );
-        testSuite.TestSuiteSyntaxTree = testSuiteSyntaxTree;
+        internalTestSuite.TestSuiteSyntaxTree = testSuiteSyntaxTree;
 
         // TODO: actual analysis ;>
         
-        return testSuite;
+        return internalTestSuite;
     }
 }

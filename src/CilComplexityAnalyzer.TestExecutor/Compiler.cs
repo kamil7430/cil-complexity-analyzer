@@ -2,7 +2,6 @@
 using CilComplexityAnalyzer.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
@@ -13,20 +12,20 @@ internal static class Compiler
         optimizationLevel: OptimizationLevel.Debug
     );
     
-    internal static TestSuite CompileStudentSolution(this TestSuite testSuite)
+    internal static InternalTestSuite CompileStudentSolution(this InternalTestSuite internalTestSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning student solution compilation.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning student solution compilation.");
 
-        if (testSuite.StudentSolutionSyntaxTree is null)
+        if (internalTestSuite.StudentSolutionSyntaxTree is null)
             throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
 
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
             assemblyName: "StudentSolution", 
-            syntaxTrees: [testSuite.StudentSolutionSyntaxTree],
+            syntaxTrees: [internalTestSuite.StudentSolutionSyntaxTree],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
-        ).Emit(stream, cancellationToken: testSuite.CancellationToken());
+        ).Emit(stream, cancellationToken: internalTestSuite.CancellationToken);
 
         if (!compilationResult.Success)
         {
@@ -39,25 +38,25 @@ internal static class Compiler
         }
             
         stream.Seek(0, SeekOrigin.Begin);
-        testSuite.StudentSolutionAssemblyBytes = stream.ToArray();
-        return testSuite;
+        internalTestSuite.StudentSolutionAssemblyBytes = stream.ToArray();
+        return internalTestSuite;
     }
 
-    internal static TestSuite CompileTestSuite(this TestSuite testSuite)
+    internal static InternalTestSuite CompileTestSuite(this InternalTestSuite internalTestSuite)
     {
-        testSuite.Logger()?.LogInformation($"[{testSuite.Name}] Beginning test suite compilation.");
+        Console.WriteLine($"[{internalTestSuite.Name}] Beginning test suite compilation.");
         
-        if (testSuite.TestSuiteSyntaxTree is null)
+        if (internalTestSuite.TestSuiteSyntaxTree is null)
             throw new NullReferenceException("Syntax tree is null! Did you run analyzer before compiler?");
         
         using var stream = new MemoryStream();
         var compilationResult = CSharpCompilation.Create(
-            assemblyName: testSuite.Name, 
-            syntaxTrees: [testSuite.TestSuiteSyntaxTree],
+            assemblyName: internalTestSuite.Name, 
+            syntaxTrees: [internalTestSuite.TestSuiteSyntaxTree],
             // TODO: do it more sophisticated way
             references: [
                 ..Basic.Reference.Assemblies.Net100.References.All,
-                MetadataReference.CreateFromImage(testSuite.StudentSolutionAssemblyBytes!),
+                MetadataReference.CreateFromImage(internalTestSuite.StudentSolutionAssemblyBytes!),
                 MetadataReference.CreateFromFile(typeof(TestCase).Assembly.Location),
             ],
             options: CompilationOptions
@@ -67,11 +66,11 @@ internal static class Compiler
             manifestResources: [
                 new ResourceDescription(
                     "StudentSolution", 
-                    () => new MemoryStream(testSuite.StudentSolutionAssemblyBytes!), 
+                    () => new MemoryStream(internalTestSuite.StudentSolutionAssemblyBytes!), 
                     true
                 ),
             ],
-            cancellationToken: testSuite.CancellationToken()
+            cancellationToken: internalTestSuite.CancellationToken
         );
 
         if (!compilationResult.Success)
@@ -85,7 +84,7 @@ internal static class Compiler
         }
         
         stream.Seek(0, SeekOrigin.Begin);
-        testSuite.TestSuiteAssemblyBytes = stream.ToArray();
-        return testSuite;
+        internalTestSuite.TestSuiteAssemblyBytes = stream.ToArray();
+        return internalTestSuite;
     }
 }
