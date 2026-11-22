@@ -5,9 +5,11 @@ using Microsoft.CodeAnalysis;
 
 namespace CilComplexityAnalyzer.TestExecutor;
 
-internal class InternalTestSuite(TestSuite testSuite)
+internal class InternalTestSuite(TestSuite testSuite, CancellationToken cancellationToken)
 {
     internal TestSuite TestSuite { get; } = testSuite;
+
+    internal CancellationToken CancellationToken { get; } = cancellationToken;
     
     internal string Name 
         => TestSuite.GetType().ToString();

@@ -10,7 +10,7 @@ internal static class StaticAnalyzer
 
         var studentSolutionSyntaxTree = CSharpSyntaxTree.ParseText(
             text: internalTestSuite.TestSuite.StudentSolutionSourceCode(),
-            cancellationToken: internalTestSuite.TestSuite.CancellationToken()
+            cancellationToken: internalTestSuite.CancellationToken
         );
         internalTestSuite.StudentSolutionSyntaxTree = studentSolutionSyntaxTree;
 
@@ -25,7 +25,7 @@ internal static class StaticAnalyzer
 
         var testSuiteSyntaxTree = CSharpSyntaxTree.ParseText(
             text: internalTestSuite.TestSuite.TestSuiteSourceCode(),
-            cancellationToken: internalTestSuite.TestSuite.CancellationToken()
+            cancellationToken: internalTestSuite.CancellationToken
         );
         internalTestSuite.TestSuiteSyntaxTree = testSuiteSyntaxTree;
 

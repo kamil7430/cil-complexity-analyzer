@@ -12,9 +12,9 @@ public class TestExecutor
     private bool _started = false;
     private Lock _startedLock = new();
 
-    public TestExecutor(TestSuite testSuite)
+    public TestExecutor(TestSuite testSuite, CancellationToken cancellationToken)
     {
-        _internalTestSuite = new InternalTestSuite(testSuite);
+        _internalTestSuite = new InternalTestSuite(testSuite, cancellationToken);
         var length = _internalTestSuite.TestCases.Value.Length;
         _results = new TestResult[length];
         _resultsTcs = new TaskCompletionSource<bool>[length];

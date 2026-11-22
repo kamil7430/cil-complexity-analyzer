@@ -37,7 +37,7 @@ internal static class Executor
             ).Build();
 
         Console.WriteLine($"[{internalTestSuite.Name}] Starting test container.");
-        container.StartAsync(internalTestSuite.TestSuite.CancellationToken()).Wait();
+        container.StartAsync(internalTestSuite.CancellationToken).Wait();
 
         var globalTimeoutMs = internalTestSuite.TestCases.Value.Sum(t => t.Settings().TimeoutMs) + AdditionalTimeoutMs;
         var globalTimeout = DateTime.UtcNow + TimeSpan.FromMilliseconds(globalTimeoutMs);
@@ -67,8 +67,8 @@ internal static class Executor
                 try
                 {
                     Console.WriteLine($"[{internalTestSuite.Name}] Trying to fetch test {i} results.");
-                    resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i),
-                        internalTestSuite.TestSuite.CancellationToken()).Result;
+                    resultBytes = container.ReadFileAsync(Paths.ResultsJsonPath(i), internalTestSuite.CancellationToken)
+                        .Result;
 
                     if (resultBytes.Length <= 0)
                     {
@@ -101,7 +101,7 @@ internal static class Executor
             results.CompleteAdding();
         });
 
-        foreach (var result in results.GetConsumingEnumerable(internalTestSuite.TestSuite.CancellationToken()))
+        foreach (var result in results.GetConsumingEnumerable(internalTestSuite.CancellationToken))
         {
             yield return result;
         }

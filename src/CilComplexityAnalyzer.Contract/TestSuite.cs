@@ -8,6 +8,4 @@ public abstract class TestSuite
     public virtual string TestSuiteSourceCode()
         => throw new NotImplementedException();
     public abstract TestSuiteSettings Settings();
-    public virtual CancellationToken CancellationToken() 
-        => System.Threading.CancellationToken.None;
 }

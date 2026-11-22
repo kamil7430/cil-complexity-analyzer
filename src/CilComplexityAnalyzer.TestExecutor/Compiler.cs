@@ -25,7 +25,7 @@ internal static class Compiler
             syntaxTrees: [internalTestSuite.StudentSolutionSyntaxTree],
             references: Basic.Reference.Assemblies.Net100.References.All,
             options: CompilationOptions
-        ).Emit(stream, cancellationToken: internalTestSuite.TestSuite.CancellationToken());
+        ).Emit(stream, cancellationToken: internalTestSuite.CancellationToken);
 
         if (!compilationResult.Success)
         {
@@ -70,7 +70,7 @@ internal static class Compiler
                     true
                 ),
             ],
-            cancellationToken: internalTestSuite.TestSuite.CancellationToken()
+            cancellationToken: internalTestSuite.CancellationToken
         );
 
         if (!compilationResult.Success)
