@@ -125,10 +125,11 @@ public class TestSuiteGenerator : IIncrementalGenerator
             eb.AppendLine("      => new TestSuiteSettings(");
             eb.AppendLine($"         {suite.Containerized.ToString().ToLower()}");
             eb.AppendLine("      );");
-            eb.AppendLine();
             foreach (var @case in suite.Cases)
             {
-                eb.AppendLine($"   public partial class {@case.Name} {{");
+                eb.AppendLine();
+                eb.AppendLine($"   public partial class {@case.Name}");
+                eb.AppendLine("   {");
                 eb.AppendLine($"      public override int TestNumber() => {testNumber++};");
                 eb.AppendLine();
                 eb.AppendLine("      public override TestCaseSettings Settings()");
