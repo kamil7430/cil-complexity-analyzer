@@ -13,6 +13,7 @@ public interface IEngineStrategy
 {
     internal void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
     internal void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
+    internal void InjectType(IMetadataContext metadataContext);
     internal void LoadRuntime(AssemblyLoadContext context);
 }
 
@@ -46,6 +47,12 @@ public abstract class BaseInjectionStrategy : IEngineStrategy, IInjectionStrateg
         ArgumentNullException.ThrowIfNull(methodInjectionContext);
         ArgumentNullException.ThrowIfNull(metadataContext);
         _engineWeaver.Inject(methodInjectionContext, metadataContext);
+    }
+
+    void IEngineStrategy.InjectType(IMetadataContext metadataContext)
+    {
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        _engineWeaver.InjectType(metadataContext);
     }
 
     void IEngineStrategy.LoadRuntime(AssemblyLoadContext context)

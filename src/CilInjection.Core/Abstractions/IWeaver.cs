@@ -4,6 +4,7 @@ internal interface IEngineWeaver
 {
     void Transform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext);
     void Inject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext);
+    void InjectType(IMetadataContext metadataContext);
 }
 
 public interface IWeaver
@@ -29,6 +30,13 @@ public abstract class BaseWeaver : IEngineWeaver, IWeaver
         OnInject(methodInjectionContext, metadataContext);
     }
     
+    void IEngineWeaver.InjectType(IMetadataContext metadataContext)
+    {
+        ArgumentNullException.ThrowIfNull(metadataContext);
+        OnInjectType(metadataContext);
+    }
+    
     protected virtual void OnTransform(IMethodTransformationContext methodTransformationContext, IMetadataContext metadataContext) { }
     protected virtual void OnInject(IMethodInjectionContext methodInjectionContext, IMetadataContext metadataContext) { }
+    protected virtual void OnInjectType(IMetadataContext metadataContext) { }
 }

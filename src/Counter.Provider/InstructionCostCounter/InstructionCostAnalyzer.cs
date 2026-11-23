@@ -11,7 +11,7 @@ public static class InstructionCostAnalyzer
     {
         var opCode = context.OpCode;
 
-        // --- 1. LINIOWY DYNAMICZNY (Rozmiar znany tylko w Runtime na szczycie stosu) ---
+        // --- LINIOWY DYNAMICZNY (Rozmiar znany tylko w Runtime na szczycie stosu) ---
         // newarr   - stos: [..., liczba_elementow]
         // localloc - stos: [..., liczba_bajtow]
         // cpblk    - stos: [..., adres_docelowy, adres_zrodlowy, liczba_bajtow]
@@ -24,7 +24,7 @@ public static class InstructionCostAnalyzer
             return GenerateLinearDynamicCost();
         }
 
-        // --- 2. LINIOWY STATYCZNY (Rozmiar znany teraz z Operandu) ---
+        // --- LINIOWY STATYCZNY (Rozmiar znany w czasie kompilacji z Operandu) ---
         // Ładowanie stringów (koszt alokacji i przekopiowania znaków)
         if (opCode == OpCodes.Ldstr && context.Operand is string str)
         {
@@ -47,7 +47,7 @@ public static class InstructionCostAnalyzer
             }
         }
 
-        // --- 3. CZAS STAŁY (Domyślny) ---
+        // --- CZAS STAŁY (Domyślny) ---
         // Instrukcje Call są traktowane jako O(1), bo wstrzykujemy kod do wnętrza każdej wywoływanej metody.
         return GenerateConstantCost(1L);
     }

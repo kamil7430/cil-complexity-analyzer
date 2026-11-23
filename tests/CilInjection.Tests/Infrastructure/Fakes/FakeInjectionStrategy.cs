@@ -45,6 +45,14 @@ namespace CilInjection.Tests
             // Delegujemy iniekcję do przekazanego weavera
             _engineWeaver?.Inject(methodInjectionContext, metadataContext);
         }
+        
+        void IEngineStrategy.InjectType(IMetadataContext metadataContext)
+        {
+            ArgumentNullException.ThrowIfNull(metadataContext);
+
+            // Delegujemy iniekcję typu do przekazanego weavera
+            _engineWeaver?.InjectType(metadataContext);
+        }
 
         void IEngineStrategy.LoadRuntime(AssemblyLoadContext context)
         {

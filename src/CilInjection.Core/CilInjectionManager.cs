@@ -9,7 +9,7 @@ namespace CilInjection.Core;
 public class CilInjectionManager
 {
     private readonly List<IEngineStrategy> _strategies = new();
-    private readonly MethodProcessor _methodProcessor = new();
+    private readonly IlProcessor _processor = new();
     private readonly StrategyRuntimeLoader _runtimeLoader = new();
     
     public CilInjectionManager(params IEnumerable<IInjectionStrategy> strategies)
@@ -52,15 +52,7 @@ public class CilInjectionManager
     
     public ModuleDefinition Transform(ModuleDefinition module)
     {
-        var methods = module.GetTypes()
-            .SelectMany(t => t.Methods)
-            .Where(m => m.HasBody && m.Body.Instructions.Count > 0)
-            .ToList();
-
-        foreach (var method in methods)
-        {
-            _methodProcessor.ProcessMethod(method, _strategies);
-        }
+        _processor.ProcessMethod(module, _strategies);
 
         return module;
     }
