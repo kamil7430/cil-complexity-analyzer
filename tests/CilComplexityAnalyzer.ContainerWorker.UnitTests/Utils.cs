@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace CilComplexityAnalyzer.ContainerWorker.Tests;
+namespace CilComplexityAnalyzer.ContainerWorker.UnitTests;
 
 public static class Utils
 {
@@ -13,12 +13,11 @@ public static class Utils
         return Assembly.Load(memoryStream.ToArray());
     }
     
-    public static void InvokeExecuteAndCaptureException(TestData[] testData, Assembly assembly,
-        Action<TestResult> action)
+    public static void InvokePerformSingleTestAndCaptureException(object testCase, Action<Contract.TestResult> action)
     {
         Exception? exception = null;
 
-        Program.Execute(testData, assembly, testResult =>
+        Program.PerformSingleTest(testCase, testResult =>
         {
             try
             {

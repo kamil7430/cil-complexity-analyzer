@@ -12,15 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <EmbeddedResource Include="Assemblies/**" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\CilComplexityAnalyzer.ContainerWorker\CilComplexityAnalyzer.ContainerWorker.csproj" />
+      <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
     </ItemGroup>
 
 </Project>
