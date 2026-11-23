@@ -8,7 +8,7 @@ using CilComplexityAnalyzer.Contract.SuiteAttributes;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
-public class Program
+public static class Program
 {
     private static TextWriter? _originalStdout;
     private static int _testNo = 0;
