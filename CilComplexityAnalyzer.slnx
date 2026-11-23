@@ -6,12 +6,7 @@
     <Project Path="src/CilComplexityAnalyzer.TestExecutor/CilComplexityAnalyzer.TestExecutor.csproj" />
     <Project Path="src\CilComplexityAnalyzer.Facade\CilComplexityAnalyzer.Facade.csproj" />
     <Project Path="src/DataAnalyzer/DataAnalyzer.csproj" />
-  </Folder>
-  <Folder Name="/src/CilInjection/">
     <Project Path="src/CilInjection.Core/CilInjection.Core.csproj" />
-  </Folder>
-  <Folder Name="/src/CilInjection/Strategies/" />
-  <Folder Name="/src/CilInjection/Strategies/InstructionCounter/">
     <Project Path="src/CilInstructionCounter.Provider/CilInstructionCounter.Provider.csproj" />
     <Project Path="src/CilInstructionCounter.RunTime/CilInstructionCounter.RunTime.csproj" />
   </Folder>
