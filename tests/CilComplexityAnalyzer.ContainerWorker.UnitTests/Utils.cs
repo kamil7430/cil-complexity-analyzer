@@ -1,16 +1,32 @@
 using System.Reflection;
+using CilComplexityAnalyzer.Contract;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CilComplexityAnalyzer.ContainerWorker.UnitTests;
 
 public static class Utils
 {
-    public static Assembly LoadAssembly(string assemblyName)
+    public static Assembly CompileTestSuiteMock(string testSuiteMockCode, CancellationToken cancellationToken)
     {
-        using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream($"CilComplexityAnalyzer.ContainerWorker.Tests.Assemblies.{assemblyName}.dll");
-        using var memoryStream = new MemoryStream();
-        stream!.CopyTo(memoryStream);
-        return Assembly.Load(memoryStream.ToArray());
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            text: testSuiteMockCode,
+            cancellationToken: cancellationToken
+        );
+        
+        using var stream = new MemoryStream();
+        CSharpCompilation.Create(
+            assemblyName: "TestSuiteMock", 
+            syntaxTrees: [syntaxTree],
+            references: [
+                ..Basic.Reference.Assemblies.Net100.References.All,
+                MetadataReference.CreateFromFile(typeof(TestCase).Assembly.Location),
+            ],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        ).Emit(stream, cancellationToken: cancellationToken);
+            
+        stream.Seek(0, SeekOrigin.Begin);
+        return Assembly.Load(stream.ToArray());
     }
     
     public static void InvokePerformSingleTestAndCaptureException(object testCase, Action<Contract.TestResult> action)
