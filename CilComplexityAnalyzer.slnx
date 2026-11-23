@@ -16,12 +16,12 @@
     <Project Path="src/CilInstructionCounter.RunTime/CilInstructionCounter.RunTime.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CilComplexityAnalyzer.ContainerWorker.UnitTests/CilComplexityAnalyzer.ContainerWorker.UnitTests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.Facade.Tests/CilComplexityAnalyzer.Facade.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.LibCilInjection.Tests/CilComplexityAnalyzer.LibCilInjection.Tests.csproj" />
     <Project Path="tests/CilComplexityAnalyzer.TestExecutor.Tests/CilComplexityAnalyzer.TestExecutor.Tests.csproj" />
     <Project Path="tests/CilInjection.Tests/CilInjection.Tests.csproj" />
     <Project Path="tests/CilInjection.TestTargets/CilInjection.TestTargets.csproj" />
     <Project Path="tests/NewTester/NewTester.csproj" />
-    <Project Path="tests\CilComplexityAnalyzer.ContainerWorker.UnitTests\CilComplexityAnalyzer.ContainerWorker.UnitTests.csproj" />
   </Folder>
 </Solution>
