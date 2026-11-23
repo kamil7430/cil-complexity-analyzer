@@ -12,7 +12,7 @@ public abstract class TestCase
 
     public abstract void Assert();
 
-    public void IsTrue(bool condition, string message)
+    public static void IsTrue(bool condition, string message)
     {
         if (!condition)
             throw new AssertFailedException(message);

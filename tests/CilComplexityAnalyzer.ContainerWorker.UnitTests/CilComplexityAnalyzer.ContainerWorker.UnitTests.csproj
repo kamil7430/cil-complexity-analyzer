@@ -9,18 +9,13 @@
 
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.0.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Assemblies/**" />
+        <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.11" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\CilComplexityAnalyzer.ContainerWorker\CilComplexityAnalyzer.ContainerWorker.csproj" />
+      <ProjectReference Include="..\..\src\CilComplexityAnalyzer.Contract\CilComplexityAnalyzer.Contract.csproj" />
     </ItemGroup>
 
 </Project>

@@ -8,74 +8,68 @@ using CilComplexityAnalyzer.Contract.SuiteAttributes;
 
 namespace CilComplexityAnalyzer.ContainerWorker;
 
-public class Program
+public static class Program
 {
     private static TextWriter? _originalStdout;
     private static int _testNo = 0;
     
     internal static void Main(string[] _)
     {
-        _originalStdout = Console.Out;
-        
-        // load test suite assembly
-        var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
-        Debug("Loaded test suite assembly");
-        
-        Execute(assembly, WriteResult);
+        try
+        {
+            _originalStdout = Console.Out;
+
+            // load test suite assembly
+            var assembly = Assembly.LoadFrom(Paths.TestSuiteDllPath);
+            Debug("Loaded test suite assembly");
+
+            Execute(assembly, WriteResult);
+        }
+        catch (Exception e)
+        {
+            WriteFailureAndExit($"Internal error: {e.Message}");
+        }
     }
 
     public static void Execute(Assembly assembly, Action<TestResult> writeResult)
     {
-        try
+        // discard any writes
+        _originalStdout = Console.Out;
+        Console.SetOut(TextWriter.Null);
+
+        using (var stream = assembly.GetManifestResourceStream("StudentSolution"))
         {
-            // discard any writes
-            _originalStdout = Console.Out;
-            Console.SetOut(TextWriter.Null);
+            if (stream is null)
+                throw new ContainerWorkerException("Could not find StudentSolution in assembly resources");
 
-            using (var stream = assembly.GetManifestResourceStream("StudentSolution"))
-            {
-                if (stream is null)
-                    throw new DllNotFoundException("Could not find StudentSolution in assembly resources");
-                
-                AssemblyLoadContext.Default.LoadFromStream(stream);
-                Debug("Loaded student solution dll from assembly resources");
-            }
-
-            var testCases = FindAllTestCases(assembly);
-            Debug($"Found {testCases.Length} TestCase types.");
-
-            var testCasesSorted = ActivateAndSortTestCases(testCases);
-            Debug("Activated and sorted test cases.");
-
-            // execute tests sequentially and report every output immediately
-            foreach (var testCase in testCasesSorted)
-            {
-                try
-                {
-                    PerformSingleTest(testCase, writeResult);
-                }
-                catch (Exception e)
-                {
-                    writeResult(new TestResult(false, null, $"Unhandled exception: {e.Message}"));
-                }
-            }
+            AssemblyLoadContext.Default.LoadFromStream(stream);
+            Debug("Loaded student solution dll from assembly resources");
         }
-        catch (Exception e)
+
+        var testCases = FindAllTestCases(assembly);
+        Debug($"Found {testCases.Length} TestCase types.");
+
+        var testCasesSorted = ActivateAndSortTestCases(testCases);
+        Debug("Activated and sorted test cases.");
+
+        foreach (var testCase in testCasesSorted)
         {
-            WriteFailureAndExit($"Internal worker exception: {e.Message}");
+            PerformSingleTest(testCase, writeResult);
         }
-        
-        Console.SetOut(_originalStdout!);
+
+        Console.SetOut(_originalStdout);
     }
 
-    private static Type[] FindAllTestCases(Assembly assembly)
+    internal static Type[] FindAllTestCases(Assembly assembly)
     {
         var types = assembly.GetTypes();
 
         var testSuiteCandidates = types.Where(t => t.GetCustomAttribute<TestSuiteAttribute>() is not null).ToArray();
         if (testSuiteCandidates.Length != 1)
         {
-            WriteFailureAndExit($"Expected one TestSuite to find. Found {testSuiteCandidates.Length} classes.");
+            throw new ContainerWorkerException(
+                $"Expected one TestSuite to find. Found {testSuiteCandidates.Length} classes."
+            );
         }
         var testSuite = testSuiteCandidates[0];
 
@@ -84,38 +78,48 @@ public class Program
             .ToArray();
         if (testCases.Length == 0)
         {
-            WriteFailureAndExit("No TestCases found.");
+            throw new ContainerWorkerException("No TestCases found.");
         }
         
         return testCases;
     }
 
-    private static IEnumerable<object> ActivateAndSortTestCases(Type[] testCases)
+    internal static IEnumerable<object> ActivateAndSortTestCases(Type[] testCases)
         => testCases.Select(c => Activator.CreateInstance(c)!)
             .OrderBy(o => o.GetType().GetMethod("TestNumber")!.Invoke(o, null)!);
 
-    private static void PerformSingleTest(object testCase, Action<TestResult> writeResult)
+    internal static void PerformSingleTest(object testCase, Action<TestResult> writeResult)
     {
-        var arrangeMethod = testCase.GetType().GetMethod("Arrange");
-        var actMethod = testCase.GetType().GetMethod("Act");
-        var assertMethod = testCase.GetType().GetMethod("Assert");
-
-        arrangeMethod!.Invoke(testCase, null);
-        Debug("Invoked Arrange");
+        var arrangeMethod = testCase.GetType().GetMethod("Arrange")
+            ?? throw new ContainerWorkerException("Could not find Arrange method");
+        var actMethod = testCase.GetType().GetMethod("Act")
+            ?? throw new ContainerWorkerException("Could not find Act method");
+        var assertMethod = testCase.GetType().GetMethod("Assert")
+            ?? throw new ContainerWorkerException("Could not find Assert method");
 
         try
         {
-            actMethod!.Invoke(testCase, null);
+            arrangeMethod.Invoke(testCase, null);
+            Debug("Invoked Arrange");
+        }
+        catch (TargetInvocationException e)
+        {
+            throw new ContainerWorkerException("Exception thrown in Arrange method", e.InnerException);
+        }
+
+        try
+        {
+            actMethod.Invoke(testCase, null);
             Debug("Invoked Act");
         }
-        catch (Exception e)
+        catch (TargetInvocationException e)
         {
-            if (e.InnerException is not null)
-            {
-                throw e.InnerException;
-            }
-
-            throw;
+            writeResult(new TestResult(
+                false, 
+                null, 
+                $"Unhandled exception in student code: {e.InnerException?.Message}"
+            ));
+            return;
         }
 
         var complexity = -1L;
@@ -127,7 +131,7 @@ public class Program
 
         try
         {
-            assertMethod!.Invoke(testCase, null);
+            assertMethod.Invoke(testCase, null);
             Debug("Invoked Assert");
         }
         catch (TargetInvocationException e)
@@ -138,7 +142,7 @@ public class Program
                 return;
             }
 
-            throw;
+            throw new ContainerWorkerException("Exception thrown in Assert method", e.InnerException);
         }
         
         writeResult(new TestResult(true, complexity, null));
