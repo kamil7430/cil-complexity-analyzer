@@ -9,6 +9,7 @@ public interface IMetadataContext
     TypeReference ImportType(TypeReference typeReference);
     FieldReference ImportField(FieldReference fieldReference);
     MethodReference ImportMethod(MethodReference methodReference);
+    TypeDefinition? TryAddTypeToCoreLib(Type templateType, string? targetNamespace = null, string? targetTypeName = null);
 }
 
 public interface IReadOnlyInstructionContext
